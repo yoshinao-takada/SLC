@@ -1,0 +1,6 @@
+// put an element.
+SLC_errno_t SLC_RingBuffer_Put_<TypeID>(SLC_PArray_t rb, const SLC_<TypeID>_t* data);
+
+// get an element.
+SLC_errno_t SLC_RingBuffer_Get_<TypeID>(SLC_PArray_t rb, SLC_<TypeID>_t* data);
+

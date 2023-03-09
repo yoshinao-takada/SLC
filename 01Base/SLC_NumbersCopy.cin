@@ -1,0 +1,25 @@
+
+void SLC_<NTID>_copy(
+    SLC_<NTID>_t* dst, _IT dst_step,
+    const SLC_<NTID>_t* src, _IT src_step,
+    _IT count
+) {
+    for (_IT i = 0; i < count; i++)
+    {
+        *dst = *src;
+        dst += dst_step;
+        src += src_step;
+    }
+}
+
+void SLC_<NTID>_set0(
+    SLC_<NTID>_t* dst, _IT dst_step, _IT count
+) {
+    SLC_<NTID>_copy(dst, dst_step, SLC_<NTID>_units, 0, count);
+}
+
+void SLC_<NTID>_set1(
+    SLC_<NTID>_t* dst, _IT dst_step, _IT count
+) {
+    SLC_<NTID>_copy(dst, dst_step, SLC_<NTID>_units + 1, 0, count);
+}

@@ -1,0 +1,40 @@
+SLC_errno_t SLC_RingBuffer_Put_<TypeID>(SLC_PArray_t rb, const SLC_<TypeID>_t* data)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_<TypeID>_t* buf;
+    int16_t wrindex, bufsize;
+    do {
+        if (SLC_RingBuffer_IsFull(rb))
+        {
+            err = ENOBUFS;
+            break;
+        }
+        buf = rb->data.<TypeID>;
+        wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
+        buf[wrindex++] = *data;
+        if (wrindex == bufsize)
+        {
+            wrindex -= bufsize;
+        }
+        BUFSIZE(rb) = wrindex;
+    } while (0);
+    return err;
+}
+
+SLC_errno_t SLC_RingBuffer_Get_<TypeID>(SLC_PArray_t rb, SLC_<TypeID>_t* data)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_<TypeID>_t* buf;
+    int16_t rdindex, bufsize;
+    do {
+        if (SLC_RingBuffer_IsEmpty(rb))
+        {
+            err = ENODATA;
+            break;
+        }
+        buf = rb->data.<TypeID>;
+        rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
+        *data = buf[rdindex++];
+    } while (0);
+    return err;
+}
