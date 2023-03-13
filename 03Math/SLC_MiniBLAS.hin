@@ -1,9 +1,10 @@
-# MiniBLAS
-## Overview
-`MiniBLAS` is a BLAS like (not compatible but simpler) linear algebraic basic subroutines.
+#pragma region <NTID>_functions
+void SLC_<NTID>_copyconj(
+    SLC_<NTID>_t* dst, SLC_size_t dst_step,
+    const SLC_<NTID>_t* src, SLC_size_t src_step,
+    SLC_size_t count
+);
 
-## Functions
-```
 // in-place operation
 // addition (dst += src)
 void SLC_<NTID>_addip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, SLC_<ITID>_t count);
@@ -41,5 +42,6 @@ SLC_<NTID>_t SLC_<NTID>_innerproduct(const SLC_<NTID>_t* src0, const SLC_<NTID>_
 SLC_<NTID>_t SLC_<NTID>_sum(const SLC_<NTID>_t* src, SLC_<ITID>_t count);
 
 // absolute sum
-SLC_<NTID>_t SLC_<NTID>_abssum(const SLC_<NTID>_t* src, SLC_<ITID>_t count);
-```
+SLC_<RNTID>_t SLC_<NTID>_abssum(const SLC_<NTID>_t* src, SLC_<ITID>_t count);
+#pragma endregion <NTID>_functions
+

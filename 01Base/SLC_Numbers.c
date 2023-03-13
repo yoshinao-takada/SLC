@@ -1,5 +1,5 @@
 #define _SLC_NUMBERS_C
-#include "SLC_Numbers.h"
+#include "SLC/SLC_Numbers.h"
 
 SLC_i8_t SLC_i8_units[3] = { 0, 1, -1 };
 
@@ -33,3 +33,5 @@ SLC_c128_t SLC_c128_units[5] = {
     CMPLX(0.0, 1.0), CMPLX(0.0, -1.0) };
 
 SLC_bool_t SLC_bool_units[2] = { false, true };
+
+SLC_size_t SLC_unitsizes[] = SLC_UNIT_SIZES;

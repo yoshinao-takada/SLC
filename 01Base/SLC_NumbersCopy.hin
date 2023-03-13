@@ -9,3 +9,6 @@ void SLC_<NTID>_set0(
 
 void SLC_<NTID>_set1(
     SLC_<NTID>_t* dst, SLC_size_t dst_step, SLC_size_t count);
+
+void SLC_<NTID>_swap(
+    SLC_<NTID>_t* x0, SLC_<NTID>_t* x1, SLC_<NTID>_t* temp, SLC_size_t count);

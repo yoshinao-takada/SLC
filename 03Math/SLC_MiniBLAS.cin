@@ -1,0 +1,108 @@
+#pragma region <NTID>_functions
+void SLC_<NTID>_copyconj(
+    SLC_<NTID>_t* dst, SLC_<ITID>_t dst_step,
+    const SLC_<NTID>_t* src, SLC_<ITID>_t src_step,
+    SLC_<ITID>_t count
+) {
+    for (SLC_<ITID>_t i = 0; i < count; i++)
+    {
+        *dst = SLC_<NTID>_conj(*src);
+        dst += dst_step;
+        src += src_step;
+    }
+}
+
+void SLC_<NTID>_addip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] += src[index];
+    }
+}
+
+void SLC_<NTID>_scaleip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* scale, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] *= *scale;
+    }
+}
+
+void SLC_<NTID>_scaleaddip(
+    SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, const SLC_<NTID>_t* scale, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] += src[index] * (*scale);
+    }
+}
+
+void SLC_<NTID>_multiplyebeip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] *= src[index];
+    }
+}
+
+void SLC_<NTID>_addsubs(
+    SLC_<NTID>_t* dst, const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] = src0[index] * src1[index];
+    }
+}
+
+void SLC_<NTID>_scaleaddsubs(
+    SLC_<NTID>_t* dst, 
+    const SLC_<NTID>_t* src0, const SLC_<NTID>_t* scale0, 
+    const SLC_<NTID>_t* src1, const SLC_<NTID>_t* scale1,
+    SLC_<ITID>_t count
+) {
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] = src0[index] * (*scale0) + src1[index] * (*scale1);
+    }
+}
+
+void SLC_<NTID>_multyplyebesubs(
+    SLC_<NTID>_t* dst, const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count
+) {
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] = src0[index] * src1[index];
+    }
+}
+
+SLC_<NTID>_t SLC_<NTID>_innerproduct(
+    const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count
+) {
+    SLC_<NTID>_t dst = SLC_<NTID>_units[0];
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst += src0[index] * src1[index];
+    }
+    return dst;
+}
+
+SLC_<NTID>_t SLC_<NTID>_sum(const SLC_<NTID>_t* src, SLC_<ITID>_t count)
+{
+    SLC_<NTID>_t dst = SLC_<NTID>_units[0];
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst += src[index];
+    }
+    return dst;
+}
+
+SLC_<RNTID>_t SLC_<NTID>_abssum(const SLC_<NTID>_t* src, SLC_<ITID>_t count)
+{
+    SLC_<RNTID>_t dst = SLC_<RNTID>_units[0];
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst += SLC_<NTID>_abs(src[index]);
+    }
+    return dst;
+}
+#pragma endregion <NTID>_functions

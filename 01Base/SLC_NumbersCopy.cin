@@ -23,3 +23,12 @@ void SLC_<NTID>_set1(
 ) {
     SLC_<NTID>_copy(dst, dst_step, SLC_<NTID>_units + 1, 0, count);
 }
+
+void SLC_<NTID>_swap(
+    SLC_<NTID>_t* x0, SLC_<NTID>_t* x1, SLC_<NTID>_t* temp, SLC_size_t count
+) {
+    SLC_size_t copy_size = count * sizeof(SLC_<NTID>_t);
+    memcpy(temp, x0, copy_size);
+    memcpy(x0, x1, copy_size);
+    memcpy(x1, temp, copy_size);
+}

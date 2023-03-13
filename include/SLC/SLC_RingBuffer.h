@@ -1,6 +1,7 @@
 #if !defined(_SLC_RINGBUFFER_H)
 #define _SLC_RINGBUFFER_H
 #include "SLC/SLC_Array.h"
+#include "SLC/SLC_errno.h"
 #include <errno.h>
 #pragma region number_type_agnostic_procesing
 #define BUFSIZE(__rb) (__rb)->cont.i16[1]

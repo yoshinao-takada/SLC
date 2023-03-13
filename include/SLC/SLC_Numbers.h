@@ -24,9 +24,6 @@ typedef enum {
     SLC_ptr,
 } SLC_NumberType_t;
 
-#define SLC_NUMBER_SIZES { \
-    1, 2, 3, 4, 1, 2, 3, 4, \
-    4, 8, 8, 16, sizeof(size_t), sizeof(bool) }
 #pragma region unit_number_types
 typedef int8_t SLC_i8_t;
 typedef int16_t SLC_i16_t;
@@ -43,8 +40,12 @@ typedef double complex SLC_c128_t;
 typedef size_t SLC_size_t;
 typedef bool SLC_bool_t;
 typedef void* SLC_ptr_t;
-typedef int32_t SLC_errno_t;
 #pragma endregion
+
+#define SLC_UNIT_SIZES { \
+    1, 2, 3, 4, 1, 2, 3, 4, \
+    4, 8, 8, 16, sizeof(SLC_size_t), sizeof(SLC_bool_t), sizeof(SLC_ptr_t) }
+
 #pragma region two_element_array_type
 typedef int8_t SLC_2i8_t[2];
 typedef int16_t SLC_2i16_t[2];
@@ -131,6 +132,15 @@ typedef bool SLC_16bool_t[16];
 typedef void* SLC_16ptr_t[16];
 #pragma endregion
 
+#define SLC_r32_abs(__number)  fabsf(__number)
+#define SLC_r64_abs(__number)   fabs(__number)
+#define SLC_c64_abs(__number)   cabsf(__number)
+#define SLC_c128_abs(__number)  cabs(__number)
+#define SLC_r32_conj(__number)  (__number)
+#define SLC_r64_conj(__number)  (__number)
+#define SLC_c64_conj(__number)  conjf(__number)
+#define SLC_c128_conj(__number) conj(__number)
+
 #define SLC_product2(__a) (__a)[0]*(__a)[1]
 #define SLC_product3(__a) (__a)[0]*(__a)[1]*(__a)[2]
 #define SLC_product4(__a) (__a)[0]*(__a)[1]*(__a)[2]*(__a)[3]
@@ -150,6 +160,7 @@ extern SLC_r64_t SLC_r64_units[3];
 extern SLC_c64_t SLC_c64_units[5];
 extern SLC_c128_t SLC_c128_units[5];
 extern SLC_bool_t SLC_bool_units[2];
+extern SLC_size_t SLC_unitsizes[];
 #endif
 
 #define SLC_ALIGN4(__N) ((0 == (__N & 3)) ? __N : ((__N | 3) + 1))

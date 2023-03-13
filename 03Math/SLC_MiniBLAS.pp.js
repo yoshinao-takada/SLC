@@ -9,14 +9,15 @@
 const fs = require('fs');
 const process = require('process');
 const path = require('path');
-const fname_c = "SLC_NumbersCopy.c"; // Output C source file
-const fname_h = "SLC/SLC_NumbersCopy.h"; // Output C header file
-const fname_cin = "SLC_NumbersCopy.cin"; // Input C source template file
-const fname_hin = "SLC_NumbersCopy.hin"; // Input C header template file
+const fname_c = "SLC_MiniBLAS.c"; // Output C source file
+const fname_h = "SLC/SLC_MiniBLAS.h"; // Output C header file
+const fname_cin = "SLC_MiniBLAS.cin"; // Input C source template file
+const fname_hin = "SLC_MiniBLAS.hin"; // Input C header template file
 const curdir = path.dirname(process.argv[1]);
 const incdir = path.join(curdir, "../include");
-const typeIDs = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", 
-                "r32", "r64", "c64", "c128", "bool"];
+const typeIDs = [ "r32", "r64", "c64", "c128" ];
+const rtypeIDs = [ "r32", "r64", "r32", "r64" ];
+
 
 //--------------------------------------------------------------------------
 // Main block
@@ -40,22 +41,28 @@ function CreateHeaderFile(hin, h)
     let text = [];
     // 1) Generate file header
     const headerText = [
-        "#if !defined(_SLC_NUMBERCOPY_H)",
-        "#define _SLC_NUMBERCOPY_H",
+        "#if !defined(_SLC_MINIBLAS_H)",
+        "#define _SLC_MINIBLAS_H",
         "#include \"SLC/SLC_Numbers.h\"",
+        ""
     ];
     headerText.forEach((e) => {
         text.push(e);
     });
 
     // 2) Generate function signatures
+    let regex0 = /<NTID>/g;
+    let regex1 = /<ITID>/g;
+    let regex2 = /<RNTID>/g;
     let templateText = ReadAllLines(path.join(curdir, hin));
-    const regex = /<NTID>/g;
-    typeIDs.forEach(function(typeID) {
+    for (let typeIndex in typeIDs)
+    {
+        let typeID = typeIDs[typeIndex];
+        let rtypeID = rtypeIDs[typeIndex];
         templateText.forEach(function(templateLine) {
-            text.push(templateLine.replace(regex, typeID));
+            text.push(templateLine.replace(regex0, typeID).replace(regex1, "size").replace(regex2, rtypeID));
         });
-    });
+    }
 
     // 3) Generate file footer
     const footerText = [
@@ -78,9 +85,7 @@ function CreateSourceFile(cin, c)
     let text = [];
     // 1) Generate file header
     const headerText = [
-        "#include \"SLC/SLC_NumbersCopy.h\"",
-        "#include <memory.h>",
-        "#define _IT\tSLC_size_t",
+        "#include \"SLC/SLC_MiniBLAS.h\"",
         ""
     ];
     headerText.forEach((e) => { text.push(e); });
@@ -88,12 +93,17 @@ function CreateSourceFile(cin, c)
 
     // 2) Generate definitions for each number types.
     let templateText = ReadAllLines(path.join(curdir, cin));
-    const regex = /<NTID>/g;
-    typeIDs.forEach(function(typeID) {
+    let regex0 = /<NTID>/g;
+    let regex1 = /<ITID>/g;
+    let regex2 = /<RNTID>/g;
+    for (let typeIndex in typeIDs)
+    {
+        let typeID = typeIDs[typeIndex];
+        let rtypeID = rtypeIDs[typeIndex];
         templateText.forEach(function(templateLine) {
-            text.push(templateLine.replace(regex, typeID));
+            text.push(templateLine.replace(regex0, typeID).replace(regex1, "size").replace(regex2, rtypeID));
         });
-    });
+    }
 
     // 3) Generate file footer
     // do nothing
