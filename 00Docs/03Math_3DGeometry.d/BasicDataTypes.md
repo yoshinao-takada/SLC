@@ -32,7 +32,7 @@ SLC_Vecr32_t Foo(SLC_Pntr32_t begin, SLC_Pntr32_t end, SLC_Vecr32_t vector);
 SLC_Pntr32_t result = Foo(point0, point1, vector);
 ```
 ## Rotation and Linear Transform
-Only multiplication is applicable to transform matrices. Therefore only two mathematical operations
+Only multiplication is applicable to transform matrices. Therefore only three mathematical operations
 are defined for transform matrices.
 ```
 typedef SLC_r32_t* SLC_TMatr32_t;
@@ -51,6 +51,11 @@ SLC_TMatr32_t SLC_TMatr32_Inv(
     SLC_TMatr32_t m, SLC_TMatr32_t minv, SLC_r32_t* work);
 SLC_TMatr64_t SLC_TMatr64_Inv(
     SLC_TMatr64_t m, SLC_TMatr64_t minv, SLC_r64_t* work);
+
+// transformed = m * original
+// transform points in original to transformed.
+SLC_r32_t* SLC_TMatr32_Transform(SLC_TMatr32_t m, const SLC_r32_t* points, SLC_r32_t* transformed);
+SLC_r64_t* SLC_TMatr64_Transform(SLC_TMatr64_t m, const SLC_r64_t* points, SLC_r64_t* transformed);
 ```
 ### __Rotation Transform__
 CCW rotation seen from positive Z axis is defined as
