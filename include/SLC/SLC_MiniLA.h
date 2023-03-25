@@ -29,6 +29,9 @@ SLC_errno_t SLC_Matr32_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t
 
 // QR decomposition
 void SLC_Matr32_QRD(SLC_PArray_t dst, SLC_PArray_t src);
+
+// Human readable print
+void SLC_Maatr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
 #pragma endregion r32_functions
 
 #pragma region r64_functions
@@ -57,6 +60,9 @@ SLC_errno_t SLC_Matr64_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t
 
 // QR decomposition
 void SLC_Matr64_QRD(SLC_PArray_t dst, SLC_PArray_t src);
+
+// Human readable print
+void SLC_Maatr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
 #pragma endregion r64_functions
 
 #pragma region c64_functions
@@ -85,6 +91,9 @@ SLC_errno_t SLC_Matc64_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t
 
 // QR decomposition
 void SLC_Matc64_QRD(SLC_PArray_t dst, SLC_PArray_t src);
+
+// Human readable print
+void SLC_Maatc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
 #pragma endregion c64_functions
 
 #pragma region c128_functions
@@ -113,6 +122,9 @@ SLC_errno_t SLC_Matc128_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_
 
 // QR decomposition
 void SLC_Matc128_QRD(SLC_PArray_t dst, SLC_PArray_t src);
+
+// Human readable print
+void SLC_Maatc128_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
 #pragma endregion c128_functions
 
 #endif

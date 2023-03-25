@@ -7,7 +7,11 @@ typedef struct SLC_DLink {
 } SLC_DLink_t, *SLC_PDLink_t;
 
 // allocate new nodes
-SLC_PDLink_t SLC_DLink_Alloca(SLC_size_t n, SLC_size_t additional_bytes);
+SLC_PDLink_t SLC_DLink_InitArray(void* node_array, SLC_size_t n, SLC_size_t additional_bytes);
+
+#define SLC_DLink_Alloca(__n, __additional_bytes) SLC_DLink_InitArray( \
+    alloca(__n * (sizeof(SLC_DLink_t) + __additional_bytes)), __n, __additional_bytes)
+    
 SLC_PDLink_t SLC_DLink_Alloc(SLC_size_t n, SLC_size_t additional_bytes);
 
 // add a new node on at->prev.

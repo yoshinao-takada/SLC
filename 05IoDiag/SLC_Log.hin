@@ -1,0 +1,8 @@
+#pragma region comparison_of_SLC_<NTID>_t_numbers
+#define SLC_<NTID>_sumabs(__a, __b) (SLC_<NTID>_abs(__a) + SLC_<NTID>_abs(__b))
+#define SLC_<NTID>_absdiff(__a, __b) SLC_<NTID>_abs((__a) - (__b))
+#define SLC_<NTID>_relabsdiff(__a, __b) SLC_<NTID>_absdiff(__a, __b)/SLC_<NTID>_sumabs(__a, __b)
+#define SLC_<NTID>_areequal(__a, __b, __tol) \
+    (((SLC_<NTID>_abs(__a) < __tol) || (SLC_<NTID>_abs(__b) < __tol)) ? \
+    (SLC_<NTID>_absdiff(__a, __b) < __tol) : (SLC_<NTID>_relabsdiff(__a, __b) < __tol))
+#pragma endregion

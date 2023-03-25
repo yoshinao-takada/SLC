@@ -9,7 +9,7 @@ SLC_errno_t SLC_RingBuffer_Put_<TypeID>(SLC_PArray_t rb, const SLC_<TypeID>_t* d
             err = ENOBUFS;
             break;
         }
-        buf = rb->data.<TypeID>;
+        buf = rb->data._<TypeID>;
         wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
         buf[wrindex++] = *data;
         if (wrindex == bufsize)
@@ -32,7 +32,7 @@ SLC_errno_t SLC_RingBuffer_Get_<TypeID>(SLC_PArray_t rb, SLC_<TypeID>_t* data)
             err = ENODATA;
             break;
         }
-        buf = rb->data.<TypeID>;
+        buf = rb->data._<TypeID>;
         rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
         *data = buf[rdindex++];
     } while (0);

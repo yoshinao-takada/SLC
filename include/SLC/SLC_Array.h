@@ -2,7 +2,7 @@
 #define _SLC_ARRAY_H
 #include "SLC/SLC_Numbers.h"
 typedef union {
-    SLC_4i16_t i16; // maybe most frequently used
+    SLC_4i16_t i16; // maybe this is the most frequently used configuration.
     SLC_i64_t i64;
     SLC_2i32_t i32;
     SLC_8i8_t i8;
@@ -14,22 +14,22 @@ typedef union {
 
 typedef union {
     const void* cv;
-    SLC_ptr_t ptr;
-    SLC_ptr_t* pptr;
-    SLC_i8_t* i8;
-    SLC_i16_t* i16;
-    SLC_i32_t* i32;
-    SLC_i64_t* i64;
-    SLC_u8_t* u8;
-    SLC_u16_t* u16;
-    SLC_u32_t* u32;
-    SLC_u64_t* u64;
-    SLC_r32_t* r32;
-    SLC_r64_t* r64;
-    SLC_c64_t* c64;
-    SLC_c128_t* c128;
-    SLC_size_t* s;
-    SLC_bool_t* b;
+    SLC_ptr_t _ptr; // void*
+    SLC_ptr_t* _pptr; // void**
+    SLC_i8_t* _i8;
+    SLC_i16_t* _i16;
+    SLC_i32_t* _i32;
+    SLC_i64_t* _i64;
+    SLC_u8_t* _u8;
+    SLC_u16_t* _u16;
+    SLC_u32_t* _u32;
+    SLC_u64_t* _u64;
+    SLC_r32_t* _r32;
+    SLC_r64_t* _r64;
+    SLC_c64_t* _c64;
+    SLC_c128_t* _c128;
+    SLC_size_t* _size;
+    SLC_bool_t* _bool;
 } SLC_ArrayData_t, *SLC_PArrayData_t;
 
 typedef struct {
@@ -37,17 +37,22 @@ typedef struct {
     SLC_ArrayData_t data;
 } SLC_Array_t, *SLC_PArray_t;
 
+SLC_PArray_t SLC_Array_InitHeader(void* ptr, SLC_i16_t nmemb, SLC_i16_t unit_size);
+SLC_PArray_t SLC_Array_InitHeader2(void* ptr, SLC_4i16_t size);
+
 // giving a unit count and a unit size, get from heap.
 SLC_PArray_t SLC_Array_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size);
 
 // giving a unit count and a unit size, get from stack frame.
-SLC_PArray_t SLC_Array_Calloca(SLC_i16_t nmemb, SLC_i16_t unit_size);
+#define SLC_Array_Calloca(__nmemb, __unit_size) SLC_Array_InitHeader( \
+    alloca(SLC_ALIGN8(__nmemb * __unit_size + sizeof(SLC_Array_t))), __nmemb, __unit_size)
 
 // giving a multi-dimensional size([0]:unit size, [1]: 1st dimension, [2]: 2nd dimension, [3]: 3rd dimension), get from heap
 SLC_PArray_t SLC_Array_Alloc(SLC_4i16_t size);
 
 // giving a multi-dimensional size, get from stack frame.
-SLC_PArray_t SLC_Array_Alloca(SLC_4i16_t size);
+#define SLC_Array_Alloca(__size) SLC_Array_InitHeader2( \
+    alloca(SLC_ALIGN8(SLC_product4(__size) + sizeof(SLC_Array_t))), __size)
 
 // return a pointer pointing the element indexed by __ix.
 #define SLC_Array_UnitSize(__a) ((__a)->cont.i16[0])
@@ -55,9 +60,9 @@ SLC_PArray_t SLC_Array_Alloca(SLC_4i16_t size);
 #define SLC_Array_Index2D(__a, __ix, __iy) (SLC_Array_UnitSize(__a) * ((__ix) + (__iy) * (__a)->cont.i16[1]))
 #define SLC_Array_Index3D(__a, __ix, __iy, __iz) \
     (SLC_Array_UnitSize(__a) * ((__ix) + (__a)->cont.i16[1] * ((__iy) + (__a)->cont.i16[2] * (__iz) )))
-#define SLC_Array_At1D(__a, __T, __ix) (__T)((__a)->data.i8 + SLC_Array_Index1D(__a, __ix))
-#define SLC_Array_At2D(__a, __T, __ix, __iy) (__T)((__a)->data.i8 + SLC_Array_Index2D(__a, __ix, __iy))
-#define SLC_Array_At3D(__a, __T, __ix, __iy, __iz) (__T)((__a)->data.i8 + SLC_Array_Index3D(__a, __ix, __iy, __iz))
+#define SLC_Array_At1D(__a, __T, __ix) (__T)((__a)->data._i8 + SLC_Array_Index1D(__a, __ix))
+#define SLC_Array_At2D(__a, __T, __ix, __iy) (__T)((__a)->data._i8 + SLC_Array_Index2D(__a, __ix, __iy))
+#define SLC_Array_At3D(__a, __T, __ix, __iy, __iz) (__T)((__a)->data._i8 + SLC_Array_Index3D(__a, __ix, __iy, __iz))
 #define SLC_Array_SameSize2D(__a, __b) \
     ((__a)->cont.i16[0] == (__b)->cont.i16[0]) && \
     ((__a)->cont.i16[1] == (__b)->cont.i16[1]) && \

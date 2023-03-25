@@ -28,6 +28,7 @@ CreateSourceFile(fname_cin, fname_c);
 //--------------------------------------------------------------------------
 // Functions
 //--------------------------------------------------------------------------
+// read a text file as a whole and split it into lines.
 function ReadAllLines(filepath)
 {
     let whole = fs.readFileSync(filepath, 'utf8');
@@ -35,6 +36,7 @@ function ReadAllLines(filepath)
     return textInput;
 }
 
+// create a header file in the project include directory.
 function CreateHeaderFile(hin, h)
 {
     let text = [];
@@ -73,6 +75,7 @@ function CreateHeaderFile(hin, h)
     fs.writeFileSync(path.join(incdir, h), whole, 'utf8');
 }
 
+// create a C source file in the current directory.
 function CreateSourceFile(cin, c)
 {
     let text = [];

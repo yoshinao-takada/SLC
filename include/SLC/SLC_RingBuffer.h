@@ -3,6 +3,7 @@
 #include "SLC/SLC_Array.h"
 #include "SLC/SLC_errno.h"
 #include <errno.h>
+#include <alloca.h>
 #pragma region number_type_agnostic_procesing
 #define BUFSIZE(__rb) (__rb)->cont.i16[1]
 #define RDINDEX(__rb) (__rb)->cont.i16[2]
@@ -15,13 +16,14 @@ bool SLC_RingBuffer_IsFull(SLC_PArray_t rb);
 bool SLC_RingBuffer_IsEmpty(SLC_PArray_t rb);
 
 // clear buffer
-void SLC_RingBuffer_Clear(SLC_PArray_t rb);
+SLC_PArray_t SLC_RingBuffer_Clear(SLC_PArray_t rb);
 
 // buffer allocation from heap
 SLC_PArray_t SLC_RingBuffer_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size);
 
 // buffer allocation from stackframe
-SLC_PArray_t SLC_RingBuffer_Calloca(SLC_i16_t nmemb, SLC_i16_t unit_size);
+#define SLC_RingBffer_Calloca(__nmemb, __unit_size) SLC_RingBuffer_Clear( \
+    SLC_Array_Calloca(__nmemb, __unit_size))
 
 // get element count existing in the buffer.
 int16_t SLC_RingBuffer_AvailableElements(SLC_PArray_t rb);

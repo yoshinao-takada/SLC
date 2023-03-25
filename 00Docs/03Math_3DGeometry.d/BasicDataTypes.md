@@ -129,6 +129,15 @@ $$\begin{equation}\begin{bmatrix}
 0 && 0 && 0 && 1
 \end{bmatrix}\end{equation}$$
 
+The following functions are defined to create rotation transform matrices.
+```
+// homogeneous coordinate 3D rotation matrix around Z axis; i.e. in x-y -plane
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* resut);
+#define SLC_TMat<NTID>_rotateZrad(__rad, __result) \
+    SLC_TMat<NTID>_rotateZ(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+#define SLC_TMat<NTID>_rotateZdeg(__deg, __result) \
+    SLC_TMat<NT>_rotateZrad()
+```
 ## Polar Coordinate and Cartesian Coordinate
 A polar coordinate is represented by  
 $r$ : a distance from the origin,  
@@ -194,11 +203,11 @@ $$\begin{equation}
 
 A struct is defined for polar coordinate.
 ```
-typedef struct SLC_PolarCoord<NTID> {
+typedef struct SLC_Polar<NTID> {
     SLC_<NTID>_t r, cphi, sphi, ctheta, stheta;
-} SLC_PolarCoord<NTID>_t, *SLC_PPolarCoord<NTID>_t;
-typedef const SLC_PolarCoord<NTID>_t *SLC_PCPolarCoord<NTID>_t;
+} SLC_Polar<NTID>_t, *SLC_PPolar<NTID>_t;
+typedef const SLC_Polar<NTID>_t *SLC_PCPolar<NTID>_t;
 
-void SLC_PolarFromCartesian<NTID>(SLC_PPolarCoord<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian);
-void SLC_PolarToCartesian<NTID>(SLC_Pnt_t cartesian, SLC_PCPolarCoord<NTID> polar);
+void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian);
+void SLC_PolarToCartesian<NTID>(SLC_Pnt_t cartesian, SLC_PCPolar<NTID>_t polar);
 ```

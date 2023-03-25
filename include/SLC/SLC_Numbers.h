@@ -5,6 +5,8 @@
 #include <complex.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
+#include <stdio.h>
 
 typedef enum {
     SLC_i8 = 0,
@@ -140,6 +142,24 @@ typedef void* SLC_16ptr_t[16];
 #define SLC_r64_conj(__number)  (__number)
 #define SLC_c64_conj(__number)  conjf(__number)
 #define SLC_c128_conj(__number) conj(__number)
+#define SLC_r32_fromreal(__number)  (__number)
+#define SLC_r64_fromreal(__number)  (__number)
+#define SLC_c64_fromreal(__number)  CMPLXF(__number, 0.0f)
+#define SLC_c128_fromreal(__number) CMPLX(__number, 0.0f)
+#define SLC_r32_print(__out, __delimiter, __number) fprintf(__out, "%s%f", __delimiter, __number)
+#define SLC_r64_print(__out, __delimiter, __number) fprintf(__out, "%s%f", __delimiter, __number)
+#define SLC_c64_print(__out, __delimiter, __number) fprintf(__out, "%s(%f,%f)", __delimiter, crealf(__number), cimagf(__number))
+#define SLC_c128_print(__out, __delimiter, __number) fprintf(__out, "%s(%f,%f)", __delimiter, creal(__number), cimag(__number))
+// uniform distribution [-1.0, +1.0] random number generators
+#define SLC_r32_rand    ((SLC_r32_t)(rand()-0.5f*RAND_MAX)/(0.5f*RAND_MAX))
+#define SLC_r64_rand    ((SLC_r64_t)(rand()-0.5*RAND_MAX)/(0.5*RAND_MAX ))
+#define SLC_c64_rand    CMPLXF(SLC_r32_rand, SLC_r32_rand)
+#define SLC_c128_rand   CMPLX(SLC_r64_rand, SLC_r64_rand)
+// standard tolerances
+#define SLC_r32_stdtol  1.0e-5f
+#define SLC_r64_stdtol  1.0e-10
+#define SLC_c64_stdtol  SLC_r32_stdtol
+#define SLC_c128_stdtol SLC_r64_stdtol
 
 #define SLC_product2(__a) (__a)[0]*(__a)[1]
 #define SLC_product3(__a) (__a)[0]*(__a)[1]*(__a)[2]

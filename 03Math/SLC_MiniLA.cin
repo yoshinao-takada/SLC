@@ -3,7 +3,7 @@ void SLC_Mat<NTID>_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1)
 {
     assert(SLC_Array_SameSize2D(dst, src0));
     assert(SLC_Array_SameSize2D(dst, src1));
-    SLC_<NTID>_addsubs(dst->data.<NTID>, src0->data.<NTID>, src1->data.<NTID>,
+    SLC_<NTID>_addsubs(dst->data._<NTID>, src0->data._<NTID>, src1->data._<NTID>,
         ((SLC_<ITID>_t)dst->cont.i16[1])*((SLC_<ITID>_t)dst->cont.i16[2]));
 }
 
@@ -13,14 +13,14 @@ void SLC_Mat<NTID>_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_<NTID
     assert(SLC_Array_SameSize2D(dst, src0));
     assert(SLC_Array_SameSize2D(dst, src1));
     SLC_<NTID>_scaleaddsubs(
-        dst->data.<NTID>, src0->data.<NTID>, scale0, src1->data.<NTID>, scale1,
+        dst->data._<NTID>, src0->data._<NTID>, scale0, src1->data._<NTID>, scale1,
         ((SLC_<ITID>_t)dst->cont.i16[1])*((SLC_<ITID>_t)dst->cont.i16[2]));
 }
 
 void SLC_Mat<NTID>_Scale(SLC_PArray_t dst, SLC_PArray_t src, const SLC_<NTID>_t *scale)
 {
     assert(SLC_Array_SameSize2D(dst, src));
-    SLC_<NTID>_scalesubs(dst->data.<NTID>, scale,
+    SLC_<NTID>_scalesubs(dst->data._<NTID>, scale, src->data._<NTID>,
         ((SLC_<ITID>_t)dst->cont.i16[1])*((SLC_<ITID>_t)dst->cont.i16[2]));
 }
 
@@ -29,18 +29,18 @@ void SLC_Mat<NTID>_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, S
     assert(SLC_Array_TransposedSize2D(src1, work));
     assert(SLC_Array_ValidMatrixProduct(dst, src0, src1));
     SLC_Mat<NTID>_Transpose(work, src1);
-    SLC_<NTID>_t* dst_rowhead = dst->data.<NTID>;
-    const SLC_<NTID>_t* src0_rowhead = src0->data.<NTID>;
+    SLC_<NTID>_t* dst_rowhead = dst->data._<NTID>;
+    const SLC_<NTID>_t* src0_rowhead = src0->data._<NTID>;
     SLC_size_t dst_stride = dst->cont.i16[1];
     SLC_size_t src0_stride = src0->cont.i16[1];
     SLC_size_t work_stride = work->cont.i16[1];
     for (SLC_i16_t row = 0; row < SLC_Array_MatRows(dst); row++)
     {
-        SLC_<NTID>_t* work_rowhead = work->data.<NTID>;
+        SLC_<NTID>_t* work_rowhead = work->data._<NTID>;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
             dst_rowhead[column] = SLC_<NTID>_units[0];
-            dst_rowhead[column] = SLC_<NTID>_innerproduct(src0_rowhead, work_rowhead);
+            dst_rowhead[column] = SLC_<NTID>_innerproduct(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;
@@ -51,8 +51,8 @@ void SLC_Mat<NTID>_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, S
 void SLC_Mat<NTID>_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
-    SLC_<NTID>_t* dst_columnhead = dst->data.<NTID>;
-    const SLC_<NTID>_t* src_rowhead = dst->data.<NTID>;
+    SLC_<NTID>_t* dst_columnhead = dst->data._<NTID>;
+    const SLC_<NTID>_t* src_rowhead = dst->data._<NTID>;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -66,8 +66,8 @@ void SLC_Mat<NTID>_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 void SLC_Mat<NTID>_TransConj(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
-    SLC_<NTID>_t* dst_columnhead = dst->data.<NTID>;
-    const SLC_<NTID>_t* src_rowhead = dst->data.<NTID>;
+    SLC_<NTID>_t* dst_columnhead = dst->data._<NTID>;
+    const SLC_<NTID>_t* src_rowhead = dst->data._<NTID>;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -83,7 +83,7 @@ static SLC_i32_t SLC_Mat<NTID>_SelectPivot(SLC_PArray_t mat, SLC_size_t columns,
     SLC_i32_t found = -1;
     SLC_<RNTID>_t pivot_norm_max = SLC_<RNTID>_units[0];
     SLC_size_t mat_stride = SLC_Array_MatColumns(mat);
-    SLC_<NTID>_t* pivot_ptr = mat->data.<NTID> + pivot_row * mat_stride + pivot_row;
+    SLC_<NTID>_t* pivot_ptr = mat->data._<NTID> + pivot_row * mat_stride + pivot_row;
     SLC_size_t rowlength = columns - pivot_row;
     const SLC_<RNTID>_t pivot_norm_threshold = SLC_<RNTID>_units[1] / (SLC_<RNTID>_t)(rowlength * 10);
     for (SLC_size_t row = pivot_row; row < columns; row++)
@@ -107,18 +107,18 @@ SLC_errno_t SLC_Mat<NTID>_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t w
     // check if dst and src are same size square matrices.
     assert(SLC_Array_SameSquareMatrixSize(dst, src));
     // check work size; work.rows == src.rows + 1, work.columns == 2 * src.columns.
-    assert(SLC_Array_InvSorkSize(src, work));
+    assert(SLC_Array_InvWorkSize(src, work));
     do {
         SLC_size_t src_rows = SLC_Array_MatRows(src);
         SLC_size_t src_columns = SLC_Array_MatColumns(src);
         SLC_size_t work_rows = SLC_Array_MatRows(work);
         SLC_size_t work_columns = SLC_Array_MatColumns(work);
-        const SLC_<NTID>_t* src_row_head = src->data.<NTID>;
-        SLC_<NTID>_t* work_row_head = work->data.<NTID>;
+        const SLC_<NTID>_t* src_row_head = src->data._<NTID>;
+        SLC_<NTID>_t* work_row_head = work->data._<NTID>;
         SLC_<NTID>_t* pivot_ptr = work_row_head;
         SLC_<NTID>_t* work_row_center = work_row_head + src_columns;
         SLC_<NTID>_t* swap_buffer = work_row_head + src_rows;
-        SLC_<NTID>_t* dst_row_head = dst->data.<NTID>;
+        SLC_<NTID>_t* dst_row_head = dst->data._<NTID>;
 
         // fill work matrix
         for (SLC_i32_t row = 0; row < src_rows; row++)
@@ -142,7 +142,7 @@ SLC_errno_t SLC_Mat<NTID>_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t w
                 err = SLC_ESINGULAR;
                 break;
             }
-            else if (row !== (SLC_size_t)new_pivot_row)
+            else if (row != (SLC_size_t)new_pivot_row)
             {
                 SLC_<NTID>_swap(pivot_ptr, pivot_ptr + (new_pivot_row - row) * work_columns,
                     swap_buffer, remaining_work_columns);
@@ -153,7 +153,7 @@ SLC_errno_t SLC_Mat<NTID>_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t w
             SLC_<NTID>_scaleip(pivot_ptr, &scaling, remaining_work_columns); // scaling the pivot row
 
             // eliminate pivot column elements except the pivot element.
-            work_row_head = work->data.<NTID> + row;
+            work_row_head = work->data._<NTID> + row;
             for (SLC_size_t row2 = 0; row2 < src_rows; row2++)
             {
                 if (row == row2)
@@ -173,7 +173,7 @@ SLC_errno_t SLC_Mat<NTID>_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t w
         if (err) break;
 
         // copy inv-mat from work to dst
-        work_row_center = work->data.<NTID> + src_columns;
+        work_row_center = work->data._<NTID> + src_columns;
         for (SLC_size_t row = 0; row < src_rows; row++)
         {
             SLC_<NTID>_copy(dst_row_head, 1, work_row_center, 1, src_columns);
@@ -197,17 +197,17 @@ SLC_errno_t SLC_Mat<NTID>_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_
     assert(SLC_Array_MatRows(left) == SLC_Array_MatRows(right));
     assert(SLC_Array_MatRows(dst) == SLC_Array_MatColumns(left));
     assert(SLC_Array_MatColumns(dst) == SLC_Array_MatColumns(right));
-    assert(SLC_Array_MatRows(work) == (SLC_Arra_MatRows(left) + 1));
+    assert(SLC_Array_MatRows(work) == (SLC_Array_MatRows(left) + 1));
     assert(SLC_Array_MatColumns(work) == (SLC_Array_MatColumns(left) + SLC_Array_MatColumns(right)));
     SLC_size_t left_rows = SLC_Array_MatRows(left);
     SLC_size_t right_columns = SLC_Array_MatColumns(right);
     SLC_size_t work_columns = SLC_Array_MatColumns(work);
-    SLC_<NTID>_t* work_row_head = work->data.<NTID>;
+    SLC_<NTID>_t* work_row_head = work->data._<NTID>;
     SLC_<NTID>_t* work_right_head = work_row_head + left_rows; // pointer to work matrix's region holding RHS elements.
     SLC_<NTID>_t* swap_buffer = work_row_head + work_columns * left_rows;
-    SLC_<NTID>_t* left_row_head = left->data.<NTID>;
-    SLC_<NTID>_t* right_row_head = right->data.<NTID>;
-    SLC_<NTID>_t* dst_row_head = dst->data.<NTID>;
+    SLC_<NTID>_t* left_row_head = left->data._<NTID>;
+    SLC_<NTID>_t* right_row_head = right->data._<NTID>;
+    SLC_<NTID>_t* dst_row_head = dst->data._<NTID>;
     do {
         // setup work matrix
         for (SLC_size_t row = 0; row < left_rows; row++)
@@ -218,7 +218,7 @@ SLC_errno_t SLC_Mat<NTID>_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_
         }
 
         // upper triangulation
-        work_row_head = work->data.<NTID>;
+        work_row_head = work->data._<NTID>;
         for (SLC_size_t row = 0; row < left_rows; row++)
         {
             SLC_size_t active_work_columns = work_columns - row;
@@ -254,7 +254,7 @@ SLC_errno_t SLC_Mat<NTID>_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_
 
         // backward substitution
         SLC_size_t row = left_rows;
-        work_row_head = work->data.<NTID> + left_rows * work_columns + left_rows;
+        work_row_head = work->data._<NTID> + left_rows * work_columns + left_rows;
         work_right_head += left_rows * work_columns;
         dst_row_head += right_columns * left_rows; // move to end (just outside)
         do {            
@@ -282,7 +282,7 @@ SLC_errno_t SLC_Mat<NTID>_EasySolve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PAr
     SLC_i16_t left_columns = left->cont.i16[1];
     SLC_i16_t right_columns = right->cont.i16[1];
     SLC_4i16_t work_size = { element_size, left_columns + right_columns, left->cont.i16[2] + 1, 1 };
-    SLC_PArray_t work = SLC_PArray_Alloca(work_size);
+    SLC_PArray_t work = SLC_Array_Alloca(work_size);
     SLC_Mat<NTID>_Solve(dst, left, right, work);
 }
 
@@ -336,3 +336,22 @@ SLC_errno_t SLC_Mat<NTID>_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArra
 // QR decomposition
 void SLC_Mat<NTID>_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 #pragma endregion <NTID>_functions
+
+// human readable print
+void SLC_Maat<NTID>_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
+{
+    fprintf(out, "%s", header);
+    fprintf(out, "%d, %d\n", mat->cont.i16[1], mat->cont.i16[2]);
+    const SLC_<NTID>_t* ptr = mat->data._<NTID>;
+    for (SLC_i16_t row = 0; row < mat->cont.i16[2]; row++)
+    {
+        const char* delimiter = "";
+        for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
+        {
+            SLC_<NTID>_print(out, delimiter, *ptr);
+            delimiter = ",";
+        }
+        fprintf(out, "\n");
+    }
+    fprintf(out, "%s", footer);
+}

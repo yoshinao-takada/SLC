@@ -1,0 +1,24 @@
+
+SLC_errno_t SLC_NumbersCopyUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_test(err, SLC_r32_copyUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r32_set0UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r32_set1UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r32_swapUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r64_copyUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r64_set0UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r64_set1UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r64_swapUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c64_copyUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c64_set0UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c64_set1UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c64_swapUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c128_copyUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c128_set0UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c128_set1UT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_c128_swapUT, settings, __func__, __LINE__);
+    } while (0);
+    return err;
+}

@@ -1,0 +1,116 @@
+#pragma region SLC_NumbersCopyUT_with_number_type_SLC_<NTID>_t.
+SLC_errno_t SLC_<NTID>_copyUT(SLC_i32_t settings)
+{
+    SLC_<NTID>_t src[] = { SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand };
+    SLC_<NTID>_t dst[SLC_ARRAYSIZE(src)];
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_copy(dst, 1, src, 1, SLC_ARRAYSIZE(src));
+        if (SLC_ARRAYSIZE(src) != 4)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "Fail in SLC_ARRAYSIZE() @ %s,%d\n", __func__, __LINE__);
+            break;
+        }
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(src); i++)
+        {
+            if (src[i] != dst[i])
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "Fail in SLC_<NTID>_copy() @ %s,%d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_set0UT(SLC_i32_t settings)
+{
+    SLC_<NTID>_t src[] = { SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand };
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_set0(src, 1, SLC_ARRAYSIZE(src));
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(src); i++)
+        {
+            if (!SLC_<NTID>_areequal(src[i], SLC_<NTID>_units[0], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "Fail in SLC_<NTID>_set0() @ %s,%d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_set1UT(SLC_i32_t settings)
+{
+    SLC_<NTID>_t src[] = { SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand };
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_set1(src, 1, SLC_ARRAYSIZE(src));
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(src); i++)
+        {
+            if (!SLC_<NTID>_areequal(src[i], SLC_<NTID>_units[1], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "Fail in SLC_<NTID>_set1() @ %s,%d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_swapUT(SLC_i32_t settings)
+{
+    SLC_<NTID>_t src0[] = { SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand };
+    SLC_<NTID>_t src1[] = { SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand, SLC_<NTID>_rand };
+    SLC_<NTID>_t src0_backup[SLC_ARRAYSIZE(src0)], src1_backup[SLC_ARRAYSIZE(src1)];
+    SLC_<NTID>_t swapbuffer[SLC_ARRAYSIZE(src0)];
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_copy(src0_backup, 1, src0, 1, SLC_ARRAYSIZE(src0));
+        SLC_<NTID>_copy(src1_backup, 1, src1, 1, SLC_ARRAYSIZE(src1));
+        SLC_<NTID>_swap(src0, src1, swapbuffer, SLC_ARRAYSIZE(src0));
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(src0); i++)
+        {
+            if (!SLC_<NTID>_areequal(src0[i], src1_backup[i], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "Fail in SLC_<NTID>_swap() @ %s,%d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        if (err) break;
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(src1); i++)
+        {
+            if (!SLC_<NTID>_areequal(src1[i], src0_backup[i], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "Fail in SLC_<NTID>_swap() @ %s,%d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_NumbersCopyUT_<NTID>(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_test(err, SLC_<NTID>_copyUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_set0UT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_set1UT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_swapUT, 0, __func__, __LINE__);
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+#pragma endregion

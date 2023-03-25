@@ -1,5 +1,10 @@
 {
     "files.associations": {
-        "complex.h": "c"
+        "complex.h": "c",
+        "math.h": "c",
+        "cmath": "cpp",
+        "slc_numbers.h": "c",
+        "slc_log.h": "c",
+        "slc_array.h": "c"
     }
 }

@@ -1,0 +1,51 @@
+
+#pragma region <NTID>_basic_geometrical_data_types
+typedef SLC_<NTID>_t* SLC_Pnt<NTID>_t;
+typedef SLC_<NTID>_t* SLC_Vec<NTID>_t;
+typedef SLC_<NTID>_t* SLC_TMat<NTID>_t;
+typedef struct {
+    SLC_<NTID>_t r, cphi, sphi, ctheta, stheta;
+} SLC_Polar<NTID>_t, *SLC_PPolar<NTID>_t;
+typedef const SLC_Polar<NTID>_t *SLC_PCPolar<NTID>_t;
+#pragma endregion <NTID>_basic_geometrical_data_types
+
+#pragma region <NTID>_function_prototypes
+// mprod = mleft * mright, and returned by SLC_TMat<NTID>_Mul.
+// work is used as work area. It must have more than 16 elements.
+SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
+    SLC_TMat<NTID>_t mleft, SLC_TMat<NTID>_t mright, SLC_TMat<NTID>_t mprod);
+
+// minv = (m)^(-1)
+// work is used as work area. It must have more than 40 elements.
+SLC_TMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_TMat<NTID>_t m, SLC_TMat<NTID>_t minv);
+
+// transformed = m * original
+// transform points in original to transformed.
+SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
+    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed);
+SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
+    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count);
+
+// homogeneous coordinate 3D rotation matrix around Z axis; i.e. in x-y -plane
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* resut);
+#define SLC_TMat<NTID>_rotateZrad(__rad, __result) \
+    SLC_TMat<NTID>_rotateZ(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+#define SLC_TMat<NTID>_rotateZdeg(__deg, __result) \
+    SLC_TMat<NT>_rotateZrad(SLC_<NTID>deg2rad(__deg))
+
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
+#define SLC_TMat<NTID>_rotateXrad(__rad, __result) \
+    SLC_TMat<NTID>_rotateX(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+#define SLC_TMat<NTID>_rotateXdeg(__deg, __result) \
+    SLC_TMat<NT>_rotateXrad(SLC_<NTID>deg2rad(__deg))
+
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
+#define SLC_TMat<NTID>_rotateYrad(__rad, __result) \
+    SLC_TMat<NTID>_rotateY(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+#define SLC_TMat<NTID>_rotateYdeg(__deg, __result) \
+    SLC_TMat<NT>_rotateYrad(SLC_<NTID>deg2rad(__deg))
+
+// polar-Cartesian coordinate translation
+void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian);
+void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar);
+#pragma endregion <NTID>_function_prototypes

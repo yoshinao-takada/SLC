@@ -19,23 +19,16 @@ bool SLC_RingBuffer_IsEmpty(SLC_PArray_t rb)
     return WRINDEX(rb) == RDINDEX(rb);
 }
 
-void SLC_RingBuffer_Clear(SLC_PArray_t rb)
+SLC_PArray_t SLC_RingBuffer_Clear(SLC_PArray_t rb)
 {
     rb->cont.i16[2] = rb->cont.i16[3] = 0;
+    return rb;
 }
 
 SLC_PArray_t SLC_RingBuffer_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size)
 {
     SLC_PArray_t p = SLC_Array_Calloc(nmemb, unit_size);
-    SLC_RingBuffer_Clear(p);
-    return p;
-}
-
-SLC_PArray_t SLC_RingBuffer_Calloca(SLC_i16_t nmemb, SLC_i16_t unit_size)
-{
-    SLC_PArray_t p = SLC_Array_Calloca(nmemb, unit_size);
-    SLC_RingBuffer_Clear(p);
-    return p;
+    return SLC_RingBuffer_Clear(p);
 }
 
 int16_t SLC_RingBuffer_AvailableElements(SLC_PArray_t rb)
@@ -69,7 +62,7 @@ SLC_errno_t SLC_RingBuffer_Put_i32(SLC_PArray_t rb, const SLC_i32_t* data)
             err = ENOBUFS;
             break;
         }
-        buf = rb->data.i32;
+        buf = rb->data._i32;
         wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
         buf[wrindex++] = *data;
         if (wrindex == bufsize)
@@ -92,7 +85,7 @@ SLC_errno_t SLC_RingBuffer_Get_i32(SLC_PArray_t rb, SLC_i32_t* data)
             err = ENODATA;
             break;
         }
-        buf = rb->data.i32;
+        buf = rb->data._i32;
         rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
         *data = buf[rdindex++];
     } while (0);
@@ -110,7 +103,7 @@ SLC_errno_t SLC_RingBuffer_Put_u8(SLC_PArray_t rb, const SLC_u8_t* data)
             err = ENOBUFS;
             break;
         }
-        buf = rb->data.u8;
+        buf = rb->data._u8;
         wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
         buf[wrindex++] = *data;
         if (wrindex == bufsize)
@@ -133,7 +126,7 @@ SLC_errno_t SLC_RingBuffer_Get_u8(SLC_PArray_t rb, SLC_u8_t* data)
             err = ENODATA;
             break;
         }
-        buf = rb->data.u8;
+        buf = rb->data._u8;
         rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
         *data = buf[rdindex++];
     } while (0);
@@ -151,7 +144,7 @@ SLC_errno_t SLC_RingBuffer_Put_u16(SLC_PArray_t rb, const SLC_u16_t* data)
             err = ENOBUFS;
             break;
         }
-        buf = rb->data.u16;
+        buf = rb->data._u16;
         wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
         buf[wrindex++] = *data;
         if (wrindex == bufsize)
@@ -174,7 +167,7 @@ SLC_errno_t SLC_RingBuffer_Get_u16(SLC_PArray_t rb, SLC_u16_t* data)
             err = ENODATA;
             break;
         }
-        buf = rb->data.u16;
+        buf = rb->data._u16;
         rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
         *data = buf[rdindex++];
     } while (0);
@@ -192,7 +185,7 @@ SLC_errno_t SLC_RingBuffer_Put_ptr(SLC_PArray_t rb, const SLC_ptr_t* data)
             err = ENOBUFS;
             break;
         }
-        buf = rb->data.ptr;
+        buf = rb->data._ptr;
         wrindex = WRINDEX(rb), bufsize = BUFSIZE(rb);
         buf[wrindex++] = *data;
         if (wrindex == bufsize)
@@ -215,7 +208,7 @@ SLC_errno_t SLC_RingBuffer_Get_ptr(SLC_PArray_t rb, SLC_ptr_t* data)
             err = ENODATA;
             break;
         }
-        buf = rb->data.ptr;
+        buf = rb->data._ptr;
         rdindex = RDINDEX(rb), bufsize = BUFSIZE(rb);
         *data = buf[rdindex++];
     } while (0);

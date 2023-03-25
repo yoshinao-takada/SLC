@@ -1,0 +1,106 @@
+#pragma region <NTID>_function_impl
+#pragma region matrix_multiplication
+SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
+    SLC_TMat<NTID>_t mleft, SLC_TMat<NTID>_t mright, SLC_TMat<NTID>_t mprod
+) {
+    for (SLC_size_t row = 0; row < 4; row++)
+    {
+        for (SLC_size_t column = 0; column < 4; column ++)
+        {
+            mprod[column + row * 4] =
+                mleft[0] * mright[0] + mleft[1] * mright[4] +
+                mleft[2] * mright[8] + mleft[3] * mright[12];
+            mright++;
+        }
+        mleft += 4;
+    }
+    return mprod;
+}
+
+#define MATSIZE4X4 { sizeof(SLC_<NTID>_t), 4, 4, 1 }
+#define MATSIZE5X8 { sizeof(SLC_<NTID>_t), 8, 5, 1 }
+SLC_TMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_TMat<NTID>_t m, SLC_TMat<NTID>_t minv)
+{
+    SLC_4i16_t worksize = MATSIZE5X8;
+    SLC_Array_t _m = { { MATSIZE4X4 }, { m } };
+    SLC_Array_t _minv = { { MATSIZE4X4 }, { minv } };
+    SLC_PArray_t _mwork = SLC_Array_Alloca(worksize);
+    SLC_errno_t err = SLC_Mat<NTID>_Inv(&_minv, &_m, _mwork);
+    return err ? NULL : minv;
+}
+
+SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
+    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed
+) {
+    transformed[0] = m[0] * original[0] + m[1] * original[1] + m[2] * original[2] + m[3] * original[3];
+    transformed[1] = m[4] * original[0] + m[5] * original[1] + m[6] * original[2] + m[7] * original[3];
+    transformed[2] = m[8] * original[0] + m[9] * original[1] + m[10] * original[2] + m[11] * original[3];
+    transformed[3] = m[12] * original[0] + m[13] * original[1] + m[14] * original[2] + m[15] * original[3];
+    return transformed;
+}
+
+SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
+    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count
+) {
+    const SLC_<NTID>_t* _original = original;
+    SLC_<NTID>_t* _transformed = transformed;
+    for (SLC_size_t i = 0; i < count; i++)
+    {
+        SLC_TMat<NTID>_Transform(m, _original, _transformed);
+        _original += 4;
+        _transformed += 4;
+    }
+    return transformed;
+}
+#pragma endregion matrix_multiplication
+
+#pragma region rotation_matrix
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+{
+    memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
+    result[0] = result[5] = c;
+    result[1] = -(result[4] = s);
+    return result;
+}
+
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+{
+    memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
+    result[5] = result[10] = c;
+    result[9] = -(result[6] = s);
+    return result;
+}
+
+SLC_<NTID>_t* SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+{
+    memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
+    result[0] = result[10] = c;
+    result[8] = -(result[2] = s);
+    return result;
+}
+#pragma endregion rotation_matrix
+
+#pragma region polar_cartesian_conversion
+void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian)
+{
+    SLC_<NTID>_t _w = SLC_<NTID>_units[1]/cartesian[3];
+    SLC_3<NTID>_t xyz = { _w * cartesian[0], _w * cartesian[1], _w * cartesian[2] };
+    SLC_<NTID>_t Rh = SLC_<NTID>sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+    polar->r = SLC_<NTID>sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+    polar->cphi = xyz[0]/Rh;
+    polar->sphi = xyz[1]/Rh;
+    polar->ctheta = Rh/polar->r;
+    polar->stheta = xyz[2]/polar->r;
+}
+
+void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar)
+{
+    cartesian[0] = polar->r * polar->ctheta * polar->cphi;
+    cartesian[1] = polar->r * polar->ctheta * polar->sphi;
+    cartesian[2] = polar->r * polar->stheta;
+    cartesian[3] = SLC_<NTID>_units[1];
+}
+#pragma region polar_cartesian_conversion
+#undef MATSIZE4X4
+#undef MATSIZE5X8
+#pragma endregion <NTID>_function_impl

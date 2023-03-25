@@ -19,23 +19,16 @@ bool SLC_RingBuffer_IsEmpty(SLC_PArray_t rb)
     return WRINDEX(rb) == RDINDEX(rb);
 }
 
-void SLC_RingBuffer_Clear(SLC_PArray_t rb)
+SLC_PArray_t SLC_RingBuffer_Clear(SLC_PArray_t rb)
 {
     rb->cont.i16[2] = rb->cont.i16[3] = 0;
+    return rb;
 }
 
 SLC_PArray_t SLC_RingBuffer_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size)
 {
     SLC_PArray_t p = SLC_Array_Calloc(nmemb, unit_size);
-    SLC_RingBuffer_Clear(p);
-    return p;
-}
-
-SLC_PArray_t SLC_RingBuffer_Calloca(SLC_i16_t nmemb, SLC_i16_t unit_size)
-{
-    SLC_PArray_t p = SLC_Array_Calloca(nmemb, unit_size);
-    SLC_RingBuffer_Clear(p);
-    return p;
+    return SLC_RingBuffer_Clear(p);
 }
 
 int16_t SLC_RingBuffer_AvailableElements(SLC_PArray_t rb)

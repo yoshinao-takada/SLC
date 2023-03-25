@@ -1,0 +1,10 @@
+SLC_errno_t SLC_GeometryUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_test(err, SLC_r32_GeometryUT, settings, __func__, __LINE__);
+        SLC_test(err, SLC_r64_GeometryUT, settings, __func__, __LINE__);
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}

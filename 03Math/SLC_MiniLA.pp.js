@@ -84,6 +84,7 @@ function CreateSourceFile(cin, c)
         "#include \"SLC/SLC_MiniLA.h\"",
         "#include \"SLC/SLC_MiniBLAS.h\"",
         "#include \"SLC/SLC_NumbersCopy.h\"",
+        "#include <assert.h>",
         ""
     ];
     headerText.forEach((e) => { text.push(e); });
