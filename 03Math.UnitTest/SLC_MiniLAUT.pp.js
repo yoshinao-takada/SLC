@@ -14,6 +14,7 @@ const fname_cin = "SLC_MiniLAUT.cin"; // Input C source template file
 const fname_cinfooter = "SLC_MiniLAUTfoot.cin";
 const curdir = path.dirname(process.argv[1]);
 const typeIDs = ["r32", "r64", "c64", "c128"];
+const rtypeIDs = ["r32", "r64", "r32", "r64"];
 //--------------------------------------------------------------------------
 // Main block
 //--------------------------------------------------------------------------
@@ -36,6 +37,7 @@ function CreateSourceFile(cin, cinfooter, c)
         "#include \"SLC/SLC_MiniLA.h\"",
         "#include \"SLC/SLC_errno.h\"",
         "#include \"SLC/SLC_Log.h\"",
+        "#include \"SLC/SLC_Numbers.h\"",
         "#include <assert.h>",
         ""
     ];
@@ -45,11 +47,12 @@ function CreateSourceFile(cin, cinfooter, c)
     // 2) Generate definitions for each number types.
     const templateText = ReadAllLines(path.join(curdir, cin));
     const regex0 = /<NTID>/g;
+    const regex1 = /<RTID>/g;
     for (let index in typeIDs)
     {
         let typeID = typeIDs[index];
         templateText.forEach(function(templateLine) {
-            text.push(templateLine.replace(regex0, typeID));
+            text.push(templateLine.replace(regex0, typeID).replace(regex1, rtypeIDs));
         });
     }
 

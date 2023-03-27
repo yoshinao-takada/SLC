@@ -52,7 +52,15 @@ void SLC_r32_addsubs(
 {
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst[index] = src0[index] * src1[index];
+        dst[index] = src0[index] + src1[index];
+    }
+}
+
+void SLC_r32_scalesubs(SLC_r32_t* dst, const SLC_r32_t* src, const SLC_r32_t* scale, SLC_size_t count)
+{
+    for (SLC_size_t index = 0; index < count; index++)
+    {
+        dst[index] = src[index] * (*scale);
     }
 }
 
@@ -83,7 +91,7 @@ SLC_r32_t SLC_r32_innerproduct(
     SLC_r32_t dst = SLC_r32_units[0];
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst += src0[index] * src1[index];
+        dst += src0[index] * SLC_r32_conj(src1[index]);
     }
     return dst;
 }
@@ -161,7 +169,15 @@ void SLC_r64_addsubs(
 {
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst[index] = src0[index] * src1[index];
+        dst[index] = src0[index] + src1[index];
+    }
+}
+
+void SLC_r64_scalesubs(SLC_r64_t* dst, const SLC_r64_t* src, const SLC_r64_t* scale, SLC_size_t count)
+{
+    for (SLC_size_t index = 0; index < count; index++)
+    {
+        dst[index] = src[index] * (*scale);
     }
 }
 
@@ -192,7 +208,7 @@ SLC_r64_t SLC_r64_innerproduct(
     SLC_r64_t dst = SLC_r64_units[0];
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst += src0[index] * src1[index];
+        dst += src0[index] * SLC_r64_conj(src1[index]);
     }
     return dst;
 }
@@ -270,7 +286,15 @@ void SLC_c64_addsubs(
 {
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst[index] = src0[index] * src1[index];
+        dst[index] = src0[index] + src1[index];
+    }
+}
+
+void SLC_c64_scalesubs(SLC_c64_t* dst, const SLC_c64_t* src, const SLC_c64_t* scale, SLC_size_t count)
+{
+    for (SLC_size_t index = 0; index < count; index++)
+    {
+        dst[index] = src[index] * (*scale);
     }
 }
 
@@ -301,7 +325,7 @@ SLC_c64_t SLC_c64_innerproduct(
     SLC_c64_t dst = SLC_c64_units[0];
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst += src0[index] * src1[index];
+        dst += src0[index] * SLC_c64_conj(src1[index]);
     }
     return dst;
 }
@@ -379,7 +403,15 @@ void SLC_c128_addsubs(
 {
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst[index] = src0[index] * src1[index];
+        dst[index] = src0[index] + src1[index];
+    }
+}
+
+void SLC_c128_scalesubs(SLC_c128_t* dst, const SLC_c128_t* src, const SLC_c128_t* scale, SLC_size_t count)
+{
+    for (SLC_size_t index = 0; index < count; index++)
+    {
+        dst[index] = src[index] * (*scale);
     }
 }
 
@@ -410,7 +442,7 @@ SLC_c128_t SLC_c128_innerproduct(
     SLC_c128_t dst = SLC_c128_units[0];
     for (SLC_size_t index = 0; index < count; index++)
     {
-        dst += src0[index] * src1[index];
+        dst += src0[index] * SLC_c128_conj(src1[index]);
     }
     return dst;
 }

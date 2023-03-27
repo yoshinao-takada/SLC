@@ -50,7 +50,15 @@ void SLC_<NTID>_addsubs(
 {
     for (SLC_<ITID>_t index = 0; index < count; index++)
     {
-        dst[index] = src0[index] * src1[index];
+        dst[index] = src0[index] + src1[index];
+    }
+}
+
+void SLC_<NTID>_scalesubs(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, const SLC_<NTID>_t* scale, SLC_<ITID>_t count)
+{
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst[index] = src[index] * (*scale);
     }
 }
 
@@ -81,7 +89,7 @@ SLC_<NTID>_t SLC_<NTID>_innerproduct(
     SLC_<NTID>_t dst = SLC_<NTID>_units[0];
     for (SLC_<ITID>_t index = 0; index < count; index++)
     {
-        dst += src0[index] * src1[index];
+        dst += src0[index] * SLC_<NTID>_conj(src1[index]);
     }
     return dst;
 }

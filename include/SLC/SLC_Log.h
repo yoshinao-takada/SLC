@@ -64,8 +64,14 @@ void SLC_LogWriteErrHeader(SLC_errno_t err);
     SLC_LogWriteHeader(SLC_LogLevelTEST); fprintf(SLC_LogSink, __VA_ARGS__); }
 #pragma endregion
 #pragma region test_utility_macros
-// standard test method signature
+// standard test method signatures
+typedef struct {
+    SLC_i32_t settings;
+    const void* data;
+} SLC_TestArgs_t, *SLC_PTestArgs_t;
+typedef const SLC_TestArgs_t *SLC_PCTestArgs_t;
 typedef SLC_errno_t (*SLC_TESTMETHOD)(SLC_i32_t settings);
+typedef SLC_errno_t (*SLC_TESTMETHOD2)(SLC_PCTestArgs_t args);
 
 // test method calling macro
 #define SLC_TEST_ABORT_ON_FAIL  1
@@ -73,6 +79,11 @@ typedef SLC_errno_t (*SLC_TESTMETHOD)(SLC_i32_t settings);
     __errno = __method_to_test(__setting); \
     if (__errno) { \
         SLC_LogERR(__errno, "setting=%d(0x%x), func=%s, line=%d", __setting, __setting, __func, __line); \
+        if (SLC_TEST_ABORT_ON_FAIL) break; }
+#define SLC_test2(__errno, __method_to_test, __pvsetting, __func, __line) \
+    __errno = __method_to_test(__pvsetting); \
+    if (__errno) { \
+        SLC_LogERR(__errno, "func=%s, line=%d", __func, __line); \
         if (SLC_TEST_ABORT_ON_FAIL) break; }
 #define SLC_testend(__errno, __func, __line) \
     SLC_LogTEST("errno=0x%x(%d) @ %s,%d\n", __errno, __errno, __func, __line)

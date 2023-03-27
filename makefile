@@ -37,9 +37,11 @@ DEBUG_TEST_OBJECTS_IO = \
 
 .PHONY 	:	debug_test
 debug_test	:	debug $(DEBUG_TARGET_TEST)
-$(DEBUG_TARGET_TEST)	:	$(DEBUG_TARGET_LIB) $(DEBUG_TESTOBJECTS_BASE) $(DEBUG_TEST_OBJECTS_CONTAINER)
+$(DEBUG_TARGET_TEST)	:	$(DEBUG_TARGET_LIB) $(DEBUG_TESTOBJECTS_BASE) $(DEBUG_TEST_OBJECTS_CONTAINER) \
+							$(DEBUG_TEST_OBJECTS_MATH)
 	mkdir -p $(BINDIR)
-	$(CC) -o $@ $(DEBUG_TESTOBJECTS_BASE) $(DEBUG_TEST_OBJECTS_CONTAINER) -L$(LIBDIR) -lSLC -lpthread -lm
+	$(CC) -o $@ $(DEBUG_TESTOBJECTS_BASE) $(DEBUG_TEST_OBJECTS_CONTAINER) $(DEBUG_TEST_OBJECTS_MATH) \
+		-L$(LIBDIR) -lSLC -lpthread -lm
 
 .PHONY	:	debug
 debug	:	$(DEBUG_TARGET_LIB)
@@ -65,6 +67,9 @@ $(DEBUG_TESTOBJECTS_BASE)	:	$(DEBUG_TARGET_LIB)
 $(DEBUG_TEST_OBJECTS_CONTAINER)	:	$(DEBUG_TARGET_LIB)
 	$(MAKESUB) 02Container.UnitTest debug
 
+$(DEBUG_TEST_OBJECTS_MATH)	:	$(DEBUG_TARGET_LIB)
+	$(MAKESUB) 03Math.UnitTest debug
+
 .PHONY	:	clean_debug
 clean_debug	:
 	rm -f $(DEBUG_TARGET_LIB)
@@ -73,3 +78,5 @@ clean_debug	:
 	$(MAKESUB) 03Math clean_debug
 	$(MAKESUB) 05IoDiag clean_debug
 	$(MAKESUB) 01Base.UnitTest clean_debug
+	$(MAKESUB) 02Container.UnitTest clean_debug
+	$(MAKESUB) 03Math.UnitTest clean_debug

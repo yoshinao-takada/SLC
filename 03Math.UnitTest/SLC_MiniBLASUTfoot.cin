@@ -1,11 +1,65 @@
+#pragma region r32_test_data
+MiniBLASUT_r32_params_t r32_params = {
+    { -1.0f, 2.0f, -2.1f, 3.3f },
+    { 2.0f, -2.1f, 3.3f, -1.5f },
+    { 1.1f, -1.1f, -0.9f, 0.85f },
+    { 1.0f, -0.1f, 1.2f, 1.8f },
+    { 1.2f, -0.31f, 1.53f, 1.65f },
+    { -1.1f, 2.2f, -2.31f, 3.63f },
+    { -2.0f, -4.2f, -6.93f, -4.95f },
+    -18.08f, 2.2f, 8.4f, SLC_r32_stdtol
+};
+#pragma endregion
+#pragma region r64_test_data
+MiniBLASUT_r64_params_t r64_params = {
+    { -1.0, 2.0, -2.1, 3.3 },
+    { 2.0, -2.1, 3.3, -1.5 },
+    { 1.1, -1.1, -0.9, 0.85 },
+    { 1.0, -0.1, 1.2, 1.8 },
+    { 1.2, -0.31, 1.53, 1.65 },
+    { -1.1, 2.2, -2.31, 3.63 },
+    { -2.0, -4.2, -6.93, -4.95 },
+    -18.08, 2.2, 8.4, SLC_r64_stdtol
+};
+#pragma endregion
+#pragma region c64_test_data
+MiniBLASUT_c64_params_t c64_params = {
+    { CMPLXF(-1.0f, 2.0f), CMPLXF(2.0f, -2.1f), CMPLXF(-2.1f, 3.3f), CMPLXF(3.3f, -1.0f) },
+    { CMPLXF(2.0f, -2.1f), CMPLXF(-2.1f, 3.3f), CMPLXF(3.3f, -1.5f), CMPLXF(-1.5f, 2.0f) },
+    { CMPLXF(1.1f, -1.1f), CMPLXF(-1.1f, -0.9f), CMPLXF(-0.9f, 0.85f), CMPLXF(0.85f, 1.1f) },
+    { CMPLXF(1.0f,-0.1f), CMPLXF(-0.1f,1.2f), CMPLXF(1.2f,1.8f), CMPLXF(1.8f,1.0f) },
+    { CMPLXF(-1.11f,-2.51f), CMPLXF(3.32f,3.84f), CMPLXF(-0.12f,-1.98f), CMPLXF(3.85f,2.85f) },
+    { CMPLXF(1.1f, 3.3f), CMPLXF(-0.11f,-4.51f), CMPLXF(1.32f, 5.94f), CMPLXF(2.53f,-4.73f) },
+    { CMPLXF(2.2f,6.1f), CMPLXF(2.73f,11.01f), CMPLXF(-1.98f,14.04f), CMPLXF(-2.95f,8.1f) },
+    CMPLXF(-36.16f,2.35f), CMPLXF(2.2f, 2.2f), 12.496f, SLC_c64_stdtol
+ };
+#pragma endregion
+#pragma region c128_test_data
+MiniBLASUT_c128_params_t c128_params = {
+    { CMPLX(-1.0, 2.0), CMPLX(2.0, -2.1), CMPLX(-2.1, 3.3), CMPLX(3.3, -1.0) },
+    { CMPLX(2.0, -2.1), CMPLX(-2.1, 3.3), CMPLX(3.3, -1.5), CMPLX(-1.5, 2.0) },
+    { CMPLX(1.1, -1.1), CMPLX(-1.1, -0.9), CMPLX(-0.9, 0.85), CMPLX(0.85, 1.1) },
+    { CMPLX(1.0,-0.1), CMPLX(-0.1,1.2), CMPLX(1.2,1.8), CMPLX(1.8,1.0) },
+    { CMPLX(-1.11,-2.51), CMPLX(3.32,3.84), CMPLX(-0.12,-1.98), CMPLX(3.85,2.85) },
+    { CMPLX(1.1,3.3), CMPLX(-0.11,-4.51), CMPLX(1.32, 5.94), CMPLX(2.53,-4.73) },
+    { CMPLX(2.2,6.1), CMPLX(2.73,11.01), CMPLX(-1.98,14.04), CMPLX(-2.95,8.1) },
+    CMPLX(-36.16,2.35), CMPLX(2.2, 2.2), 12.496, SLC_c64_stdtol
+};
+#pragma endregion
+
+static const SLC_TestArgs_t r32_args = { 0, (void*)&r32_params };
+static const SLC_TestArgs_t r64_args = { 0, (void*)&r64_params };
+static const SLC_TestArgs_t c64_args = { 0, (void*)&c64_params };
+static const SLC_TestArgs_t c128_args = { 0, (void*)&c128_params };
+
 SLC_errno_t SLC_MiniBLASUT(SLC_i32_t settings)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     do {
-        SLC_test(err, SLC_r32_MiniBLASUT, settings, __func__, __LINE__);
-        SLC_test(err, SLC_r64_MiniBLASUT, settings, __func__, __LINE__);
-        SLC_test(err, SLC_c64_MiniBLASUT, settings, __func__, __LINE__);
-        SLC_test(err, SLC_c128_MiniBLASUT, settings, __func__, __LINE__);
+        SLC_test2(err, SLC_r32_MiniBLASUT, &r32_args, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_MiniBLASUT, &r64_args, __func__, __LINE__);
+        SLC_test2(err, SLC_c64_MiniBLASUT, &c64_args, __func__, __LINE__);
+        SLC_test2(err, SLC_c128_MiniBLASUT, &c128_args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

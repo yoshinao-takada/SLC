@@ -1,11 +1,116 @@
 #pragma region Unit_tests_for_MiniLA_with_base_number_type_SLC_<NTID>_t
-SLC_errno_t SLC_<NTID>_MiniLAUT(SLC_i32_t settings)
+#pragma region basic_matrix_operations
+typedef struct {
+    SLC_<NTID>_t mat0[16], mat1[16];
+    SLC_<NTID>_t matsum[16], matprod[16];
+    SLC_<NTID>_t mattranspose[16], matinv[16];
+} <NTID>_MiniLAUTParams_t, *<NTID>_PMiniLAUTParams_t;
+typedef const <NTID>_MiniLAUTParams_t *<NTID>_PCMiniLAUTParams_t;
+
+SLC_errno_t SLC_Mat<NTID>_AddUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
     do {
 
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
 }
+
+SLC_errno_t SLC_Mat<NTID>_ScaleAddUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_Mat<NTID>_ScaleUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_Mat<NTID>_MulUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_Mat<NTID>_TransposeUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_Mat<NTID>_TransConjUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_Mat<NTID>_InvUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_MiniLAUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+#pragma endregion basic_matrix_operations
+#pragma region linear_equation_solvers
+typedef struct {
+    SLC_<NTID>_t matL[16], matR[16], matLredundant[24];
+    SLC_<NTID>_t matX[16]; // solution
+} <NTID>_MiniLASolverUTParams_t, *<NTID>_PMiniLASolverUTParams_t;
+typedef const <NTID>_MiniLASolverUTParams_t *<NTID>_PCMiniLASolverUTParams_t;
+
+SLC_errno_t SLC_<NTID>_MiniLASolverUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLASolverUTParams_t params = (<NTID>_PCMiniLASolverUTParams_t)(args->data);
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+#pragma endregion linear_equation_solvers
 #pragma endregion Unit_tests_for_MiniLA_with_base_number_type_SLC_<NTID>_t

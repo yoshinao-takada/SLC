@@ -5,7 +5,7 @@ void SLC_<NTID>_copyconj(
     SLC_size_t count
 );
 
-// in-place operation
+//--- in-place operation identifiers have postfix 'ip'. ---
 // addition (dst += src)
 void SLC_<NTID>_addip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, SLC_<ITID>_t count);
 
@@ -15,10 +15,11 @@ void SLC_<NTID>_scaleip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* scale, SLC_<ITID>
 // scaling addition (dst += src * scale)
 void SLC_<NTID>_scaleaddip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, const SLC_<NTID>_t* scale, SLC_<ITID>_t count);
 
+// element-by-element operation has a secondary postfix L'ebe'
 // element-by-element product
 void SLC_<NTID>_multiplyebeip(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src, SLC_<ITID>_t count);
 
-// substitutional operation
+//--- substitutional operation identifiers have postfix 'subs'. ---
 // addition
 void SLC_<NTID>_addsubs(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
 
@@ -32,9 +33,11 @@ void SLC_<NTID>_scaleaddsubs(
     const SLC_<NTID>_t* src1, const SLC_<NTID>_t* scale1,
     SLC_<ITID>_t count);
 
+// element-by-element operation has a secondary postfix L'ebe'
 // element-by-element product
 void SLC_<NTID>_multyplyebesubs(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
 
+//--- vector-in, scalar-out operation identifier does not have any postfix. ---
 // inner product
 SLC_<NTID>_t SLC_<NTID>_innerproduct(const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
 

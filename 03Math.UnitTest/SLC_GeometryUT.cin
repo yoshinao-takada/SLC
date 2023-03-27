@@ -1,9 +1,9 @@
 #pragma region Unit_Tests_for_Geometry_functions_with_base_number_type_SLC_<NTID>_t
-SLC_errno_t SLC_<NTID>_GeometryUT(SLC_i32_t settings)
+SLC_errno_t SLC_<NTID>_GeometryUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     do {
-
+        
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

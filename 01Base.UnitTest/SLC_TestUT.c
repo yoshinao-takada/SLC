@@ -25,7 +25,7 @@ int main()
     do {
         SLC_test(err, BaseUT, 0, __func__, __LINE__);
         SLC_test(err, ContainerUT, 0, __func__, __LINE__);
-        // SLC_test(err, MathUT, 0, __func__, __LINE__);
+        SLC_test(err, MathUT, 0, __func__, __LINE__);
         // SLC_test(err, IoDiagUT, 0, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
@@ -54,16 +54,16 @@ SLC_errno_t ContainerUT(SLC_i32_t settings)
     return err;
 }
 
-// SLC_errno_t MathUT(SLC_i32_t settings)
-// {
-//     SLC_errno_t err = EXIT_SUCCESS;
-//     do {
-//         SLC_test(err, SLC_MiniBLASUT, 0, __func__, __LINE__);
-//         SLC_test(err, SLC_MiniLAUT, 0, __func__, __LINE__);
-//         SLC_test(err, SLC_GeometryUT, 0, __func__, __LINE__);
-//     } while (0);
-//     return err;
-// }
+SLC_errno_t MathUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_test(err, SLC_MiniBLASUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_MiniLAUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_GeometryUT, 0, __func__, __LINE__);
+    } while (0);
+    return err;
+}
 
 // SLC_errno_t IoDiagUT(SLC_i32_t settings)
 // {
