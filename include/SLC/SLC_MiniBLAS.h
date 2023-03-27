@@ -42,8 +42,11 @@ void SLC_r32_scaleaddsubs(
 void SLC_r32_multyplyebesubs(SLC_r32_t* dst, const SLC_r32_t* src0, const SLC_r32_t* src1, SLC_size_t count);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
-// inner product
+// inner product (sum(src0[]*conj(src1[])))
 SLC_r32_t SLC_r32_innerproduct(const SLC_r32_t* src0, const SLC_r32_t* src1, SLC_size_t count);
+
+// product-sum (sum(src0[]*src1[]))
+SLC_r32_t SLC_r32_productsum(const SLC_r32_t* src0, const SLC_r32_t* src1, SLC_size_t count);
 
 // sum of elements in an array
 SLC_r32_t SLC_r32_sum(const SLC_r32_t* src, SLC_size_t count);
@@ -93,8 +96,11 @@ void SLC_r64_scaleaddsubs(
 void SLC_r64_multyplyebesubs(SLC_r64_t* dst, const SLC_r64_t* src0, const SLC_r64_t* src1, SLC_size_t count);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
-// inner product
+// inner product (sum(src0[]*conj(src1[])))
 SLC_r64_t SLC_r64_innerproduct(const SLC_r64_t* src0, const SLC_r64_t* src1, SLC_size_t count);
+
+// product-sum (sum(src0[]*src1[]))
+SLC_r64_t SLC_r64_productsum(const SLC_r64_t* src0, const SLC_r64_t* src1, SLC_size_t count);
 
 // sum of elements in an array
 SLC_r64_t SLC_r64_sum(const SLC_r64_t* src, SLC_size_t count);
@@ -144,8 +150,11 @@ void SLC_c64_scaleaddsubs(
 void SLC_c64_multyplyebesubs(SLC_c64_t* dst, const SLC_c64_t* src0, const SLC_c64_t* src1, SLC_size_t count);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
-// inner product
+// inner product (sum(src0[]*conj(src1[])))
 SLC_c64_t SLC_c64_innerproduct(const SLC_c64_t* src0, const SLC_c64_t* src1, SLC_size_t count);
+
+// product-sum (sum(src0[]*src1[]))
+SLC_c64_t SLC_c64_productsum(const SLC_c64_t* src0, const SLC_c64_t* src1, SLC_size_t count);
 
 // sum of elements in an array
 SLC_c64_t SLC_c64_sum(const SLC_c64_t* src, SLC_size_t count);
@@ -195,8 +204,11 @@ void SLC_c128_scaleaddsubs(
 void SLC_c128_multyplyebesubs(SLC_c128_t* dst, const SLC_c128_t* src0, const SLC_c128_t* src1, SLC_size_t count);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
-// inner product
+// inner product (sum(src0[]*conj(src1[])))
 SLC_c128_t SLC_c128_innerproduct(const SLC_c128_t* src0, const SLC_c128_t* src1, SLC_size_t count);
+
+// product-sum (sum(src0[]*src1[]))
+SLC_c128_t SLC_c128_productsum(const SLC_c128_t* src0, const SLC_c128_t* src1, SLC_size_t count);
 
 // sum of elements in an array
 SLC_c128_t SLC_c128_sum(const SLC_c128_t* src, SLC_size_t count);

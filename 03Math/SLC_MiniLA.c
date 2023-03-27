@@ -44,8 +44,7 @@ void SLC_Matr32_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, SLC_
         SLC_r32_t* work_rowhead = work->data._r32;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
-            dst_rowhead[column] = SLC_r32_units[0];
-            dst_rowhead[column] = SLC_r32_innerproduct(src0_rowhead, work_rowhead, src0_stride);
+            dst_rowhead[column] = SLC_r32_productsum(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;
@@ -401,8 +400,7 @@ void SLC_Matr64_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, SLC_
         SLC_r64_t* work_rowhead = work->data._r64;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
-            dst_rowhead[column] = SLC_r64_units[0];
-            dst_rowhead[column] = SLC_r64_innerproduct(src0_rowhead, work_rowhead, src0_stride);
+            dst_rowhead[column] = SLC_r64_productsum(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;
@@ -758,8 +756,7 @@ void SLC_Matc64_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, SLC_
         SLC_c64_t* work_rowhead = work->data._c64;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
-            dst_rowhead[column] = SLC_c64_units[0];
-            dst_rowhead[column] = SLC_c64_innerproduct(src0_rowhead, work_rowhead, src0_stride);
+            dst_rowhead[column] = SLC_c64_productsum(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;
@@ -1115,8 +1112,7 @@ void SLC_Matc128_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, SLC
         SLC_c128_t* work_rowhead = work->data._c128;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
-            dst_rowhead[column] = SLC_c128_units[0];
-            dst_rowhead[column] = SLC_c128_innerproduct(src0_rowhead, work_rowhead, src0_stride);
+            dst_rowhead[column] = SLC_c128_productsum(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;

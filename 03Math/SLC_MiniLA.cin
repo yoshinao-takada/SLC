@@ -39,8 +39,7 @@ void SLC_Mat<NTID>_Mul(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1, S
         SLC_<NTID>_t* work_rowhead = work->data._<NTID>;
         for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(dst); column++)
         {
-            dst_rowhead[column] = SLC_<NTID>_units[0];
-            dst_rowhead[column] = SLC_<NTID>_innerproduct(src0_rowhead, work_rowhead, src0_stride);
+            dst_rowhead[column] = SLC_<NTID>_productsum(src0_rowhead, work_rowhead, src0_stride);
             work_rowhead += work_stride;
         }
         dst_rowhead += dst_stride;

@@ -38,7 +38,7 @@ typedef struct {
 } SLC_Array_t, *SLC_PArray_t;
 
 SLC_PArray_t SLC_Array_InitHeader(void* ptr, SLC_i16_t nmemb, SLC_i16_t unit_size);
-SLC_PArray_t SLC_Array_InitHeader2(void* ptr, SLC_4i16_t size);
+SLC_PArray_t SLC_Array_InitHeader2(void* ptr, const SLC_4i16_t size);
 
 // giving a unit count and a unit size, get from heap.
 SLC_PArray_t SLC_Array_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size);
@@ -48,7 +48,7 @@ SLC_PArray_t SLC_Array_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size);
     alloca(SLC_ALIGN8(__nmemb * __unit_size + sizeof(SLC_Array_t))), __nmemb, __unit_size)
 
 // giving a multi-dimensional size([0]:unit size, [1]: 1st dimension, [2]: 2nd dimension, [3]: 3rd dimension), get from heap
-SLC_PArray_t SLC_Array_Alloc(SLC_4i16_t size);
+SLC_PArray_t SLC_Array_Alloc(const SLC_4i16_t size);
 
 // giving a multi-dimensional size, get from stack frame.
 #define SLC_Array_Alloca(__size) SLC_Array_InitHeader2( \

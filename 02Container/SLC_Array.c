@@ -19,7 +19,7 @@ SLC_PArray_t SLC_Array_Calloc(SLC_i16_t nmemb, SLC_i16_t unit_size)
     return SLC_Array_InitHeader(ptr, nmemb, unit_size);
 }
 
-SLC_PArray_t SLC_Array_InitHeader2(void* ptr, SLC_4i16_t size)
+SLC_PArray_t SLC_Array_InitHeader2(void* ptr, const SLC_4i16_t size)
 {
     SLC_PArray_t pa = (SLC_PArray_t)ptr;
     SLC_COPY4(pa->cont.i16, size);
@@ -27,7 +27,7 @@ SLC_PArray_t SLC_Array_InitHeader2(void* ptr, SLC_4i16_t size)
     return pa;
 }
 
-SLC_PArray_t SLC_Array_Alloc(SLC_4i16_t size)
+SLC_PArray_t SLC_Array_Alloc(const SLC_4i16_t size)
 {
     size_t alloc_size = SLC_product4(size) + sizeof(SLC_Array_t);
     void* ptr = aligned_alloc(8, alloc_size);

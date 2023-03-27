@@ -38,8 +38,11 @@ void SLC_<NTID>_scaleaddsubs(
 void SLC_<NTID>_multyplyebesubs(SLC_<NTID>_t* dst, const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
-// inner product
+// inner product (sum(src0[]*conj(src1[])))
 SLC_<NTID>_t SLC_<NTID>_innerproduct(const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
+
+// product-sum (sum(src0[]*src1[]))
+SLC_<NTID>_t SLC_<NTID>_productsum(const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count);
 
 // sum of elements in an array
 SLC_<NTID>_t SLC_<NTID>_sum(const SLC_<NTID>_t* src, SLC_<ITID>_t count);

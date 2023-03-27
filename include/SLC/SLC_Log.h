@@ -108,33 +108,33 @@ void SLC_Stopwatch_Release(SLC_i32_t channel);
 void SLC_Timespec_A_minus_B(struct timespec* a_minus_b, struct timespec* a, struct timespec* b);
 #pragma endregion
 #pragma region comparison_of_SLC_r32_t_numbers
-#define SLC_r32_sumabs(__a, __b) (SLC_r32_abs(__a) + SLC_r32_abs(__b))
+#define SLC_r32_abssum2(__a, __b) (SLC_r32_abs(__a) + SLC_r32_abs(__b))
 #define SLC_r32_absdiff(__a, __b) SLC_r32_abs((__a) - (__b))
-#define SLC_r32_relabsdiff(__a, __b) SLC_r32_absdiff(__a, __b)/SLC_r32_sumabs(__a, __b)
+#define SLC_r32_relabsdiff(__a, __b) SLC_r32_absdiff(__a, __b)/SLC_r32_abssum2(__a, __b)
 #define SLC_r32_areequal(__a, __b, __tol) \
     (((SLC_r32_abs(__a) < __tol) || (SLC_r32_abs(__b) < __tol)) ? \
     (SLC_r32_absdiff(__a, __b) < __tol) : (SLC_r32_relabsdiff(__a, __b) < __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_r64_t_numbers
-#define SLC_r64_sumabs(__a, __b) (SLC_r64_abs(__a) + SLC_r64_abs(__b))
+#define SLC_r64_abssum2(__a, __b) (SLC_r64_abs(__a) + SLC_r64_abs(__b))
 #define SLC_r64_absdiff(__a, __b) SLC_r64_abs((__a) - (__b))
-#define SLC_r64_relabsdiff(__a, __b) SLC_r64_absdiff(__a, __b)/SLC_r64_sumabs(__a, __b)
+#define SLC_r64_relabsdiff(__a, __b) SLC_r64_absdiff(__a, __b)/SLC_r64_abssum2(__a, __b)
 #define SLC_r64_areequal(__a, __b, __tol) \
     (((SLC_r64_abs(__a) < __tol) || (SLC_r64_abs(__b) < __tol)) ? \
     (SLC_r64_absdiff(__a, __b) < __tol) : (SLC_r64_relabsdiff(__a, __b) < __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_c64_t_numbers
-#define SLC_c64_sumabs(__a, __b) (SLC_c64_abs(__a) + SLC_c64_abs(__b))
+#define SLC_c64_abssum2(__a, __b) (SLC_c64_abs(__a) + SLC_c64_abs(__b))
 #define SLC_c64_absdiff(__a, __b) SLC_c64_abs((__a) - (__b))
-#define SLC_c64_relabsdiff(__a, __b) SLC_c64_absdiff(__a, __b)/SLC_c64_sumabs(__a, __b)
+#define SLC_c64_relabsdiff(__a, __b) SLC_c64_absdiff(__a, __b)/SLC_c64_abssum2(__a, __b)
 #define SLC_c64_areequal(__a, __b, __tol) \
     (((SLC_c64_abs(__a) < __tol) || (SLC_c64_abs(__b) < __tol)) ? \
     (SLC_c64_absdiff(__a, __b) < __tol) : (SLC_c64_relabsdiff(__a, __b) < __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_c128_t_numbers
-#define SLC_c128_sumabs(__a, __b) (SLC_c128_abs(__a) + SLC_c128_abs(__b))
+#define SLC_c128_abssum2(__a, __b) (SLC_c128_abs(__a) + SLC_c128_abs(__b))
 #define SLC_c128_absdiff(__a, __b) SLC_c128_abs((__a) - (__b))
-#define SLC_c128_relabsdiff(__a, __b) SLC_c128_absdiff(__a, __b)/SLC_c128_sumabs(__a, __b)
+#define SLC_c128_relabsdiff(__a, __b) SLC_c128_absdiff(__a, __b)/SLC_c128_abssum2(__a, __b)
 #define SLC_c128_areequal(__a, __b, __tol) \
     (((SLC_c128_abs(__a) < __tol) || (SLC_c128_abs(__b) < __tol)) ? \
     (SLC_c128_absdiff(__a, __b) < __tol) : (SLC_c128_relabsdiff(__a, __b) < __tol))

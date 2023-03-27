@@ -38,6 +38,7 @@ function CreateSourceFile(cin, cinfooter, c)
         "#include \"SLC/SLC_errno.h\"",
         "#include \"SLC/SLC_Log.h\"",
         "#include \"SLC/SLC_Numbers.h\"",
+        "#include \"SLC/SLC_NumbersCopy.h\"",
         "#include <assert.h>",
         ""
     ];
@@ -51,8 +52,9 @@ function CreateSourceFile(cin, cinfooter, c)
     for (let index in typeIDs)
     {
         let typeID = typeIDs[index];
+        let rtypeID = rtypeIDs[index];
         templateText.forEach(function(templateLine) {
-            text.push(templateLine.replace(regex0, typeID).replace(regex1, rtypeIDs));
+            text.push(templateLine.replace(regex0, typeID).replace(regex1, rtypeID));
         });
     }
 

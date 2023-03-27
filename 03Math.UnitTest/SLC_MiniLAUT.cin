@@ -1,9 +1,12 @@
 #pragma region Unit_tests_for_MiniLA_with_base_number_type_SLC_<NTID>_t
 #pragma region basic_matrix_operations
 typedef struct {
+    SLC_4i16_t size;
     SLC_<NTID>_t mat0[16], mat1[16];
-    SLC_<NTID>_t matsum[16], matprod[16];
+    SLC_<NTID>_t matsum[16], matprod[16], scaled[16], scaledsum[16];
     SLC_<NTID>_t mattranspose[16], matinv[16];
+    SLC_<RTID>_t tolerance;
+    SLC_<NTID>_t scale0, scale1;
 } <NTID>_MiniLAUTParams_t, *<NTID>_PMiniLAUTParams_t;
 typedef const <NTID>_MiniLAUTParams_t *<NTID>_PCMiniLAUTParams_t;
 
@@ -11,9 +14,30 @@ SLC_errno_t SLC_Mat<NTID>_AddUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
+    SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matsum = SLC_Array_Alloca(params->size);
     do {
-
+        SLC_<NTID>_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
+        SLC_<NTID>_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
+        SLC_Mat<NTID>_Add(matsum, mat0, mat1);
+        SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
+        for (SLC_i16_t row=0; row < rows; row++)
+        {
+            for (SLC_i16_t column = 0; column < columns; column++)
+            {
+                SLC_size_t index = column + row * columns;
+                if (!SLC_<NTID>_areequal(params->matsum[index], matsum->data._<NTID>[index], params->tolerance))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
     } while (0);
+    free(mat0);
     SLC_testend(err, __func__, __LINE__);
     return err;
 }
@@ -22,10 +46,31 @@ SLC_errno_t SLC_Mat<NTID>_ScaleAddUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
+    SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
+    SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
     do {
-
+        SLC_<NTID>_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
+        SLC_<NTID>_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
+        SLC_Mat<NTID>_Add(matprod, mat0, mat1);
+        SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
+        for (SLC_i16_t row=0; row < rows; row++)
+        {
+            for (SLC_i16_t column = 0; column < columns; column++)
+            {
+                SLC_size_t index = column + row * columns;
+                if (!SLC_<NTID>_areequal(params->matprod[index], matprod->data._<NTID>[index], params->tolerance))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
     } while (0);
     SLC_testend(err, __func__, __LINE__);
+    free(mat0);
     return err;
 }
 

@@ -94,6 +94,16 @@ SLC_<NTID>_t SLC_<NTID>_innerproduct(
     return dst;
 }
 
+SLC_<NTID>_t SLC_<NTID>_productsum(const SLC_<NTID>_t* src0, const SLC_<NTID>_t* src1, SLC_<ITID>_t count
+) {
+    SLC_<NTID>_t dst = SLC_<NTID>_units[0];
+    for (SLC_<ITID>_t index = 0; index < count; index++)
+    {
+        dst += src0[index] * src1[index];
+    }
+    return dst;
+}
+
 SLC_<NTID>_t SLC_<NTID>_sum(const SLC_<NTID>_t* src, SLC_<ITID>_t count)
 {
     SLC_<NTID>_t dst = SLC_<NTID>_units[0];
