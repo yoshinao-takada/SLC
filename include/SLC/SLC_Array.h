@@ -68,17 +68,22 @@ SLC_PArray_t SLC_Array_Alloc(const SLC_4i16_t size);
     ((__a)->cont.i16[1] == (__b)->cont.i16[1]) && \
     ((__a)->cont.i16[2] == (__b)->cont.i16[2]) && \
     ((__a)->cont.i16[3] == 1) && \
-    ((__b)->cont.i16[0] == 1)
+    ((__b)->cont.i16[3] == 1)
 #define SLC_Array_TransposedSize2D(__a, __b) \
     ((__a)->cont.i16[0] == (__b)->cont.i16[0]) && \
     ((__a)->cont.i16[2] == (__b)->cont.i16[1]) && \
-    ((__a)->cont.i16[2] == (__b)->cont.i16[1])
+    ((__a)->cont.i16[1] == (__b)->cont.i16[2]) && \
+    ((__a)->cont.i16[3] == 1) && \
+    ((__b)->cont.i16[3] == 1)
 #define SLC_Array_ValidMatrixProduct(__prod, __left, __right) \
     ((__prod)->cont.i16[0] == (__left)->cont.i16[0]) && \
     ((__prod)->cont.i16[0] == (__right)->cont.i16[0]) && \
-    ((__prod)->cont.i16[1] == (__left)->cont.i16[1]) && \
-    ((__prod)->cont.i16[2] == (__right)->cont.i16[2]) && \
-    ((__left)->cont.i16[2] == (__right)->cont.i16[1])
+    ((__prod)->cont.i16[2] == (__left)->cont.i16[2]) && \
+    ((__prod)->cont.i16[1] == (__right)->cont.i16[1]) && \
+    ((__left)->cont.i16[1] == (__right)->cont.i16[2]) && \
+    ((__left)->cont.i16[3] == 1) && \
+    ((__right)->cont.i16[3] == 1) && \
+    ((__prod)->cont.i16[3] == 1)
 #define SLC_Array_SameSquareMatrixSize(__a, __b) \
     ((__a)->cont.i16[0] == (__b)->cont.i16[0]) && \
     ((__a)->cont.i16[1] == (__b)->cont.i16[1]) && \

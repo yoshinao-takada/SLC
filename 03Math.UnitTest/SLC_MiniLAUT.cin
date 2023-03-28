@@ -48,18 +48,18 @@ SLC_errno_t SLC_Mat<NTID>_ScaleAddUT(SLC_PCTestArgs_t args)
     <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
     SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
     SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
-    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matScaleAdd = SLC_Array_Alloca(params->size);
     do {
         SLC_<NTID>_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
         SLC_<NTID>_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
-        SLC_Mat<NTID>_Add(matprod, mat0, mat1);
+        SLC_Mat<NTID>_ScaleAdd(matScaleAdd, mat0, &params->scale0, mat1, &params->scale1);
         SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
         for (SLC_i16_t row=0; row < rows; row++)
         {
             for (SLC_i16_t column = 0; column < columns; column++)
             {
                 SLC_size_t index = column + row * columns;
-                if (!SLC_<NTID>_areequal(params->matprod[index], matprod->data._<NTID>[index], params->tolerance))
+                if (!SLC_<NTID>_areequal(params->scaledsum[index], matScaleAdd->data._<NTID>[index], params->tolerance))
                 {
                     err = EXIT_FAILURE;
                     SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
@@ -134,7 +134,9 @@ SLC_errno_t SLC_<NTID>_MiniLAUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     <NTID>_PCMiniLAUTParams_t params = (<NTID>_PCMiniLAUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_Mat<NTID>_AddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Mat<NTID>_ScaleAddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Mat<NTID>_ScaleUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

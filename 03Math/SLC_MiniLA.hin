@@ -26,5 +26,5 @@ SLC_errno_t SLC_Mat<NTID>_SolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArra
 void SLC_Mat<NTID>_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 
 // Human readable print
-void SLC_Maat<NTID>_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
+void SLC_Mat<NTID>_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer);
 #pragma endregion <NTID>_functions

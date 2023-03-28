@@ -102,7 +102,7 @@ r64_MiniLAUTParams_t r64_LAparams = {
         0.05, 0.5, -0.25, -0.2,
         0.3, -0.25, 0.0, 0.05
     },
-    SLC_r64_stdtol, 2.3, 1.5
+    SLC_r64_stdtol, 2.3, -1.5
 };
 
 c64_MiniLAUTParams_t c64_LAparams = {

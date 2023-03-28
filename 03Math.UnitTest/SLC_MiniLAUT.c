@@ -55,18 +55,18 @@ SLC_errno_t SLC_Matr32_ScaleAddUT(SLC_PCTestArgs_t args)
     r32_PCMiniLAUTParams_t params = (r32_PCMiniLAUTParams_t)(args->data);
     SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
     SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
-    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matScaleAdd = SLC_Array_Alloca(params->size);
     do {
         SLC_r32_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
         SLC_r32_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
-        SLC_Matr32_Add(matprod, mat0, mat1);
+        SLC_Matr32_ScaleAdd(matScaleAdd, mat0, &params->scale0, mat1, &params->scale1);
         SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
         for (SLC_i16_t row=0; row < rows; row++)
         {
             for (SLC_i16_t column = 0; column < columns; column++)
             {
                 SLC_size_t index = column + row * columns;
-                if (!SLC_r32_areequal(params->matprod[index], matprod->data._r32[index], params->tolerance))
+                if (!SLC_r32_areequal(params->scaledsum[index], matScaleAdd->data._r32[index], params->tolerance))
                 {
                     err = EXIT_FAILURE;
                     SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
@@ -141,7 +141,9 @@ SLC_errno_t SLC_r32_MiniLAUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     r32_PCMiniLAUTParams_t params = (r32_PCMiniLAUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_Matr32_AddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matr32_ScaleAddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matr32_ScaleUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -216,18 +218,18 @@ SLC_errno_t SLC_Matr64_ScaleAddUT(SLC_PCTestArgs_t args)
     r64_PCMiniLAUTParams_t params = (r64_PCMiniLAUTParams_t)(args->data);
     SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
     SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
-    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matScaleAdd = SLC_Array_Alloca(params->size);
     do {
         SLC_r64_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
         SLC_r64_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
-        SLC_Matr64_Add(matprod, mat0, mat1);
+        SLC_Matr64_ScaleAdd(matScaleAdd, mat0, &params->scale0, mat1, &params->scale1);
         SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
         for (SLC_i16_t row=0; row < rows; row++)
         {
             for (SLC_i16_t column = 0; column < columns; column++)
             {
                 SLC_size_t index = column + row * columns;
-                if (!SLC_r64_areequal(params->matprod[index], matprod->data._r64[index], params->tolerance))
+                if (!SLC_r64_areequal(params->scaledsum[index], matScaleAdd->data._r64[index], params->tolerance))
                 {
                     err = EXIT_FAILURE;
                     SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
@@ -302,7 +304,9 @@ SLC_errno_t SLC_r64_MiniLAUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     r64_PCMiniLAUTParams_t params = (r64_PCMiniLAUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_Matr64_AddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matr64_ScaleAddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matr64_ScaleUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -377,18 +381,18 @@ SLC_errno_t SLC_Matc64_ScaleAddUT(SLC_PCTestArgs_t args)
     c64_PCMiniLAUTParams_t params = (c64_PCMiniLAUTParams_t)(args->data);
     SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
     SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
-    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matScaleAdd = SLC_Array_Alloca(params->size);
     do {
         SLC_c64_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
         SLC_c64_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
-        SLC_Matc64_Add(matprod, mat0, mat1);
+        SLC_Matc64_ScaleAdd(matScaleAdd, mat0, &params->scale0, mat1, &params->scale1);
         SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
         for (SLC_i16_t row=0; row < rows; row++)
         {
             for (SLC_i16_t column = 0; column < columns; column++)
             {
                 SLC_size_t index = column + row * columns;
-                if (!SLC_c64_areequal(params->matprod[index], matprod->data._c64[index], params->tolerance))
+                if (!SLC_c64_areequal(params->scaledsum[index], matScaleAdd->data._c64[index], params->tolerance))
                 {
                     err = EXIT_FAILURE;
                     SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
@@ -463,7 +467,9 @@ SLC_errno_t SLC_c64_MiniLAUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     c64_PCMiniLAUTParams_t params = (c64_PCMiniLAUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_Matc64_AddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matc64_ScaleAddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matc64_ScaleUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -538,18 +544,18 @@ SLC_errno_t SLC_Matc128_ScaleAddUT(SLC_PCTestArgs_t args)
     c128_PCMiniLAUTParams_t params = (c128_PCMiniLAUTParams_t)(args->data);
     SLC_PArray_t mat0 = SLC_Array_Alloc(params->size);
     SLC_PArray_t mat1 = SLC_Array_Alloca(params->size);
-    SLC_PArray_t matprod = SLC_Array_Alloca(params->size);
+    SLC_PArray_t matScaleAdd = SLC_Array_Alloca(params->size);
     do {
         SLC_c128_copy(mat0->data._ptr, 1, params->mat0, 1, SLC_ARRAYSIZE(params->mat0));
         SLC_c128_copy(mat1->data._ptr, 1, params->mat1, 1, SLC_ARRAYSIZE(params->mat1));
-        SLC_Matc128_Add(matprod, mat0, mat1);
+        SLC_Matc128_ScaleAdd(matScaleAdd, mat0, &params->scale0, mat1, &params->scale1);
         SLC_i16_t rows = SLC_Array_MatRows(mat0), columns = SLC_Array_MatColumns(mat0);
         for (SLC_i16_t row=0; row < rows; row++)
         {
             for (SLC_i16_t column = 0; column < columns; column++)
             {
                 SLC_size_t index = column + row * columns;
-                if (!SLC_c128_areequal(params->matprod[index], matprod->data._c128[index], params->tolerance))
+                if (!SLC_c128_areequal(params->scaledsum[index], matScaleAdd->data._c128[index], params->tolerance))
                 {
                     err = EXIT_FAILURE;
                     SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
@@ -624,7 +630,9 @@ SLC_errno_t SLC_c128_MiniLAUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     c128_PCMiniLAUTParams_t params = (c128_PCMiniLAUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_Matc128_AddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matc128_ScaleAddUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_Matc128_ScaleUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -753,7 +761,7 @@ r64_MiniLAUTParams_t r64_LAparams = {
         0.05, 0.5, -0.25, -0.2,
         0.3, -0.25, 0.0, 0.05
     },
-    SLC_r64_stdtol, 2.3, 1.5
+    SLC_r64_stdtol, 2.3, -1.5
 };
 
 c64_MiniLAUTParams_t c64_LAparams = {

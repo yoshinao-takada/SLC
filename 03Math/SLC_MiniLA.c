@@ -342,7 +342,7 @@ void SLC_Matr32_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 #pragma endregion r32_functions
 
 // human readable print
-void SLC_Maatr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
+void SLC_Matr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
 {
     fprintf(out, "%s", header);
     fprintf(out, "%d, %d\n", mat->cont.i16[1], mat->cont.i16[2]);
@@ -352,7 +352,7 @@ void SLC_Maatr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const ch
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_r32_print(out, delimiter, *ptr);
+            SLC_r32_print(out, delimiter, *ptr++);
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -698,7 +698,7 @@ void SLC_Matr64_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 #pragma endregion r64_functions
 
 // human readable print
-void SLC_Maatr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
+void SLC_Matr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
 {
     fprintf(out, "%s", header);
     fprintf(out, "%d, %d\n", mat->cont.i16[1], mat->cont.i16[2]);
@@ -708,7 +708,7 @@ void SLC_Maatr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const ch
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_r64_print(out, delimiter, *ptr);
+            SLC_r64_print(out, delimiter, *ptr++);
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -1054,7 +1054,7 @@ void SLC_Matc64_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 #pragma endregion c64_functions
 
 // human readable print
-void SLC_Maatc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
+void SLC_Matc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
 {
     fprintf(out, "%s", header);
     fprintf(out, "%d, %d\n", mat->cont.i16[1], mat->cont.i16[2]);
@@ -1064,7 +1064,7 @@ void SLC_Maatc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const ch
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_c64_print(out, delimiter, *ptr);
+            SLC_c64_print(out, delimiter, *ptr++);
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -1410,7 +1410,7 @@ void SLC_Matc128_QRD(SLC_PArray_t dst, SLC_PArray_t src);
 #pragma endregion c128_functions
 
 // human readable print
-void SLC_Maatc128_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
+void SLC_Matc128_Print(FILE* out, const char* header, SLC_PArray_t mat, const char* footer)
 {
     fprintf(out, "%s", header);
     fprintf(out, "%d, %d\n", mat->cont.i16[1], mat->cont.i16[2]);
@@ -1420,7 +1420,7 @@ void SLC_Maatc128_Print(FILE* out, const char* header, SLC_PArray_t mat, const c
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_c128_print(out, delimiter, *ptr);
+            SLC_c128_print(out, delimiter, *ptr++);
             delimiter = ",";
         }
         fprintf(out, "\n");
