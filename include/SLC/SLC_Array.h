@@ -95,4 +95,6 @@ SLC_PArray_t SLC_Array_Alloc(const SLC_4i16_t size);
     ((1 + (__a)->cont.i16[2]) == (__inv)->cont.i16[2])
 #define SLC_Array_MatRows(__m) (__m)->cont.i16[2]
 #define SLC_Array_MatColumns(__m) (__m)->cont.i16[1]
+#define SLC_TransposedMatSize(__matsize) { __matsize[0], __matsize[2], __matsize[1], 1 }
+#define SLC_InvMatWorkSize(__matsize) { __matsize[0], 2 * __matsize[1], 1 + __matsize[2], 1 }
 #endif

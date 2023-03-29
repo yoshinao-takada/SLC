@@ -78,12 +78,12 @@ typedef SLC_errno_t (*SLC_TESTMETHOD2)(SLC_PCTestArgs_t args);
 #define SLC_test(__errno, __method_to_test, __setting, __func, __line) \
     __errno = __method_to_test(__setting); \
     if (__errno) { \
-        SLC_LogERR(__errno, "setting=%d(0x%x), func=%s, line=%d", __setting, __setting, __func, __line); \
+        SLC_LogERR(__errno, "setting=%d(0x%x), func=%s, line=%d\n", __setting, __setting, __func, __line); \
         if (SLC_TEST_ABORT_ON_FAIL) break; }
 #define SLC_test2(__errno, __method_to_test, __pvsetting, __func, __line) \
     __errno = __method_to_test(__pvsetting); \
     if (__errno) { \
-        SLC_LogERR(__errno, "func=%s, line=%d", __func, __line); \
+        SLC_LogERR(__errno, "func=%s, line=%d\n", __func, __line); \
         if (SLC_TEST_ABORT_ON_FAIL) break; }
 #define SLC_testend(__errno, __func, __line) \
     SLC_LogTEST("errno=0x%x(%d) @ %s,%d\n", __errno, __errno, __func, __line)

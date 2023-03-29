@@ -25,7 +25,7 @@ void SLC_Matr32_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_r32_t* s
 void SLC_Matr32_Scale(SLC_PArray_t dst, SLC_PArray_t src, const SLC_r32_t *scale)
 {
     assert(SLC_Array_SameSize2D(dst, src));
-    SLC_r32_scalesubs(dst->data._r32, scale, src->data._r32,
+    SLC_r32_scalesubs(dst->data._r32, src->data._r32, scale,
         ((SLC_size_t)dst->cont.i16[1])*((SLC_size_t)dst->cont.i16[2]));
 }
 
@@ -56,7 +56,7 @@ void SLC_Matr32_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_r32_t* dst_columnhead = dst->data._r32;
-    const SLC_r32_t* src_rowhead = dst->data._r32;
+    const SLC_r32_t* src_rowhead = src->data._r32;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -71,12 +71,12 @@ void SLC_Matr32_TransConj(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_r32_t* dst_columnhead = dst->data._r32;
-    const SLC_r32_t* src_rowhead = dst->data._r32;
+    const SLC_r32_t* src_rowhead = src->data._r32;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
     {
-        SLC_r32_copy(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
+        SLC_r32_copyconj(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
         dst_columnhead++;
         src_rowhead += src_columns;
     }
@@ -121,7 +121,7 @@ SLC_errno_t SLC_Matr32_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
         SLC_r32_t* work_row_head = work->data._r32;
         SLC_r32_t* pivot_ptr = work_row_head;
         SLC_r32_t* work_row_center = work_row_head + src_columns;
-        SLC_r32_t* swap_buffer = work_row_head + src_rows;
+        SLC_r32_t* swap_buffer = work_row_head + src_rows * work_columns;
         SLC_r32_t* dst_row_head = dst->data._r32;
 
         // fill work matrix
@@ -166,17 +166,16 @@ SLC_errno_t SLC_Matr32_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
                     continue;
                 }
                 scaling = -(*work_row_head);
-                SLC_r32_scaleaddip(pivot_ptr, work_row_head, &scaling, remaining_work_columns);
+                SLC_r32_scaleaddip(work_row_head, pivot_ptr, &scaling, remaining_work_columns);
                 work_row_head += work_columns;
             }
-
             // move pivot to the next position
             pivot_ptr += work_columns + 1; // move to next row, next column
             swap_buffer++; // move to next column
         }
         if (err) break;
 
-        // copy inv-mat from work to dst
+        // copy inv-mat in the right half of work to dst
         work_row_center = work->data._r32 + src_columns;
         for (SLC_size_t row = 0; row < src_rows; row++)
         {
@@ -381,7 +380,7 @@ void SLC_Matr64_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_r64_t* s
 void SLC_Matr64_Scale(SLC_PArray_t dst, SLC_PArray_t src, const SLC_r64_t *scale)
 {
     assert(SLC_Array_SameSize2D(dst, src));
-    SLC_r64_scalesubs(dst->data._r64, scale, src->data._r64,
+    SLC_r64_scalesubs(dst->data._r64, src->data._r64, scale,
         ((SLC_size_t)dst->cont.i16[1])*((SLC_size_t)dst->cont.i16[2]));
 }
 
@@ -412,7 +411,7 @@ void SLC_Matr64_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_r64_t* dst_columnhead = dst->data._r64;
-    const SLC_r64_t* src_rowhead = dst->data._r64;
+    const SLC_r64_t* src_rowhead = src->data._r64;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -427,12 +426,12 @@ void SLC_Matr64_TransConj(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_r64_t* dst_columnhead = dst->data._r64;
-    const SLC_r64_t* src_rowhead = dst->data._r64;
+    const SLC_r64_t* src_rowhead = src->data._r64;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
     {
-        SLC_r64_copy(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
+        SLC_r64_copyconj(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
         dst_columnhead++;
         src_rowhead += src_columns;
     }
@@ -477,7 +476,7 @@ SLC_errno_t SLC_Matr64_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
         SLC_r64_t* work_row_head = work->data._r64;
         SLC_r64_t* pivot_ptr = work_row_head;
         SLC_r64_t* work_row_center = work_row_head + src_columns;
-        SLC_r64_t* swap_buffer = work_row_head + src_rows;
+        SLC_r64_t* swap_buffer = work_row_head + src_rows * work_columns;
         SLC_r64_t* dst_row_head = dst->data._r64;
 
         // fill work matrix
@@ -522,17 +521,16 @@ SLC_errno_t SLC_Matr64_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
                     continue;
                 }
                 scaling = -(*work_row_head);
-                SLC_r64_scaleaddip(pivot_ptr, work_row_head, &scaling, remaining_work_columns);
+                SLC_r64_scaleaddip(work_row_head, pivot_ptr, &scaling, remaining_work_columns);
                 work_row_head += work_columns;
             }
-
             // move pivot to the next position
             pivot_ptr += work_columns + 1; // move to next row, next column
             swap_buffer++; // move to next column
         }
         if (err) break;
 
-        // copy inv-mat from work to dst
+        // copy inv-mat in the right half of work to dst
         work_row_center = work->data._r64 + src_columns;
         for (SLC_size_t row = 0; row < src_rows; row++)
         {
@@ -737,7 +735,7 @@ void SLC_Matc64_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_c64_t* s
 void SLC_Matc64_Scale(SLC_PArray_t dst, SLC_PArray_t src, const SLC_c64_t *scale)
 {
     assert(SLC_Array_SameSize2D(dst, src));
-    SLC_c64_scalesubs(dst->data._c64, scale, src->data._c64,
+    SLC_c64_scalesubs(dst->data._c64, src->data._c64, scale,
         ((SLC_size_t)dst->cont.i16[1])*((SLC_size_t)dst->cont.i16[2]));
 }
 
@@ -768,7 +766,7 @@ void SLC_Matc64_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_c64_t* dst_columnhead = dst->data._c64;
-    const SLC_c64_t* src_rowhead = dst->data._c64;
+    const SLC_c64_t* src_rowhead = src->data._c64;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -783,12 +781,12 @@ void SLC_Matc64_TransConj(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_c64_t* dst_columnhead = dst->data._c64;
-    const SLC_c64_t* src_rowhead = dst->data._c64;
+    const SLC_c64_t* src_rowhead = src->data._c64;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
     {
-        SLC_c64_copy(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
+        SLC_c64_copyconj(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
         dst_columnhead++;
         src_rowhead += src_columns;
     }
@@ -833,7 +831,7 @@ SLC_errno_t SLC_Matc64_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
         SLC_c64_t* work_row_head = work->data._c64;
         SLC_c64_t* pivot_ptr = work_row_head;
         SLC_c64_t* work_row_center = work_row_head + src_columns;
-        SLC_c64_t* swap_buffer = work_row_head + src_rows;
+        SLC_c64_t* swap_buffer = work_row_head + src_rows * work_columns;
         SLC_c64_t* dst_row_head = dst->data._c64;
 
         // fill work matrix
@@ -878,17 +876,16 @@ SLC_errno_t SLC_Matc64_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t work
                     continue;
                 }
                 scaling = -(*work_row_head);
-                SLC_c64_scaleaddip(pivot_ptr, work_row_head, &scaling, remaining_work_columns);
+                SLC_c64_scaleaddip(work_row_head, pivot_ptr, &scaling, remaining_work_columns);
                 work_row_head += work_columns;
             }
-
             // move pivot to the next position
             pivot_ptr += work_columns + 1; // move to next row, next column
             swap_buffer++; // move to next column
         }
         if (err) break;
 
-        // copy inv-mat from work to dst
+        // copy inv-mat in the right half of work to dst
         work_row_center = work->data._c64 + src_columns;
         for (SLC_size_t row = 0; row < src_rows; row++)
         {
@@ -1093,7 +1090,7 @@ void SLC_Matc128_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_c128_t*
 void SLC_Matc128_Scale(SLC_PArray_t dst, SLC_PArray_t src, const SLC_c128_t *scale)
 {
     assert(SLC_Array_SameSize2D(dst, src));
-    SLC_c128_scalesubs(dst->data._c128, scale, src->data._c128,
+    SLC_c128_scalesubs(dst->data._c128, src->data._c128, scale,
         ((SLC_size_t)dst->cont.i16[1])*((SLC_size_t)dst->cont.i16[2]));
 }
 
@@ -1124,7 +1121,7 @@ void SLC_Matc128_Transpose(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_c128_t* dst_columnhead = dst->data._c128;
-    const SLC_c128_t* src_rowhead = dst->data._c128;
+    const SLC_c128_t* src_rowhead = src->data._c128;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
@@ -1139,12 +1136,12 @@ void SLC_Matc128_TransConj(SLC_PArray_t dst, SLC_PArray_t src)
 {
     assert(SLC_Array_TransposedSize2D(dst, src));
     SLC_c128_t* dst_columnhead = dst->data._c128;
-    const SLC_c128_t* src_rowhead = dst->data._c128;
+    const SLC_c128_t* src_rowhead = src->data._c128;
     SLC_size_t dst_columns = SLC_Array_MatColumns(dst);
     SLC_size_t src_columns = SLC_Array_MatColumns(src);
     for (SLC_size_t dst_column = 0; dst_column < dst_columns; dst_column++)
     {
-        SLC_c128_copy(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
+        SLC_c128_copyconj(dst_columnhead, dst_columns, src_rowhead, 1, src_columns);
         dst_columnhead++;
         src_rowhead += src_columns;
     }
@@ -1189,7 +1186,7 @@ SLC_errno_t SLC_Matc128_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t wor
         SLC_c128_t* work_row_head = work->data._c128;
         SLC_c128_t* pivot_ptr = work_row_head;
         SLC_c128_t* work_row_center = work_row_head + src_columns;
-        SLC_c128_t* swap_buffer = work_row_head + src_rows;
+        SLC_c128_t* swap_buffer = work_row_head + src_rows * work_columns;
         SLC_c128_t* dst_row_head = dst->data._c128;
 
         // fill work matrix
@@ -1234,17 +1231,16 @@ SLC_errno_t SLC_Matc128_Inv(SLC_PArray_t dst, SLC_PArray_t src, SLC_PArray_t wor
                     continue;
                 }
                 scaling = -(*work_row_head);
-                SLC_c128_scaleaddip(pivot_ptr, work_row_head, &scaling, remaining_work_columns);
+                SLC_c128_scaleaddip(work_row_head, pivot_ptr, &scaling, remaining_work_columns);
                 work_row_head += work_columns;
             }
-
             // move pivot to the next position
             pivot_ptr += work_columns + 1; // move to next row, next column
             swap_buffer++; // move to next column
         }
         if (err) break;
 
-        // copy inv-mat from work to dst
+        // copy inv-mat in the right half of work to dst
         work_row_center = work->data._c128 + src_columns;
         for (SLC_size_t row = 0; row < src_rows; row++)
         {

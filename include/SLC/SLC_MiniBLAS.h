@@ -41,6 +41,12 @@ void SLC_r32_scaleaddsubs(
 // element-by-element product
 void SLC_r32_multyplyebesubs(SLC_r32_t* dst, const SLC_r32_t* src0, const SLC_r32_t* src1, SLC_size_t count);
 
+void SLC_r32_copyconj(
+    SLC_r32_t* dst, SLC_size_t dst_step,
+    const SLC_r32_t* src, SLC_size_t src_step,
+    SLC_size_t count
+);
+
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
 // inner product (sum(src0[]*conj(src1[])))
 SLC_r32_t SLC_r32_innerproduct(const SLC_r32_t* src0, const SLC_r32_t* src1, SLC_size_t count);
@@ -94,6 +100,12 @@ void SLC_r64_scaleaddsubs(
 // element-by-element operation has a secondary postfix L'ebe'
 // element-by-element product
 void SLC_r64_multyplyebesubs(SLC_r64_t* dst, const SLC_r64_t* src0, const SLC_r64_t* src1, SLC_size_t count);
+
+void SLC_r64_copyconj(
+    SLC_r64_t* dst, SLC_size_t dst_step,
+    const SLC_r64_t* src, SLC_size_t src_step,
+    SLC_size_t count
+);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
 // inner product (sum(src0[]*conj(src1[])))
@@ -149,6 +161,12 @@ void SLC_c64_scaleaddsubs(
 // element-by-element product
 void SLC_c64_multyplyebesubs(SLC_c64_t* dst, const SLC_c64_t* src0, const SLC_c64_t* src1, SLC_size_t count);
 
+void SLC_c64_copyconj(
+    SLC_c64_t* dst, SLC_size_t dst_step,
+    const SLC_c64_t* src, SLC_size_t src_step,
+    SLC_size_t count
+);
+
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
 // inner product (sum(src0[]*conj(src1[])))
 SLC_c64_t SLC_c64_innerproduct(const SLC_c64_t* src0, const SLC_c64_t* src1, SLC_size_t count);
@@ -202,6 +220,12 @@ void SLC_c128_scaleaddsubs(
 // element-by-element operation has a secondary postfix L'ebe'
 // element-by-element product
 void SLC_c128_multyplyebesubs(SLC_c128_t* dst, const SLC_c128_t* src0, const SLC_c128_t* src1, SLC_size_t count);
+
+void SLC_c128_copyconj(
+    SLC_c128_t* dst, SLC_size_t dst_step,
+    const SLC_c128_t* src, SLC_size_t src_step,
+    SLC_size_t count
+);
 
 //--- vector-in, scalar-out operation identifier does not have any postfix. ---
 // inner product (sum(src0[]*conj(src1[])))
