@@ -4,6 +4,7 @@
 #include "SLC/SLC_errno.h"
 
 #pragma region r32_functions
+// basic matrix operations
 void SLC_Matr32_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1);
 void SLC_Matr32_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_r32_t* scale0,
     SLC_PArray_t src1, const SLC_r32_t* scale1);
@@ -35,6 +36,7 @@ void SLC_Matr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
 #pragma endregion r32_functions
 
 #pragma region r64_functions
+// basic matrix operations
 void SLC_Matr64_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1);
 void SLC_Matr64_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_r64_t* scale0,
     SLC_PArray_t src1, const SLC_r64_t* scale1);
@@ -66,6 +68,7 @@ void SLC_Matr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
 #pragma endregion r64_functions
 
 #pragma region c64_functions
+// basic matrix operations
 void SLC_Matc64_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1);
 void SLC_Matc64_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_c64_t* scale0,
     SLC_PArray_t src1, const SLC_c64_t* scale1);
@@ -97,6 +100,7 @@ void SLC_Matc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
 #pragma endregion c64_functions
 
 #pragma region c128_functions
+// basic matrix operations
 void SLC_Matc128_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1);
 void SLC_Matc128_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_c128_t* scale0,
     SLC_PArray_t src1, const SLC_c128_t* scale1);

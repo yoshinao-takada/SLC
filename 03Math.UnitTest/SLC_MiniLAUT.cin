@@ -219,17 +219,60 @@ SLC_errno_t SLC_<NTID>_MiniLAUT(SLC_PCTestArgs_t args)
 #pragma endregion basic_matrix_operations
 #pragma region linear_equation_solvers
 typedef struct {
-    SLC_<NTID>_t matL[16], matR[16], matLredundant[24];
-    SLC_<NTID>_t matX[16]; // solution
+    SLC_4i16_t sizeL, sizeX;
+    SLC_<NTID>_t matL0[16], matL1[16], X[8];
 } <NTID>_MiniLASolverUTParams_t, *<NTID>_PMiniLASolverUTParams_t;
 typedef const <NTID>_MiniLASolverUTParams_t *<NTID>_PCMiniLASolverUTParams_t;
+
+SLC_errno_t SLC_<NTID>_MiniLASolveUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    <NTID>_PCMiniLASolverUTParams_t params = (<NTID>_PCMiniLASolverUTParams_t)(args->data);
+    SLC_4i16_t work2size = SLC_TransposedMatSize(params->sizeX);
+    SLC_4i16_t worksize = SLC_SolveWorkSize(params->sizeL, params->sizeX);
+    SLC_PArray_t L = SLC_Array_Alloc(params->sizeL);
+    SLC_PArray_t R = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t work = SLC_Array_Alloc(worksize);
+    SLC_PArray_t work2 = SLC_Array_Alloc(work2size);
+    SLC_i16_t rows = params->sizeL[2], columns = params->sizeL[1];
+    SLC_<NTID>_copy(L->data._<NTID>, 1, params->matL0, 1, (SLC_size_t)rows * (SLC_size_t)columns);
+    SLC_<NTID>_copy(X->data._<NTID>, 1, params->X, 1, (SLC_size_t)rows * (SLC_size_t)SLC_Array_MatColumns(X));
+    do {
+        // create R
+        SLC_Mat<NTID>_Mul(R, L, X, work2);
+        // clear X
+        SLC_<NTID>_set0(X->data._<NTID>, 1, (SLC_size_t)rows * (SLC_size_t)SLC_Array_MatColumns(X));
+        // solve the equation L * X = R
+        SLC_Mat<NTID>_Solve(X, L, R, work);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = (SLC_size_t)column + (SLC_size_t)SLC_Array_MatColumns(X) * (SLC_size_t)row;
+                if (!SLC_<NTID>_areequal(params->X[index], X->data._<NTID>[index], SLC_<NTID>_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s,%d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    free(L);
+    free(R);
+    free(X);
+    free(work);
+    return err;
+}
 
 SLC_errno_t SLC_<NTID>_MiniLASolverUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
-    <NTID>_PCMiniLASolverUTParams_t params = (<NTID>_PCMiniLASolverUTParams_t)(args->data);
     do {
-
+        SLC_test2(err, SLC_<NTID>_MiniLASolveUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

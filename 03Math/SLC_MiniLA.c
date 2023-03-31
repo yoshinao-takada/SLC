@@ -203,6 +203,7 @@ SLC_errno_t SLC_Matr32_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
     assert(SLC_Array_MatRows(work) == (SLC_Array_MatRows(left) + 1));
     assert(SLC_Array_MatColumns(work) == (SLC_Array_MatColumns(left) + SLC_Array_MatColumns(right)));
     SLC_size_t left_rows = SLC_Array_MatRows(left);
+    SLC_size_t left_columns = SLC_Array_MatColumns(left);
     SLC_size_t right_columns = SLC_Array_MatColumns(right);
     SLC_size_t work_columns = SLC_Array_MatColumns(work);
     SLC_r32_t* work_row_head = work->data._r32;
@@ -218,6 +219,8 @@ SLC_errno_t SLC_Matr32_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             SLC_r32_copy(work_row_head, 1, left_row_head, 1, left_rows);
             SLC_r32_copy(work_row_head + left_rows, 1, right_row_head, 1, right_columns);
             work_row_head += work_columns;
+            left_row_head += left_columns;
+            right_row_head += right_columns;
         }
 
         // upper triangulation
@@ -254,12 +257,12 @@ SLC_errno_t SLC_Matr32_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             swap_buffer++;
         }
         if (err) break;
-
         // backward substitution
         SLC_size_t row = left_rows;
         work_row_head = work->data._r32 + left_rows * work_columns + left_rows;
         work_right_head += left_rows * work_columns;
         dst_row_head += right_columns * left_rows; // move to end (just outside)
+        SLC_size_t solved_count = 0;
         do {            
             --row;
             work_row_head -= (work_columns + 1);
@@ -268,12 +271,13 @@ SLC_errno_t SLC_Matr32_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             for (SLC_size_t dst_column = 0; dst_column < right_columns; dst_column++)
             {
                 dst_row_head[dst_column] = work_right_head[dst_column];
-                for (SLC_size_t work_column = 1; work_column < left_rows; work_column++)
+                for (SLC_size_t work_column = 1; work_column <= solved_count; work_column++)
                 {
                     dst_row_head[dst_column] -= 
-                        work_right_head[dst_column + work_column * right_columns] / work_row_head[work_column];
+                        dst_row_head[dst_column + right_columns * work_column] * work_row_head[work_column];
                 }
             }
+            solved_count++;
         } while (row != 0);
     } while (0);
     return err;
@@ -351,7 +355,8 @@ void SLC_Matr32_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_r32_print(out, delimiter, *ptr++);
+            SLC_r32_print(out, delimiter, *ptr);
+            ptr++;
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -558,6 +563,7 @@ SLC_errno_t SLC_Matr64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
     assert(SLC_Array_MatRows(work) == (SLC_Array_MatRows(left) + 1));
     assert(SLC_Array_MatColumns(work) == (SLC_Array_MatColumns(left) + SLC_Array_MatColumns(right)));
     SLC_size_t left_rows = SLC_Array_MatRows(left);
+    SLC_size_t left_columns = SLC_Array_MatColumns(left);
     SLC_size_t right_columns = SLC_Array_MatColumns(right);
     SLC_size_t work_columns = SLC_Array_MatColumns(work);
     SLC_r64_t* work_row_head = work->data._r64;
@@ -573,6 +579,8 @@ SLC_errno_t SLC_Matr64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             SLC_r64_copy(work_row_head, 1, left_row_head, 1, left_rows);
             SLC_r64_copy(work_row_head + left_rows, 1, right_row_head, 1, right_columns);
             work_row_head += work_columns;
+            left_row_head += left_columns;
+            right_row_head += right_columns;
         }
 
         // upper triangulation
@@ -609,12 +617,12 @@ SLC_errno_t SLC_Matr64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             swap_buffer++;
         }
         if (err) break;
-
         // backward substitution
         SLC_size_t row = left_rows;
         work_row_head = work->data._r64 + left_rows * work_columns + left_rows;
         work_right_head += left_rows * work_columns;
         dst_row_head += right_columns * left_rows; // move to end (just outside)
+        SLC_size_t solved_count = 0;
         do {            
             --row;
             work_row_head -= (work_columns + 1);
@@ -623,12 +631,13 @@ SLC_errno_t SLC_Matr64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             for (SLC_size_t dst_column = 0; dst_column < right_columns; dst_column++)
             {
                 dst_row_head[dst_column] = work_right_head[dst_column];
-                for (SLC_size_t work_column = 1; work_column < left_rows; work_column++)
+                for (SLC_size_t work_column = 1; work_column <= solved_count; work_column++)
                 {
                     dst_row_head[dst_column] -= 
-                        work_right_head[dst_column + work_column * right_columns] / work_row_head[work_column];
+                        dst_row_head[dst_column + right_columns * work_column] * work_row_head[work_column];
                 }
             }
+            solved_count++;
         } while (row != 0);
     } while (0);
     return err;
@@ -706,7 +715,8 @@ void SLC_Matr64_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_r64_print(out, delimiter, *ptr++);
+            SLC_r64_print(out, delimiter, *ptr);
+            ptr++;
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -913,6 +923,7 @@ SLC_errno_t SLC_Matc64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
     assert(SLC_Array_MatRows(work) == (SLC_Array_MatRows(left) + 1));
     assert(SLC_Array_MatColumns(work) == (SLC_Array_MatColumns(left) + SLC_Array_MatColumns(right)));
     SLC_size_t left_rows = SLC_Array_MatRows(left);
+    SLC_size_t left_columns = SLC_Array_MatColumns(left);
     SLC_size_t right_columns = SLC_Array_MatColumns(right);
     SLC_size_t work_columns = SLC_Array_MatColumns(work);
     SLC_c64_t* work_row_head = work->data._c64;
@@ -928,6 +939,8 @@ SLC_errno_t SLC_Matc64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             SLC_c64_copy(work_row_head, 1, left_row_head, 1, left_rows);
             SLC_c64_copy(work_row_head + left_rows, 1, right_row_head, 1, right_columns);
             work_row_head += work_columns;
+            left_row_head += left_columns;
+            right_row_head += right_columns;
         }
 
         // upper triangulation
@@ -964,12 +977,12 @@ SLC_errno_t SLC_Matc64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             swap_buffer++;
         }
         if (err) break;
-
         // backward substitution
         SLC_size_t row = left_rows;
         work_row_head = work->data._c64 + left_rows * work_columns + left_rows;
         work_right_head += left_rows * work_columns;
         dst_row_head += right_columns * left_rows; // move to end (just outside)
+        SLC_size_t solved_count = 0;
         do {            
             --row;
             work_row_head -= (work_columns + 1);
@@ -978,12 +991,13 @@ SLC_errno_t SLC_Matc64_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t r
             for (SLC_size_t dst_column = 0; dst_column < right_columns; dst_column++)
             {
                 dst_row_head[dst_column] = work_right_head[dst_column];
-                for (SLC_size_t work_column = 1; work_column < left_rows; work_column++)
+                for (SLC_size_t work_column = 1; work_column <= solved_count; work_column++)
                 {
                     dst_row_head[dst_column] -= 
-                        work_right_head[dst_column + work_column * right_columns] / work_row_head[work_column];
+                        dst_row_head[dst_column + right_columns * work_column] * work_row_head[work_column];
                 }
             }
+            solved_count++;
         } while (row != 0);
     } while (0);
     return err;
@@ -1061,7 +1075,8 @@ void SLC_Matc64_Print(FILE* out, const char* header, SLC_PArray_t mat, const cha
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_c64_print(out, delimiter, *ptr++);
+            SLC_c64_print(out, delimiter, *ptr);
+            ptr++;
             delimiter = ",";
         }
         fprintf(out, "\n");
@@ -1268,6 +1283,7 @@ SLC_errno_t SLC_Matc128_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t 
     assert(SLC_Array_MatRows(work) == (SLC_Array_MatRows(left) + 1));
     assert(SLC_Array_MatColumns(work) == (SLC_Array_MatColumns(left) + SLC_Array_MatColumns(right)));
     SLC_size_t left_rows = SLC_Array_MatRows(left);
+    SLC_size_t left_columns = SLC_Array_MatColumns(left);
     SLC_size_t right_columns = SLC_Array_MatColumns(right);
     SLC_size_t work_columns = SLC_Array_MatColumns(work);
     SLC_c128_t* work_row_head = work->data._c128;
@@ -1283,6 +1299,8 @@ SLC_errno_t SLC_Matc128_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t 
             SLC_c128_copy(work_row_head, 1, left_row_head, 1, left_rows);
             SLC_c128_copy(work_row_head + left_rows, 1, right_row_head, 1, right_columns);
             work_row_head += work_columns;
+            left_row_head += left_columns;
+            right_row_head += right_columns;
         }
 
         // upper triangulation
@@ -1319,12 +1337,12 @@ SLC_errno_t SLC_Matc128_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t 
             swap_buffer++;
         }
         if (err) break;
-
         // backward substitution
         SLC_size_t row = left_rows;
         work_row_head = work->data._c128 + left_rows * work_columns + left_rows;
         work_right_head += left_rows * work_columns;
         dst_row_head += right_columns * left_rows; // move to end (just outside)
+        SLC_size_t solved_count = 0;
         do {            
             --row;
             work_row_head -= (work_columns + 1);
@@ -1333,12 +1351,13 @@ SLC_errno_t SLC_Matc128_Solve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray_t 
             for (SLC_size_t dst_column = 0; dst_column < right_columns; dst_column++)
             {
                 dst_row_head[dst_column] = work_right_head[dst_column];
-                for (SLC_size_t work_column = 1; work_column < left_rows; work_column++)
+                for (SLC_size_t work_column = 1; work_column <= solved_count; work_column++)
                 {
                     dst_row_head[dst_column] -= 
-                        work_right_head[dst_column + work_column * right_columns] / work_row_head[work_column];
+                        dst_row_head[dst_column + right_columns * work_column] * work_row_head[work_column];
                 }
             }
+            solved_count++;
         } while (row != 0);
     } while (0);
     return err;
@@ -1416,7 +1435,8 @@ void SLC_Matc128_Print(FILE* out, const char* header, SLC_PArray_t mat, const ch
         const char* delimiter = "";
         for (SLC_i16_t column = 0; column < mat->cont.i16[1]; column++)
         {
-            SLC_c128_print(out, delimiter, *ptr++);
+            SLC_c128_print(out, delimiter, *ptr);
+            ptr++;
             delimiter = ",";
         }
         fprintf(out, "\n");

@@ -1,4 +1,5 @@
 #pragma region <NTID>_functions
+// basic matrix operations
 void SLC_Mat<NTID>_Add(SLC_PArray_t dst, SLC_PArray_t src0, SLC_PArray_t src1);
 void SLC_Mat<NTID>_ScaleAdd(SLC_PArray_t dst, SLC_PArray_t src0, const SLC_<NTID>_t* scale0,
     SLC_PArray_t src1, const SLC_<NTID>_t* scale1);
