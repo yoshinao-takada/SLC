@@ -288,7 +288,7 @@ SLC_errno_t SLC_Matr32_EasySolve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray
     SLC_i16_t element_size = left->cont.i16[0];
     SLC_i16_t left_columns = left->cont.i16[1];
     SLC_i16_t right_columns = right->cont.i16[1];
-    SLC_4i16_t work_size = { element_size, left_columns + right_columns, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(left->cont.i16, right->cont.i16);
     SLC_PArray_t work = SLC_Array_Alloca(work_size);
     SLC_Matr32_Solve(dst, left, right, work);
 }
@@ -299,11 +299,11 @@ SLC_errno_t SLC_Matr32_EasySolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArr
     assert(SLC_unitsizes[(SLC_size_t)SLC_r32] == SLC_Array_UnitSize(dst));
     assert(SLC_unitsizes[(SLC_size_t)SLC_r32] == SLC_Array_UnitSize(left));
     assert(SLC_unitsizes[(SLC_size_t)SLC_r32] == SLC_Array_UnitSize(right));
-    SLC_4i16_t leftT_size = { left->cont.i16[0], left->cont.i16[2], left->cont.i16[1], 1 };
-    SLC_4i16_t rightT_size = { right->cont.i16[0], right->cont.i16[2], right->cont.i16[1], 1 };
-    SLC_4i16_t work_size = { left->cont.i16[0], left->cont.i16[1] * 2, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t leftT_size = SLC_TransposedMatSize(left->cont.i16);
+    SLC_4i16_t rightT_size = SLC_TransposedMatSize(right->cont.i16);
     SLC_4i16_t leftTC_left_size = { left->cont.i16[0], left->cont.i16[1], leftT_size[2], 1 };
     SLC_4i16_t leftTC_right_size = { left->cont.i16[0], right->cont.i16[1], leftT_size[2], 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(leftTC_left_size, leftTC_right_size);
     SLC_PArray_t leftT = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC_left = SLC_Array_Alloc(leftTC_left_size);
@@ -648,7 +648,7 @@ SLC_errno_t SLC_Matr64_EasySolve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray
     SLC_i16_t element_size = left->cont.i16[0];
     SLC_i16_t left_columns = left->cont.i16[1];
     SLC_i16_t right_columns = right->cont.i16[1];
-    SLC_4i16_t work_size = { element_size, left_columns + right_columns, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(left->cont.i16, right->cont.i16);
     SLC_PArray_t work = SLC_Array_Alloca(work_size);
     SLC_Matr64_Solve(dst, left, right, work);
 }
@@ -659,11 +659,11 @@ SLC_errno_t SLC_Matr64_EasySolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArr
     assert(SLC_unitsizes[(SLC_size_t)SLC_r64] == SLC_Array_UnitSize(dst));
     assert(SLC_unitsizes[(SLC_size_t)SLC_r64] == SLC_Array_UnitSize(left));
     assert(SLC_unitsizes[(SLC_size_t)SLC_r64] == SLC_Array_UnitSize(right));
-    SLC_4i16_t leftT_size = { left->cont.i16[0], left->cont.i16[2], left->cont.i16[1], 1 };
-    SLC_4i16_t rightT_size = { right->cont.i16[0], right->cont.i16[2], right->cont.i16[1], 1 };
-    SLC_4i16_t work_size = { left->cont.i16[0], left->cont.i16[1] * 2, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t leftT_size = SLC_TransposedMatSize(left->cont.i16);
+    SLC_4i16_t rightT_size = SLC_TransposedMatSize(right->cont.i16);
     SLC_4i16_t leftTC_left_size = { left->cont.i16[0], left->cont.i16[1], leftT_size[2], 1 };
     SLC_4i16_t leftTC_right_size = { left->cont.i16[0], right->cont.i16[1], leftT_size[2], 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(leftTC_left_size, leftTC_right_size);
     SLC_PArray_t leftT = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC_left = SLC_Array_Alloc(leftTC_left_size);
@@ -1008,7 +1008,7 @@ SLC_errno_t SLC_Matc64_EasySolve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArray
     SLC_i16_t element_size = left->cont.i16[0];
     SLC_i16_t left_columns = left->cont.i16[1];
     SLC_i16_t right_columns = right->cont.i16[1];
-    SLC_4i16_t work_size = { element_size, left_columns + right_columns, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(left->cont.i16, right->cont.i16);
     SLC_PArray_t work = SLC_Array_Alloca(work_size);
     SLC_Matc64_Solve(dst, left, right, work);
 }
@@ -1019,11 +1019,11 @@ SLC_errno_t SLC_Matc64_EasySolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArr
     assert(SLC_unitsizes[(SLC_size_t)SLC_c64] == SLC_Array_UnitSize(dst));
     assert(SLC_unitsizes[(SLC_size_t)SLC_c64] == SLC_Array_UnitSize(left));
     assert(SLC_unitsizes[(SLC_size_t)SLC_c64] == SLC_Array_UnitSize(right));
-    SLC_4i16_t leftT_size = { left->cont.i16[0], left->cont.i16[2], left->cont.i16[1], 1 };
-    SLC_4i16_t rightT_size = { right->cont.i16[0], right->cont.i16[2], right->cont.i16[1], 1 };
-    SLC_4i16_t work_size = { left->cont.i16[0], left->cont.i16[1] * 2, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t leftT_size = SLC_TransposedMatSize(left->cont.i16);
+    SLC_4i16_t rightT_size = SLC_TransposedMatSize(right->cont.i16);
     SLC_4i16_t leftTC_left_size = { left->cont.i16[0], left->cont.i16[1], leftT_size[2], 1 };
     SLC_4i16_t leftTC_right_size = { left->cont.i16[0], right->cont.i16[1], leftT_size[2], 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(leftTC_left_size, leftTC_right_size);
     SLC_PArray_t leftT = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC_left = SLC_Array_Alloc(leftTC_left_size);
@@ -1368,7 +1368,7 @@ SLC_errno_t SLC_Matc128_EasySolve(SLC_PArray_t dst, SLC_PArray_t left, SLC_PArra
     SLC_i16_t element_size = left->cont.i16[0];
     SLC_i16_t left_columns = left->cont.i16[1];
     SLC_i16_t right_columns = right->cont.i16[1];
-    SLC_4i16_t work_size = { element_size, left_columns + right_columns, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(left->cont.i16, right->cont.i16);
     SLC_PArray_t work = SLC_Array_Alloca(work_size);
     SLC_Matc128_Solve(dst, left, right, work);
 }
@@ -1379,11 +1379,11 @@ SLC_errno_t SLC_Matc128_EasySolveOD(SLC_PArray_t dst, SLC_PArray_t left, SLC_PAr
     assert(SLC_unitsizes[(SLC_size_t)SLC_c128] == SLC_Array_UnitSize(dst));
     assert(SLC_unitsizes[(SLC_size_t)SLC_c128] == SLC_Array_UnitSize(left));
     assert(SLC_unitsizes[(SLC_size_t)SLC_c128] == SLC_Array_UnitSize(right));
-    SLC_4i16_t leftT_size = { left->cont.i16[0], left->cont.i16[2], left->cont.i16[1], 1 };
-    SLC_4i16_t rightT_size = { right->cont.i16[0], right->cont.i16[2], right->cont.i16[1], 1 };
-    SLC_4i16_t work_size = { left->cont.i16[0], left->cont.i16[1] * 2, left->cont.i16[2] + 1, 1 };
+    SLC_4i16_t leftT_size = SLC_TransposedMatSize(left->cont.i16);
+    SLC_4i16_t rightT_size = SLC_TransposedMatSize(right->cont.i16);
     SLC_4i16_t leftTC_left_size = { left->cont.i16[0], left->cont.i16[1], leftT_size[2], 1 };
     SLC_4i16_t leftTC_right_size = { left->cont.i16[0], right->cont.i16[1], leftT_size[2], 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(leftTC_left_size, leftTC_right_size);
     SLC_PArray_t leftT = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC = SLC_Array_Alloc(leftT_size);
     SLC_PArray_t leftTC_left = SLC_Array_Alloc(leftTC_left_size);

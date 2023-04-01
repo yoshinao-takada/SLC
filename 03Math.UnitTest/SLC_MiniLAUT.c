@@ -272,6 +272,133 @@ SLC_errno_t SLC_r32_MiniLASolveUT(SLC_PCTestArgs_t args)
     free(R);
     free(X);
     free(work);
+    free(work2);
+    return err;
+}
+
+SLC_errno_t SLC_r32_MiniLAEasySolveUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r32_PCMiniLASolverUTParams_t params = (r32_PCMiniLASolverUTParams_t)(args->data);
+    SLC_4i16_t xt_size = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t L = SLC_Array_Alloc(params->sizeL);
+    SLC_PArray_t R = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloc(params->sizeX);
+    SLC_size_t eqdim = params->sizeL[1];
+    SLC_size_t sol_count = params->sizeX[1];
+    do {
+        SLC_PArray_t xt_work = SLC_Array_Alloca(xt_size);
+        SLC_r32_copy(L->data._r32, 1, params->matL0, 1, eqdim*eqdim);
+        SLC_r32_copy(X->data._r32, 1, params->X, 1, eqdim*sol_count);
+        SLC_Matr32_Mul(R, L, X, xt_work);
+        SLC_r32_set0(X->data._r32, 1, sol_count);
+        SLC_Matr32_EasySolve(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r32_areequal(params->X[index], X->data._r32[index], SLC_r32_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while(0);
+    SLC_testend(err, __func__, __LINE__);
+    free(L);
+    free(R);
+    free(X);
+    return err;
+}
+
+void SLC_r32_MiniLACreateODEquations(SLC_PArray_t* pR, SLC_PArray_t* pL, r32_PCMiniLASolverUTParams_t params)
+{
+    SLC_4i16_t sizeL = { params->sizeL[0], params->sizeL[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeR = { params->sizeL[0], params->sizeX[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeTX = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+    SLC_PArray_t TX_work = SLC_Array_Alloca(sizeTX);
+
+    *pL = SLC_Array_Alloc(sizeL);
+    *pR = SLC_Array_Alloc(sizeR);
+    SLC_size_t single_mat_size = params->sizeL[1]*params->sizeL[2];
+    SLC_size_t xsize = params->sizeX[1] * params->sizeX[2];
+    SLC_r32_copy((*pL)->data._r32, 1, params->matL0, 1, single_mat_size);
+    SLC_r32_copy((*pL)->data._r32 + single_mat_size, 1, params->matL1, 1, single_mat_size);
+    SLC_r32_copy(X->data._r32, 1, params->X, 1, xsize);
+    SLC_Matr32_Mul(*pR, *pL, X, TX_work);    
+}
+
+SLC_errno_t SLC_r32_MiniLASolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r32_PCMiniLASolverUTParams_t params = (r32_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_r32_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_4i16_t sizeTransposedL = SLC_TransposedMatSize(L->cont.i16);
+        SLC_4i16_t sizeTransposedR = SLC_TransposedMatSize(R->cont.i16);
+        SLC_4i16_t sizeTransposedX = SLC_TransposedMatSize(params->sizeX);
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_PArray_t LT = SLC_Array_Alloca(sizeTransposedL), LTC = SLC_Array_Alloca(sizeTransposedL);
+        SLC_PArray_t LTC_L = SLC_Array_Alloca(params->sizeL);
+        SLC_PArray_t RT = SLC_Array_Alloca(sizeTransposedR);
+        SLC_PArray_t LTC_R = SLC_Array_Alloca(params->sizeX);
+        SLC_4i16_t worksize = SLC_SolveWorkSize(params->sizeL, params->sizeX);
+        SLC_PArray_t work = SLC_Array_Alloca(worksize);
+        SLC_Matr32_SolveOD(X, L, R, LT, LTC, LTC_L, RT, LTC_R, work);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r32_areequal(params->X[index], X->data._r32[index], SLC_r32_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_r32_MiniLAEasySolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r32_PCMiniLASolverUTParams_t params = (r32_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_r32_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_Matr32_EasySolveOD(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r32_areequal(params->X[index], X->data._r32[index], SLC_r32_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -280,6 +407,9 @@ SLC_errno_t SLC_r32_MiniLASolverUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     do {
         SLC_test2(err, SLC_r32_MiniLASolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r32_MiniLAEasySolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r32_MiniLASolveOD, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r32_MiniLAEasySolveOD, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -553,6 +683,133 @@ SLC_errno_t SLC_r64_MiniLASolveUT(SLC_PCTestArgs_t args)
     free(R);
     free(X);
     free(work);
+    free(work2);
+    return err;
+}
+
+SLC_errno_t SLC_r64_MiniLAEasySolveUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r64_PCMiniLASolverUTParams_t params = (r64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_4i16_t xt_size = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t L = SLC_Array_Alloc(params->sizeL);
+    SLC_PArray_t R = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloc(params->sizeX);
+    SLC_size_t eqdim = params->sizeL[1];
+    SLC_size_t sol_count = params->sizeX[1];
+    do {
+        SLC_PArray_t xt_work = SLC_Array_Alloca(xt_size);
+        SLC_r64_copy(L->data._r64, 1, params->matL0, 1, eqdim*eqdim);
+        SLC_r64_copy(X->data._r64, 1, params->X, 1, eqdim*sol_count);
+        SLC_Matr64_Mul(R, L, X, xt_work);
+        SLC_r64_set0(X->data._r64, 1, sol_count);
+        SLC_Matr64_EasySolve(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r64_areequal(params->X[index], X->data._r64[index], SLC_r64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while(0);
+    SLC_testend(err, __func__, __LINE__);
+    free(L);
+    free(R);
+    free(X);
+    return err;
+}
+
+void SLC_r64_MiniLACreateODEquations(SLC_PArray_t* pR, SLC_PArray_t* pL, r64_PCMiniLASolverUTParams_t params)
+{
+    SLC_4i16_t sizeL = { params->sizeL[0], params->sizeL[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeR = { params->sizeL[0], params->sizeX[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeTX = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+    SLC_PArray_t TX_work = SLC_Array_Alloca(sizeTX);
+
+    *pL = SLC_Array_Alloc(sizeL);
+    *pR = SLC_Array_Alloc(sizeR);
+    SLC_size_t single_mat_size = params->sizeL[1]*params->sizeL[2];
+    SLC_size_t xsize = params->sizeX[1] * params->sizeX[2];
+    SLC_r64_copy((*pL)->data._r64, 1, params->matL0, 1, single_mat_size);
+    SLC_r64_copy((*pL)->data._r64 + single_mat_size, 1, params->matL1, 1, single_mat_size);
+    SLC_r64_copy(X->data._r64, 1, params->X, 1, xsize);
+    SLC_Matr64_Mul(*pR, *pL, X, TX_work);    
+}
+
+SLC_errno_t SLC_r64_MiniLASolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r64_PCMiniLASolverUTParams_t params = (r64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_r64_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_4i16_t sizeTransposedL = SLC_TransposedMatSize(L->cont.i16);
+        SLC_4i16_t sizeTransposedR = SLC_TransposedMatSize(R->cont.i16);
+        SLC_4i16_t sizeTransposedX = SLC_TransposedMatSize(params->sizeX);
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_PArray_t LT = SLC_Array_Alloca(sizeTransposedL), LTC = SLC_Array_Alloca(sizeTransposedL);
+        SLC_PArray_t LTC_L = SLC_Array_Alloca(params->sizeL);
+        SLC_PArray_t RT = SLC_Array_Alloca(sizeTransposedR);
+        SLC_PArray_t LTC_R = SLC_Array_Alloca(params->sizeX);
+        SLC_4i16_t worksize = SLC_SolveWorkSize(params->sizeL, params->sizeX);
+        SLC_PArray_t work = SLC_Array_Alloca(worksize);
+        SLC_Matr64_SolveOD(X, L, R, LT, LTC, LTC_L, RT, LTC_R, work);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r64_areequal(params->X[index], X->data._r64[index], SLC_r64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_r64_MiniLAEasySolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    r64_PCMiniLASolverUTParams_t params = (r64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_r64_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_Matr64_EasySolveOD(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_r64_areequal(params->X[index], X->data._r64[index], SLC_r64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -561,6 +818,9 @@ SLC_errno_t SLC_r64_MiniLASolverUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     do {
         SLC_test2(err, SLC_r64_MiniLASolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_MiniLAEasySolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_MiniLASolveOD, args, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_MiniLAEasySolveOD, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -834,6 +1094,133 @@ SLC_errno_t SLC_c64_MiniLASolveUT(SLC_PCTestArgs_t args)
     free(R);
     free(X);
     free(work);
+    free(work2);
+    return err;
+}
+
+SLC_errno_t SLC_c64_MiniLAEasySolveUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c64_PCMiniLASolverUTParams_t params = (c64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_4i16_t xt_size = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t L = SLC_Array_Alloc(params->sizeL);
+    SLC_PArray_t R = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloc(params->sizeX);
+    SLC_size_t eqdim = params->sizeL[1];
+    SLC_size_t sol_count = params->sizeX[1];
+    do {
+        SLC_PArray_t xt_work = SLC_Array_Alloca(xt_size);
+        SLC_c64_copy(L->data._c64, 1, params->matL0, 1, eqdim*eqdim);
+        SLC_c64_copy(X->data._c64, 1, params->X, 1, eqdim*sol_count);
+        SLC_Matc64_Mul(R, L, X, xt_work);
+        SLC_c64_set0(X->data._c64, 1, sol_count);
+        SLC_Matc64_EasySolve(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c64_areequal(params->X[index], X->data._c64[index], SLC_c64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while(0);
+    SLC_testend(err, __func__, __LINE__);
+    free(L);
+    free(R);
+    free(X);
+    return err;
+}
+
+void SLC_c64_MiniLACreateODEquations(SLC_PArray_t* pR, SLC_PArray_t* pL, c64_PCMiniLASolverUTParams_t params)
+{
+    SLC_4i16_t sizeL = { params->sizeL[0], params->sizeL[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeR = { params->sizeL[0], params->sizeX[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeTX = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+    SLC_PArray_t TX_work = SLC_Array_Alloca(sizeTX);
+
+    *pL = SLC_Array_Alloc(sizeL);
+    *pR = SLC_Array_Alloc(sizeR);
+    SLC_size_t single_mat_size = params->sizeL[1]*params->sizeL[2];
+    SLC_size_t xsize = params->sizeX[1] * params->sizeX[2];
+    SLC_c64_copy((*pL)->data._c64, 1, params->matL0, 1, single_mat_size);
+    SLC_c64_copy((*pL)->data._c64 + single_mat_size, 1, params->matL1, 1, single_mat_size);
+    SLC_c64_copy(X->data._c64, 1, params->X, 1, xsize);
+    SLC_Matc64_Mul(*pR, *pL, X, TX_work);    
+}
+
+SLC_errno_t SLC_c64_MiniLASolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c64_PCMiniLASolverUTParams_t params = (c64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_c64_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_4i16_t sizeTransposedL = SLC_TransposedMatSize(L->cont.i16);
+        SLC_4i16_t sizeTransposedR = SLC_TransposedMatSize(R->cont.i16);
+        SLC_4i16_t sizeTransposedX = SLC_TransposedMatSize(params->sizeX);
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_PArray_t LT = SLC_Array_Alloca(sizeTransposedL), LTC = SLC_Array_Alloca(sizeTransposedL);
+        SLC_PArray_t LTC_L = SLC_Array_Alloca(params->sizeL);
+        SLC_PArray_t RT = SLC_Array_Alloca(sizeTransposedR);
+        SLC_PArray_t LTC_R = SLC_Array_Alloca(params->sizeX);
+        SLC_4i16_t worksize = SLC_SolveWorkSize(params->sizeL, params->sizeX);
+        SLC_PArray_t work = SLC_Array_Alloca(worksize);
+        SLC_Matc64_SolveOD(X, L, R, LT, LTC, LTC_L, RT, LTC_R, work);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c64_areequal(params->X[index], X->data._c64[index], SLC_c64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_c64_MiniLAEasySolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c64_PCMiniLASolverUTParams_t params = (c64_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_c64_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_Matc64_EasySolveOD(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c64_areequal(params->X[index], X->data._c64[index], SLC_c64_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -842,6 +1229,9 @@ SLC_errno_t SLC_c64_MiniLASolverUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     do {
         SLC_test2(err, SLC_c64_MiniLASolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c64_MiniLAEasySolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c64_MiniLASolveOD, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c64_MiniLAEasySolveOD, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -1115,6 +1505,133 @@ SLC_errno_t SLC_c128_MiniLASolveUT(SLC_PCTestArgs_t args)
     free(R);
     free(X);
     free(work);
+    free(work2);
+    return err;
+}
+
+SLC_errno_t SLC_c128_MiniLAEasySolveUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c128_PCMiniLASolverUTParams_t params = (c128_PCMiniLASolverUTParams_t)(args->data);
+    SLC_4i16_t xt_size = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t L = SLC_Array_Alloc(params->sizeL);
+    SLC_PArray_t R = SLC_Array_Alloc(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloc(params->sizeX);
+    SLC_size_t eqdim = params->sizeL[1];
+    SLC_size_t sol_count = params->sizeX[1];
+    do {
+        SLC_PArray_t xt_work = SLC_Array_Alloca(xt_size);
+        SLC_c128_copy(L->data._c128, 1, params->matL0, 1, eqdim*eqdim);
+        SLC_c128_copy(X->data._c128, 1, params->X, 1, eqdim*sol_count);
+        SLC_Matc128_Mul(R, L, X, xt_work);
+        SLC_c128_set0(X->data._c128, 1, sol_count);
+        SLC_Matc128_EasySolve(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c128_areequal(params->X[index], X->data._c128[index], SLC_c128_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while(0);
+    SLC_testend(err, __func__, __LINE__);
+    free(L);
+    free(R);
+    free(X);
+    return err;
+}
+
+void SLC_c128_MiniLACreateODEquations(SLC_PArray_t* pR, SLC_PArray_t* pL, c128_PCMiniLASolverUTParams_t params)
+{
+    SLC_4i16_t sizeL = { params->sizeL[0], params->sizeL[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeR = { params->sizeL[0], params->sizeX[1], 2 * params->sizeL[2], 1 };
+    SLC_4i16_t sizeTX = SLC_TransposedMatSize(params->sizeX);
+    SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+    SLC_PArray_t TX_work = SLC_Array_Alloca(sizeTX);
+
+    *pL = SLC_Array_Alloc(sizeL);
+    *pR = SLC_Array_Alloc(sizeR);
+    SLC_size_t single_mat_size = params->sizeL[1]*params->sizeL[2];
+    SLC_size_t xsize = params->sizeX[1] * params->sizeX[2];
+    SLC_c128_copy((*pL)->data._c128, 1, params->matL0, 1, single_mat_size);
+    SLC_c128_copy((*pL)->data._c128 + single_mat_size, 1, params->matL1, 1, single_mat_size);
+    SLC_c128_copy(X->data._c128, 1, params->X, 1, xsize);
+    SLC_Matc128_Mul(*pR, *pL, X, TX_work);    
+}
+
+SLC_errno_t SLC_c128_MiniLASolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c128_PCMiniLASolverUTParams_t params = (c128_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_c128_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_4i16_t sizeTransposedL = SLC_TransposedMatSize(L->cont.i16);
+        SLC_4i16_t sizeTransposedR = SLC_TransposedMatSize(R->cont.i16);
+        SLC_4i16_t sizeTransposedX = SLC_TransposedMatSize(params->sizeX);
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_PArray_t LT = SLC_Array_Alloca(sizeTransposedL), LTC = SLC_Array_Alloca(sizeTransposedL);
+        SLC_PArray_t LTC_L = SLC_Array_Alloca(params->sizeL);
+        SLC_PArray_t RT = SLC_Array_Alloca(sizeTransposedR);
+        SLC_PArray_t LTC_R = SLC_Array_Alloca(params->sizeX);
+        SLC_4i16_t worksize = SLC_SolveWorkSize(params->sizeL, params->sizeX);
+        SLC_PArray_t work = SLC_Array_Alloca(worksize);
+        SLC_Matc128_SolveOD(X, L, R, LT, LTC, LTC_L, RT, LTC_R, work);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c128_areequal(params->X[index], X->data._c128[index], SLC_c128_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_c128_MiniLAEasySolveOD(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    c128_PCMiniLASolverUTParams_t params = (c128_PCMiniLASolverUTParams_t)(args->data);
+    SLC_PArray_t R = NULL, L = NULL;
+    SLC_c128_MiniLACreateODEquations(&R, &L, params);
+    do {
+        SLC_PArray_t X = SLC_Array_Alloca(params->sizeX);
+        SLC_Matc128_EasySolveOD(X, L, R);
+        for (SLC_i16_t row = 0; row < SLC_Array_MatRows(X); row++)
+        {
+            for (SLC_i16_t column = 0; column < SLC_Array_MatColumns(X); column++)
+            {
+                SLC_size_t index = column + row * SLC_Array_MatColumns(X);
+                if (!SLC_c128_areequal(params->X[index], X->data._c128[index], SLC_c128_stdtol))
+                {
+                    err = EXIT_FAILURE;
+                    SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                    break;
+                }
+            }
+            if (err) break;
+        }
+    } while (0);
+    free(R);
+    free(L);
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -1123,6 +1640,9 @@ SLC_errno_t SLC_c128_MiniLASolverUT(SLC_PCTestArgs_t args)
     SLC_errno_t err = EXIT_SUCCESS;
     do {
         SLC_test2(err, SLC_c128_MiniLASolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c128_MiniLAEasySolveUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c128_MiniLASolveOD, args, __func__, __LINE__);
+        SLC_test2(err, SLC_c128_MiniLAEasySolveOD, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
