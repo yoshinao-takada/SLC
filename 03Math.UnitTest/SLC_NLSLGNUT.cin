@@ -1,0 +1,62 @@
+#pragma region UnitTest_for_Gauss-Newton_Nonlinear_solvers_with_base_number_type_<NTID>
+typedef struct {
+    SLC_<NTID>_t mat0[4], mat0_2[4];
+    SLC_<NTID>_t trace_mat0;
+    SLC_size_t cx, cy, cc;
+    SLC_GVVF_<NTID> objective;
+    SLC_GVVF_<NTID> jacobian[4];
+} NLSLGNUT_<NTID>_t, *PNLSLGNUT_<NTID>_t;
+typedef const NLSLGNUT_<NTID>_t *PCNLSLGNUT_<NTID>_t;
+
+SLC_errno_t Objective<NTID>(
+    SLC_<NTID>_t* y, SLC_size_t cy,
+    const SLC_<NTID>_t* x, SLC_size_t cx,
+    const SLC_<NTID>_t* c, SLC_size_t cc
+) {
+    return EXIT_SUCCESS;
+}
+
+
+SLC_errno_t J0<NTID>(
+    SLC_<NTID>_t* y, SLC_size_t cy,
+    const SLC_<NTID>_t* x, SLC_size_t cx,
+    const SLC_<NTID>_t* c, SLC_size_t cc
+) {
+    return EXIT_SUCCESS;
+}
+
+SLC_errno_t J1<NTID>(
+    SLC_<NTID>_t* y, SLC_size_t cy,
+    const SLC_<NTID>_t* x, SLC_size_t cx,
+    const SLC_<NTID>_t* c, SLC_size_t cc
+) {
+    return EXIT_SUCCESS;
+}
+
+SLC_errno_t J2<NTID>(
+    SLC_<NTID>_t* y, SLC_size_t cy,
+    const SLC_<NTID>_t* x, SLC_size_t cx,
+    const SLC_<NTID>_t* c, SLC_size_t cc
+) {
+    return EXIT_SUCCESS;
+}
+
+SLC_errno_t J3<NTID>(
+    SLC_<NTID>_t* y, SLC_size_t cy,
+    const SLC_<NTID>_t* x, SLC_size_t cx,
+    const SLC_<NTID>_t* c, SLC_size_t cc
+) {
+    return EXIT_SUCCESS;
+}
+
+SLC_errno_t SLC_NLSLGNUT<NTID>_Square_and_Trace(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    PCNLSLGNUT_<NTID>_t params = (PCNLSLGNUT_<NTID>_t)args->data;
+    do {
+
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+#pragma endregion UnitTest_for_Gauss-Newton_Nonlinear_solvers_with_base_number_type_<NTID>
