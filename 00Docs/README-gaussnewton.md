@@ -137,4 +137,64 @@ $\bold{x}$[4] | $s_\phi$
 Cartesian coordinate components, $x$, $y$, $z$ are given in `params` which is the last argument of
 the callback functions.
 
-
+## Practice 2: Self product and Trace of 2x2 Matrix
+Consider a problem to determine a 2x2 matrix $\bold{M}$ by giving the product of $\bold{M}$ and itself twice and $\text{trace}(\bold{M})$.
+$\bold{M}$ has four elements of arbitrary numbers as
+$$\begin{equation}
+\bold{M} = \begin{bmatrix}
+a & b \\ c & d
+\end{bmatrix}
+\end{equation}$$
+$$\begin{equation}
+\bold{M}\bold{M}=\begin{bmatrix}
+a^2+bc & ab+bd \\ ca+dc & cb+d^2
+\end{bmatrix} = \begin{bmatrix}
+P & Q \\ R & S
+\end{bmatrix}
+\end{equation}$$
+$$\begin{equation}
+\text{trace}(\bold{M})=a+d=T
+\end{equation}$$
+Rewriting (21) and (22) in a nonlinear simultaneos equation,
+$$\begin{equation}
+\bold{0}=\begin{bmatrix}
+a^2+bc-P \\ ab+bd-Q \\ ca+dc-R \\ cb+d^2-S \\ a+d-T
+\end{bmatrix}
+\end{equation}$$
+Jacobian 1st column is partial derivative of (23) by $a$,
+$$\begin{equation}\text{J}_{0}=\begin{bmatrix}
+2a \\ b \\ c \\ 0 \\ 1
+\end{bmatrix}\end{equation}$$
+Jacobian 2nd column is partial derivative of (23) by $b$,
+$$\begin{equation}\text{J}_{1}=\begin{bmatrix}
+c \\ a+d \\ 0 \\ c \\ 0
+\end{bmatrix}\end{equation}$$
+Jacobian 3rd column is partial derivative of (23) by $c$,
+$$\begin{equation}\text{J}_{2}=\begin{bmatrix}
+b \\ 0 \\ a+d \\ b \\ 0
+\end{bmatrix}\end{equation}$$
+Jacobian 4th column is partial derivative of (23) by $d$,
+$$\begin{equation}\text{J}_{3}=\begin{bmatrix}
+0 \\ b \\ c \\ 2d \\ 1
+\end{bmatrix}\end{equation}$$
+Combining the four columns, Jacobian is
+$$\begin{equation}\bold{J}=\begin{bmatrix}
+2a & c & b & 0 \\ b & a+d & 0 & b \\ c & 0 & a+d & c \\ 0 & c & b & 2d \\ 1 & 0 & 0 & 1
+\end{bmatrix}\end{equation}$$
+Replacing $(a, b, c, d)$ with $(x_0, x_1, x_2, x_3)$, the objective function $\bold{F}(\bold{x})$ is
+$$\begin{equation}
+\bold{F}(\bold{x}) = \begin{bmatrix}
+{x_0}^2+{x_1}{x_2}-P \\
+{x_0}{x_1}+{x_1}{x_3}-Q \\
+{x_2}{x_0}+{x_3}{x_2}-R \\
+{x_2}{x_1}+{x_3}^2-S \\
+{x_0}+{x_3}-T
+\end{bmatrix},
+\end{equation}$$
+$$\begin{equation}\bold{J}=\begin{bmatrix}
+2{x_0} & {x_2} & {x_1} & 0 \\
+{x_1} & {x_0}+{x_3} & 0 & {x_1} \\
+{x_2} & 0 & {x_0}+{x_3} & {x_2} \\
+0 & {x_2} & {x_1} & 2{x_3} \\
+1 & 0 & 0 & 1
+\end{bmatrix}\end{equation}$$

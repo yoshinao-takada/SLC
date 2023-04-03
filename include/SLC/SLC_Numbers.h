@@ -167,19 +167,19 @@ typedef void* SLC_16ptr_t[16];
 #define SLC_product8(__a) (__a)[0]*(__a)[1]*(__a)[2]*(__a)[3]*(__a)[4]*(__a)[5]*(__a)[6]*(__a)[7]
 
 #if !defined(_SLC_NUMBERS_C)
-extern SLC_i8_t SLC_i8_units[3];
-extern SLC_i16_t SLC_i16_units[3];
-extern SLC_i32_t SLC_i32_units[3];
-extern SLC_i64_t SLC_i64_units[3];
-extern SLC_u8_t SLC_u8_units[2];
-extern SLC_u16_t SLC_u16_units[2];
-extern SLC_u32_t SLC_u32_units[2];
-extern SLC_u64_t SLC_u64_units[2];
-extern SLC_r32_t SLC_r32_units[3];
-extern SLC_r64_t SLC_r64_units[3];
-extern SLC_c64_t SLC_c64_units[5];
-extern SLC_c128_t SLC_c128_units[5];
-extern SLC_bool_t SLC_bool_units[2];
+extern SLC_i8_t SLC_i8_units[3]; // { 0, 1, -1 }
+extern SLC_i16_t SLC_i16_units[3]; // { 0, 1, -1 }
+extern SLC_i32_t SLC_i32_units[3]; // { 0, 1, -1 }
+extern SLC_i64_t SLC_i64_units[3]; // { 0, 1, -1 }
+extern SLC_u8_t SLC_u8_units[2]; // { 0, 1 }
+extern SLC_u16_t SLC_u16_units[2]; // { 0, 1 }
+extern SLC_u32_t SLC_u32_units[2]; // { 0, 1 }
+extern SLC_u64_t SLC_u64_units[2]; // { 0, 1 }
+extern SLC_r32_t SLC_r32_units[3]; // { 0, 1, -1 }
+extern SLC_r64_t SLC_r64_units[3]; // { 0, 1, -1 }
+extern SLC_c64_t SLC_c64_units[5]; // { 0, (1+0j), (-1+0j), (0+j), (0-j) }
+extern SLC_c128_t SLC_c128_units[5]; // { 0, (1+0j), (-1+0j), (0+j), (0-j) }
+extern SLC_bool_t SLC_bool_units[2]; // { false, true }
 extern SLC_size_t SLC_unitsizes[];
 #endif
 

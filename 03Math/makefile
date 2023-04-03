@@ -5,7 +5,7 @@ OBJDIR = ../o
 DEBUG_OBJDIR = $(OBJDIR)/debug
 RELEASE_OBJDIR = $(OBJDIR)/release
 DEBUG_OBJECTS = $(DEBUG_OBJDIR)/SLC_MiniBLAS.o $(DEBUG_OBJDIR)/SLC_MiniLA.o \
-	$(DEBUG_OBJDIR)/SLC_Geometry.o
+	$(DEBUG_OBJDIR)/SLC_Geometry.o $(DEBUG_OBJDIR)/SLC_NLSLGN.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_OBJECTS)
@@ -19,6 +19,10 @@ $(DEBUG_OBJDIR)/SLC_MiniLA.o	:	SLC_MiniLA.c $(INCDIR)/SLC/SLC_MiniLA.h
 	$(CC) $(CFLAGS) -g -o $@ $<
 
 $(DEBUG_OBJDIR)/SLC_Geometry.o	:	SLC_Geometry.c $(INCDIR)/SLC/SLC_Geometry.h
+	mkdir -p $(DEBUG_OBJDIR)
+	$(CC) $(CFLAGS) -g -o $@ $<
+
+$(DEBUG_OBJDIR)/SLC_NLSLGN.o	:	SLC_NLSLGN.c $(INCDIR)/SLC/SLC_NLSLGN.h $(INCDIR)/SLC/SLC_NLSL.h
 	mkdir -p $(DEBUG_OBJDIR)
 	$(CC) $(CFLAGS) -g -o $@ $<
 
@@ -40,6 +44,14 @@ SLC_Geometry.c	:	SLC_Geometry.pp.js SLC_Geometry.cin
 $(INCDIR)/SLC/SLC_Geometry.h	:	SLC_Geometry.pp.js SLC_Geometry.hin
 	node $<
 
+SLC_NLSLGN.c	:	SLC_NLSLGN.pp.js SLC_NLSLGN.cin
+	node $<
+
+$(INCDIR)/SLC/SLC_NLSLGN.h	:	SLC_NLSLGN.pp.js SLC_NLSLGN.hin
+	node $<
+
+$(INCDIR)/SLC/SLC_NLSL.h	:	SLC_NLSL.pp.js SLC_NLSL.hin
+	node $<
 
 .PHONY	:	clean_debug
 clean_debug	:

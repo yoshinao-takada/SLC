@@ -46,6 +46,14 @@ void SLC_LogWriteErrHeader(SLC_errno_t err);
     SLC_LogWriteErrHeader(err); \
     fprintf(SLC_LogSink, __VA_ARGS__); \
 }
+// __var : evaluation target variable
+// __err : error number variable is set by this macro.
+// __file : file path; usually filled with __FILE__ macro.
+// __func : function name; usually filled with __func__ macro.
+// __line : line number where the error occurs. usually filled with __LINE__ macro.
+#define SLC_IfNullERR(__var, __err, __file, __func, __line) if (NULL == (__var)) { \
+    __err = ENOMEM; \
+    SLC_LogERR(err, "@ %s, %s, %d\n", __file, __func, __line); break; }
 
 // Info log output
 #define SLC_LogINF(...) if ((SLC_LogSink) && (SLC_LogLevel & (int)SLC_LogLevelINF)) { \

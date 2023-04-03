@@ -1,0 +1,235 @@
+#pragma region SLC_NLSLGNSolver<NTID>_implimentation
+struct SLC_NLSLGNSolver<NTID> {
+    // configuration parameters
+    SLC_NLSLGNConf<NTID>_t conf;
+
+    // working matrices
+    SLC_PArray_t 
+        _xcv_new, // renewed _xcv
+        _xcv, // X column vector
+        _delta_xcv, // 
+        _xcv_workT, // transposed _xcv size matrix for work area
+        _ycv, // Y column vector
+        _jcolbuf, // Jacobian column buffer
+        _j, _jtc; // Jacobian and its tranpose conjugate
+    SLC_PArray_t _jtworkT, _jtcworkT, _ycvworkT; // transposed work area for matrix multiplication
+    SLC_PArray_t _jtc_j; // product of transconj Jacobian and the Jacobian.
+    SLC_PArray_t  _inv_jtc_j; // and its inverse.
+    SLC_PArray_t _jtc_y; // prouct of transconj Jacobian and _y.
+    SLC_PArray_t _invwork; // work matrix for inverting matrices
+    
+    // convergence cliterion
+    SLC_<NTID>_t _xnorm, _ynorm;
+
+    // operating state
+    SLC_NLSLState_t state;
+};
+
+#define SAFEFREE(__var) if (__var) { free(__var); __var = NULL; }
+
+void FreeAllArrays<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SAFEFREE(solver->_xcv);
+    SAFEFREE(solver->_xcv_new);
+    SAFEFREE(solver->_delta_xcv);
+    SAFEFREE(solver->_xcv_workT);
+    SAFEFREE(solver->_ycv);
+    SAFEFREE(solver->_jcolbuf);
+    SAFEFREE(solver->_j);
+    SAFEFREE(solver->_jtc);
+    SAFEFREE(solver->_jtworkT);
+    SAFEFREE(solver->_jtcworkT);
+    SAFEFREE(solver->_ycvworkT);
+    SAFEFREE(solver->_jtc_j);
+    SAFEFREE(solver->_inv_jtc_j);
+    SAFEFREE(solver->_jtc_y);
+    SAFEFREE(solver->_invwork);
+}
+
+// create a new instance of a Gauss-Newton solver
+SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t cy, SLC_size_t cc)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PNLSLGNSolver<NTID>_t p = NULL;
+    do {
+        SLC_size_t alloc_size = 
+            SLC_ALIGN8(sizeof(SLC_NLSLGNSolver<NTID>_t)) + 
+            SLC_ALIGN8(sizeof(SLC_GVVF_<NTID>) * cx);
+        SLC_PNLSLGNSolver<NTID>_t p = aligned_alloc(8, alloc_size);
+        SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
+        p->conf.base.cx = cx;
+        p->conf.base.cy = cy;
+        p->conf.base.cc = cc;
+        p->conf.base.maxIter = 100;
+        p->conf.base.c = p->conf.base.xInitial = NULL;
+        p->conf.base.dxNormMax = cx * SLC_<NTID>_stdtol;
+        p->conf.base.yNormMax = cy * (SLC_<NTID>_stdtol * (SLC_<RTID>_t)1000);
+        p->conf.base.objective = NULL;
+        p->conf.jacobian = (SLC_GVVF_<NTID>*)(p + 1);
+        p->state = NLSLState_created;
+    } while (0);
+    return p;
+}
+
+// delete an existing instance
+void SLC_NLSLGNSolver<NTID>_Delete(SLC_PNLSLGNSolver<NTID>_t *ppsolver)
+{
+    assert(ppsolver && *ppsolver);
+    SLC_PNLSLGNSolver<NTID>_t p = *ppsolver;
+    FreeAllArrays<NTID>(p);
+    free(p);
+    *ppsolver = NULL;
+}
+
+// retrieve a configuration struct
+SLC_PNLSLGNConf<NTID>_t SLC_NLSLGNSolver<NTID>_Conf(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    return &solver->conf;
+}
+
+// initalizer is called after setting configuration parameters.
+SLC_errno_t SLC_NLSLGNSolver<NTID>_Init(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_i16_t unit_size = sizeof(SLC_<NTID>_t);
+    assert(solver->conf.base.objective);
+    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
+    {
+        assert(solver->conf.jacobian[i]);
+    }
+    do {
+        { // init _xcv, _xcv_new, _ycv, _ycvworkT
+            SLC_4i16_t xcv_size = { unit_size, 1, solver->conf.base.cx, 1 };
+            SLC_4i16_t transposed_xcv_size = SLC_TransposedMatSize(xcv_size);
+            SLC_4i16_t ycv_size = { unit_size, 1, solver->conf.base.cy, 1 };
+            SLC_4i16_t transposed_ycv_size = SLC_TransposedMatSize(ycv_size);
+            SLC_IfNullERR(solver->_xcv = SLC_Array_Alloc(xcv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_delta_xcv = SLC_Array_Alloc(xcv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_xcv_new = SLC_Array_Alloc(xcv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_xcv_workT = SLC_Array_Alloc(transposed_xcv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_ycv = SLC_Array_Alloc(ycv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_jcolbuf = SLC_Array_Alloc(ycv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_ycvworkT = SLC_Array_Alloc(transposed_ycv_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_jtc_y = SLC_Array_Alloc(xcv_size), err, __FILE__, __func__, __LINE__);
+        } { // init _j, _jtc, _jtworkT, _jtcworkT
+            SLC_4i16_t jsize = { unit_size, solver->conf.base.cx, solver->conf.base.cy, 1 };
+            SLC_4i16_t jtcsize = SLC_TransposedMatSize(jsize);
+            SLC_IfNullERR(solver->_j = SLC_Array_Alloc(jsize), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_jtc = SLC_Array_Alloc(jtcsize), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_jtworkT = SLC_Array_Alloc(jtcsize), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_jtcworkT = SLC_Array_Alloc(jsize), err, __FILE__, __func__, __LINE__);
+        } { // init _jtc_j, _inv_jtc_j, _invwork
+            SLC_4i16_t jtc_j_size = { unit_size, solver->conf.base.cx, solver->conf.base.cx, 1 };
+            SLC_4i16_t invwork_size = SLC_InvMatWorkSize(jtc_j_size);
+            SLC_IfNullERR(solver->_jtc_j = SLC_Array_Alloc(jtc_j_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_inv_jtc_j = SLC_Array_Alloc(jtc_j_size), err, __FILE__, __func__, __LINE__);
+            SLC_IfNullERR(solver->_invwork = SLC_Array_Alloc(invwork_size), err, __FILE__, __func__, __LINE__);
+        }
+        SLC_<NTID>_copy(solver->_xcv->data._<NTID>, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
+        err = solver->conf.base.objective(
+            solver->_xcv->data._<NTID>, solver->conf.base.cx,
+            solver->_ycv->data._<NTID>, solver->conf.base.cy,
+            solver->conf.base.c, solver->conf.base.cc
+        );
+        solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
+    } while (0);
+    if (err) FreeAllArrays<NTID>(solver);
+    return err;
+}
+
+// calculate new X vector
+SLC_errno_t RenewX<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_size_t jacobian_columns = solver->conf.base.cx;
+        SLC_size_t jacobian_rows = solver->conf.base.cy;
+        for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
+        {
+            err = solver->conf.jacobian[i](
+                solver->_xcv->data._<NTID>, solver->conf.base.cx,
+                solver->_jcolbuf->data._<NTID>, solver->conf.base.cx,
+                solver->conf.base.c, solver->conf.base.cc
+            );
+            if (err)
+            {
+                SLC_LogERR(err, "@ %s, %s, %d\n", __FILE__, __func__, __LINE__);
+                solver->state = NLSLState_errabort;
+                break;
+            }
+            SLC_<NTID>_copy(solver->_j->data._<NTID> + i, jacobian_columns,
+                solver->_jcolbuf->data._<NTID>, 1, jacobian_rows);
+        }
+        if (err) break;
+        SLC_Mat<NTID>_TransConj(solver->_jtc, solver->_j);
+        SLC_Mat<NTID>_Mul(solver->_jtc_j, solver->_jtc, solver->_j, solver->_jtworkT);
+        SLC_Mat<NTID>_Mul(solver->_jtc_y, solver->_jtc, solver->_ycv, solver->_ycvworkT);
+        err = SLC_Mat<NTID>_Inv(solver->_inv_jtc_j, solver->_jtc_j, solver->_invwork);
+        if (err != EXIT_SUCCESS)
+        {
+            SLC_LogERR(err, "@ %s, %s, %d\n", __FILE__, __func__, __LINE__);
+            break;
+        }
+        SLC_Mat<NTID>_Mul(solver->_jtc_y, solver->_jtc, solver->_ycv, solver->_ycvworkT);
+        SLC_Mat<NTID>_Mul(solver->_delta_xcv, solver->_inv_jtc_j, solver->_jtc_y, solver->_xcv_workT);
+        SLC_Mat<NTID>_ScaleAdd(solver->_xcv_new, solver->_xcv, &SLC_<NTID>_units[1], 
+            solver->_delta_xcv, &SLC_<NTID>_units[2]);
+        SLC_<NTID>_copy(solver->_xcv->data._<NTID>, 1, solver->_xcv_new->data._<NTID>, 1, solver->conf.base.cx);
+        err = solver->conf.base.objective(
+            solver->_ycv->data._<NTID>, solver->conf.base.cy,
+            solver->_xcv->data._<NTID>, solver->conf.base.cx,
+            solver->conf.base.c, solver->conf.base.cc
+        );
+        if (err != EXIT_SUCCESS)
+        {
+            SLC_LogERR(err, "@ %s, %s, %d\n", __FILE__, __func__, __LINE__);
+            solver->state = NLSLState_errabort;
+            break;
+        }
+    } while (0);
+    return err;
+}
+
+SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_size_t iter = 0;
+        solver->state = NLSLState_running;
+        for (; iter < solver->conf.base.maxIter; iter++)
+        {
+            // calculating a new X vector to update solver->_xcv_new.
+            if (EXIT_SUCCESS != (err = RenewX<NTID>(solver)))
+            {
+                SLC_LogERR(err, "@ %s, %s, %d\n", __FILE__, __func__, __LINE__);
+                solver->state = NLSLState_errabort;
+                break;
+            }
+            // check delta-x convergence
+            SLC_<RTID>_t normDeltaX = SLC_<NTID>_abssum(solver->_delta_xcv->data._<NTID>, solver->conf.base.cx);
+            SLC_<RTID>_t normY = SLC_<NTID>_abssum(solver->_ycv->data._<NTID>, solver->conf.base.cy);
+            if ((normDeltaX < solver->conf.base.dxNormMax) && (normY < solver->conf.base.yNormMax))
+            {
+                solver->state = NLSLState_converged;
+                break;
+            }
+        }
+        if (iter == solver->conf.base.maxIter)
+        {
+            err = SLC_ENOCONV;
+            solver->state = NLSLState_iterlimit;
+        }
+    } while (0);
+    return err;
+}
+
+// retrieve x and y vector
+const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_X(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_xcv->data._<NTID>; }
+const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_Y(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_ycv->data._<NTID>; }
+
+// retrieve L1 norm of dx and y vector
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormDX(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_xnorm; }
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormY(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_ynorm; }
+
+#pragma endregion SLC_NLSLGNSolver<NTID>_implimentation

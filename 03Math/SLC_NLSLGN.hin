@@ -1,0 +1,32 @@
+#pragma region Gauss-Newton-Solver-For-SLC_<NTID>_t
+typedef struct {
+    SLC_NLSLConf<NTID>_t base; // configuration common parts are regarded as a base class.
+    SLC_GVVF_<NTID>* jacobian; /* Jacobian column vector functions */
+} SLC_NLSLGNConf<NTID>_t, *SLC_PNLSLGNConf<NTID>_t;
+
+typedef struct SLC_NLSLGNSolver<NTID> SLC_NLSLGNSolver<NTID>_t;
+typedef SLC_NLSLGNSolver<NTID>_t *SLC_PNLSLGNSolver<NTID>_t;
+
+// create a new instance of a Gauss-Newton solver
+SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t cy, SLC_size_t cc);
+
+// delete an existing instance
+void SLC_NLSLGNSolver<NTID>_Delete(SLC_PNLSLGNSolver<NTID>_t *ppsolver);
+
+// retrieve a configuration struct
+SLC_PNLSLGNConf<NTID>_t SLC_NLSLGNSolver<NTID>_Conf(SLC_PNLSLGNSolver<NTID>_t solver);
+
+// initalizer is called after setting configuration parameters.
+SLC_errno_t SLC_NLSLGNSolver<NTID>_Init(SLC_PNLSLGNSolver<NTID>_t solver);
+
+// execute Gauss-Newton iterative operation
+SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver);
+
+// retrieve x and y vector
+const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_X(SLC_PNLSLGNSolver<NTID>_t solver);
+const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_Y(SLC_PNLSLGNSolver<NTID>_t solver);
+
+// retrieve L1 norm of dx and y vector
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormDX(SLC_PNLSLGNSolver<NTID>_t solver);
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormY(SLC_PNLSLGNSolver<NTID>_t solver);
+#pragma endregion Gauss-Newton-Solver-For-SLC_<NTID>_t

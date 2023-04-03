@@ -1,0 +1,13 @@
+typedef SLC_errno_t (*SLC_GVVF_<NTID>)(
+    SLC_<NTID>_t* y, SLC_size_t cy, /* depedent variables */
+    const SLC_<NTID>_t* x, SLC_size_t cx, /* independent variables */
+    const SLC_<NTID>_t* c, SLC_size_t cc /* constants */);
+
+typedef struct {
+    SLC_size_t cx, cy, cc; /* element counts of x, y, c */
+    SLC_size_t maxIter; /* maximum iteration limit */
+    SLC_<NTID>_t *xInitial; /* initial x vector */
+    SLC_<NTID>_t *c; /* constant parameters of objective function and jacobian */
+    SLC_<RTID>_t dxNormMax, yNormMax; /* Convergence criterions; L1 norm of delta-x and y */
+    SLC_GVVF_<NTID> objective; /* objective function */
+} SLC_NLSLConf<NTID>_t, *SLC_PNLSLConf<NTID>_t;
