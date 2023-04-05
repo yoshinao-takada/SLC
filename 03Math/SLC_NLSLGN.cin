@@ -1,4 +1,6 @@
 #pragma region SLC_NLSLGNSolver<NTID>_implimentation
+typedef void (*NLSLGNSolverTrace<NTID>)(SLC_PNLSLGNSolver<NTID>_t solver);
+
 struct SLC_NLSLGNSolver<NTID> {
     // configuration parameters
     SLC_NLSLGNConf<NTID>_t conf;
@@ -19,14 +21,15 @@ struct SLC_NLSLGNSolver<NTID> {
     SLC_PArray_t _invwork; // work matrix for inverting matrices
     
     // convergence cliterion
-    SLC_<NTID>_t _xnorm, _ynorm;
+    SLC_<RTID>_t _normDeltaX, _normY;
 
     // operating state
     SLC_NLSLState_t state;
+    SLC_size_t iter;
+    NLSLGNSolverTrace<NTID> traceIXY, traceIJ, traceINormDXNormY;
 };
 
 #define SAFEFREE(__var) if (__var) { free(__var); __var = NULL; }
-
 void FreeAllArrays<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
 {
     SAFEFREE(solver->_xcv);
@@ -45,6 +48,50 @@ void FreeAllArrays<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
     SAFEFREE(solver->_jtc_y);
     SAFEFREE(solver->_invwork);
 }
+#undef SAFEFREE
+#pragma region Trace_methods_are_private_to_this_source_code 
+static void NLSLGNSolverTrace<NTID>_None(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    // does nothing
+}
+
+static void NLSLGNSolverTrace<NTID>_IXY(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SLC_PArray_t x = solver->_xcv;
+    SLC_PArray_t y = solver->_ycv;
+    FILE* trace_out = solver->conf.base.trace.trace_out;
+    fprintf(trace_out, "iter=%ld\n", solver->iter);
+    fprintf(trace_out, "x={");
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        const char* delimiter = (i == 0) ? " " : " ,";
+        SLC_<NTID>_print(trace_out, delimiter, x->data._<NTID>[i]);
+    }
+    fprintf(trace_out, "}\ny={");
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        const char* delimiter = (i == 0) ? " " : " ,";
+        SLC_<NTID>_print(trace_out, delimiter, y->data._<NTID>[i]);
+    }
+    fprintf(trace_out, "}\n");
+}
+
+static void NLSLGNSolverTrace<NTID>_IJ(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    FILE* trace_out = solver->conf.base.trace.trace_out;
+    fprintf(trace_out, "iter=%ld\n", solver->iter);
+    SLC_Mat<NTID>_Print(trace_out, "Jacobian: ", solver->_j, "");
+}
+
+static void NLSLGNSolverTrace<NTID>_INormDXNormY(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    FILE* trace_out = solver->conf.base.trace.trace_out;
+    fprintf(trace_out, "iter=%ld\n", solver->iter);
+    SLC_<RTID>_print(trace_out, "norm(delta-x) = ", solver->_normDeltaX);
+    SLC_<RTID>_print(trace_out, "\tnorm(y) = ", solver->_normY);
+    fprintf(trace_out, "\n");
+}
+#pragma endregion Trace_methods_are_private_to_this_source_code 
 
 // create a new instance of a Gauss-Newton solver
 SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t cy, SLC_size_t cc)
@@ -57,6 +104,8 @@ SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t c
         SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
         p = (SLC_PNLSLGNSolver<NTID>_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
+        p->conf.base.trace.trace_out = stdout;
+        p->conf.base.trace.item = NLSLTraceItem_None;
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
         p->conf.base.cc = cc;
@@ -67,6 +116,8 @@ SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t c
         p->conf.base.objective = NULL;
         p->conf.jacobian = (SLC_GVVF_<NTID>*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
+        p->iter = 0;
+        p->traceINormDXNormY = p->traceIJ = p->traceIXY = NLSLGNSolverTrace<NTID>_None;
     } while (0);
     return p;
 }
@@ -85,6 +136,22 @@ void SLC_NLSLGNSolver<NTID>_Delete(SLC_PNLSLGNSolver<NTID>_t *ppsolver)
 SLC_PNLSLGNConf<NTID>_t SLC_NLSLGNSolver<NTID>_Conf(SLC_PNLSLGNSolver<NTID>_t solver)
 {
     return &solver->conf;
+}
+
+static void NLSLGNSolver<NTID>_InitTrace(SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    if (0 != (solver->conf.base.trace.item & NLSLTraceItem_IXY))
+    {
+        solver->traceIXY = NLSLGNSolverTrace<NTID>_IXY;
+    }
+    if (0 != (solver->conf.base.trace.item & NLSLTraceItem_IJ))
+    {
+        solver->traceIJ = NLSLGNSolverTrace<NTID>_IJ;
+    }
+    if (0 != (solver->conf.base.trace.item & NLSLTraceItem_INormDXNormY))
+    {
+        solver->traceINormDXNormY = NLSLGNSolverTrace<NTID>_INormDXNormY;
+    }
 }
 
 // initalizer is called after setting configuration parameters.
@@ -133,6 +200,8 @@ SLC_errno_t SLC_NLSLGNSolver<NTID>_Init(SLC_PNLSLGNSolver<NTID>_t solver)
             solver->conf.base.c, solver->conf.base.cc
         );
         solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
+        solver->iter = 0;
+        NLSLGNSolver<NTID>_InitTrace(solver);
     } while (0);
     if (err) FreeAllArrays<NTID>(solver);
     return err;
@@ -191,32 +260,14 @@ SLC_errno_t RenewX<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
     return err;
 }
 
-void Trace<NTID>(SLC_size_t iter, SLC_PNLSLGNSolver<NTID>_t solver)
-{
-    SLC_LogDBG("iter:%ld\n\tx = {", iter);
-    SLC_PArray_t x = solver->_xcv;
-    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
-    {
-        SLC_<NTID>_print(stdout, "\t", x->data._<NTID>[i]);
-    }
-    fprintf(stdout, "\t}\n\ty = {");
-    SLC_PArray_t y = solver->_ycv;
-    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
-    {
-        SLC_<NTID>_print(stdout, "\t", y->data._<NTID>[i]);
-    }
-    fprintf(stdout, "\t}\n");
-}
-
 SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     do {
-        SLC_size_t iter = 0;
         solver->state = NLSLState_running;
-        for (; iter < solver->conf.base.maxIter; iter++)
+        for (; solver->iter < solver->conf.base.maxIter; solver->iter++)
         {
-            Trace<NTID>(iter, solver);
+            solver->traceIXY(solver); // debug trace
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewX<NTID>(solver)))
             {
@@ -224,16 +275,18 @@ SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver)
                 solver->state = NLSLState_errabort;
                 break;
             }
+            solver->traceIJ(solver); // debug trace
             // check delta-x convergence
-            SLC_<RTID>_t normDeltaX = SLC_<NTID>_abssum(solver->_delta_xcv->data._<NTID>, solver->conf.base.cx);
-            SLC_<RTID>_t normY = SLC_<NTID>_abssum(solver->_ycv->data._<NTID>, solver->conf.base.cy);
-            if ((normDeltaX < solver->conf.base.dxNormMax) && (normY < solver->conf.base.yNormMax))
+            solver->_normDeltaX = SLC_<NTID>_abssum(solver->_delta_xcv->data._<NTID>, solver->conf.base.cx);
+            solver->_normY = SLC_<NTID>_abssum(solver->_ycv->data._<NTID>, solver->conf.base.cy);
+            solver->traceINormDXNormY(solver); // debug trace
+            if ((solver->_normDeltaX < solver->conf.base.dxNormMax) && (solver->_normY < solver->conf.base.yNormMax))
             {
                 solver->state = NLSLState_converged;
                 break;
             }
         }
-        if (iter == solver->conf.base.maxIter)
+        if (solver->iter == solver->conf.base.maxIter)
         {
             err = SLC_ENOCONV;
             solver->state = NLSLState_iterlimit;
@@ -247,7 +300,7 @@ const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_X(SLC_PNLSLGNSolver<NTID>_t solver) {
 const SLC_<NTID>_t* SLC_NLSLGNSolver<NTID>_Y(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_ycv->data._<NTID>; }
 
 // retrieve L1 norm of dx and y vector
-SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormDX(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_xnorm; }
-SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormY(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_ynorm; }
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormDX(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_normDeltaX; }
+SLC_<NTID>_t SLC_NLSLGNSolver<NTID>_L1NormY(SLC_PNLSLGNSolver<NTID>_t solver) { return solver->_normY; }
 
 #pragma endregion SLC_NLSLGNSolver<NTID>_implimentation

@@ -4,6 +4,7 @@ typedef SLC_errno_t (*SLC_GVVF_<NTID>)(
     const SLC_<NTID>_t* c, SLC_size_t cc /* constants */);
 
 typedef struct {
+    SLC_NLSLTrace_t trace;
     SLC_size_t cx, cy, cc; /* element counts of x, y, c */
     SLC_size_t maxIter; /* maximum iteration limit */
     SLC_<NTID>_t *xInitial; /* initial x vector */

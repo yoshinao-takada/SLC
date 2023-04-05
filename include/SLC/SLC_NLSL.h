@@ -3,13 +3,25 @@
 #include "SLC/SLC_Numbers.h"
 #include "SLC/SLC_errno.h"
 typedef enum {
-NLSLState_created, // created but not yet initialized
-NLSLState_initialized, // just after initialized
-NLSLState_running, // running execution
-NLSLState_iterlimit, // stopped by iteration limit
-NLSLState_converged, // stopped by convergence
-NLSLState_errabort, // stopped by error in objective or Jacobian
+	NLSLState_created, // created but not yet initialized
+	NLSLState_initialized, // just after initialized
+	NLSLState_running, // running execution
+	NLSLState_iterlimit, // stopped by iteration limit
+	NLSLState_converged, // stopped by convergence
+	NLSLState_errabort, // stopped by error in objective or Jacobian
 } SLC_NLSLState_t;
+typedef enum {
+	NLSLTraceItem_None=0,
+	NLSLTraceItem_IXY=1, // iteration, x, and y
+	NLSLTraceItem_IJ=2, // iteration and Jacobian
+	NLSLTraceItem_INormDXNormY=4, // iteration and Norm(x), Norm(y)
+	NLSLTraceItem_All=7, // All trace items are enabled.
+} SLC_NLSLTraceItem_t;
+typedef struct {
+	SLC_NLSLTraceItem_t item;
+	FILE* trace_out;
+} SLC_NLSLTrace_t, *SLC_PNLSLTrace_t;
+typedef const SLC_NLSLTrace_t *SLC_PCNLSLTrace_t;
 
 typedef SLC_errno_t (*SLC_GVVF_r32)(
     SLC_r32_t* y, SLC_size_t cy, /* depedent variables */
@@ -17,6 +29,7 @@ typedef SLC_errno_t (*SLC_GVVF_r32)(
     const SLC_r32_t* c, SLC_size_t cc /* constants */);
 
 typedef struct {
+    SLC_NLSLTrace_t trace;
     SLC_size_t cx, cy, cc; /* element counts of x, y, c */
     SLC_size_t maxIter; /* maximum iteration limit */
     SLC_r32_t *xInitial; /* initial x vector */
@@ -31,6 +44,7 @@ typedef SLC_errno_t (*SLC_GVVF_r64)(
     const SLC_r64_t* c, SLC_size_t cc /* constants */);
 
 typedef struct {
+    SLC_NLSLTrace_t trace;
     SLC_size_t cx, cy, cc; /* element counts of x, y, c */
     SLC_size_t maxIter; /* maximum iteration limit */
     SLC_r64_t *xInitial; /* initial x vector */
@@ -45,6 +59,7 @@ typedef SLC_errno_t (*SLC_GVVF_c64)(
     const SLC_c64_t* c, SLC_size_t cc /* constants */);
 
 typedef struct {
+    SLC_NLSLTrace_t trace;
     SLC_size_t cx, cy, cc; /* element counts of x, y, c */
     SLC_size_t maxIter; /* maximum iteration limit */
     SLC_c64_t *xInitial; /* initial x vector */
@@ -59,6 +74,7 @@ typedef SLC_errno_t (*SLC_GVVF_c128)(
     const SLC_c128_t* c, SLC_size_t cc /* constants */);
 
 typedef struct {
+    SLC_NLSLTrace_t trace;
     SLC_size_t cx, cy, cc; /* element counts of x, y, c */
     SLC_size_t maxIter; /* maximum iteration limit */
     SLC_c128_t *xInitial; /* initial x vector */

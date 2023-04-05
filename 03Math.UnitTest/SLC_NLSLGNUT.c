@@ -147,6 +147,7 @@ SLC_errno_t SLC_NLSLGNUTr32_Square_and_Trace(SLC_PCTestArgs_t args)
         conf->base.c = c;
         conf->base.xInitial = x;
         conf->base.maxIter = 50;
+        conf->base.trace.item = NLSLTraceItem_None;
         SLC_NLSLGNSolverr32_Init(solver);
         SLC_NLSLGNSolverr32_Execute(solver);
         const SLC_r32_t* xSolved = SLC_NLSLGNSolverr32_X(solver);
@@ -305,6 +306,7 @@ SLC_errno_t SLC_NLSLGNUTr64_Square_and_Trace(SLC_PCTestArgs_t args)
         conf->base.c = c;
         conf->base.xInitial = x;
         conf->base.maxIter = 50;
+        conf->base.trace.item = NLSLTraceItem_None;
         SLC_NLSLGNSolverr64_Init(solver);
         SLC_NLSLGNSolverr64_Execute(solver);
         const SLC_r64_t* xSolved = SLC_NLSLGNSolverr64_X(solver);
@@ -463,6 +465,7 @@ SLC_errno_t SLC_NLSLGNUTc64_Square_and_Trace(SLC_PCTestArgs_t args)
         conf->base.c = c;
         conf->base.xInitial = x;
         conf->base.maxIter = 50;
+        conf->base.trace.item = NLSLTraceItem_None;
         SLC_NLSLGNSolverc64_Init(solver);
         SLC_NLSLGNSolverc64_Execute(solver);
         const SLC_c64_t* xSolved = SLC_NLSLGNSolverc64_X(solver);
@@ -621,6 +624,7 @@ SLC_errno_t SLC_NLSLGNUTc128_Square_and_Trace(SLC_PCTestArgs_t args)
         conf->base.c = c;
         conf->base.xInitial = x;
         conf->base.maxIter = 50;
+        conf->base.trace.item = NLSLTraceItem_None;
         SLC_NLSLGNSolverc128_Init(solver);
         SLC_NLSLGNSolverc128_Execute(solver);
         const SLC_c128_t* xSolved = SLC_NLSLGNSolverc128_X(solver);

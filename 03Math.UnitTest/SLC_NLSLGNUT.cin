@@ -137,6 +137,7 @@ SLC_errno_t SLC_NLSLGNUT<NTID>_Square_and_Trace(SLC_PCTestArgs_t args)
         conf->base.c = c;
         conf->base.xInitial = x;
         conf->base.maxIter = 50;
+        conf->base.trace.item = NLSLTraceItem_None;
         SLC_NLSLGNSolver<NTID>_Init(solver);
         SLC_NLSLGNSolver<NTID>_Execute(solver);
         const SLC_<NTID>_t* xSolved = SLC_NLSLGNSolver<NTID>_X(solver);
