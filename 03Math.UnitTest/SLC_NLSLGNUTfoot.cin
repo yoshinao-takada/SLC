@@ -3,7 +3,8 @@ static const NLSLGNUT_r32_t TestData_r32_Square_and_Trace =
 {
     { 1.0f, 2.3f, -1.5f, -2.5f }, // mat0
     { -2.45f, -3.45f, 2.25f, 2.8f }, // mat0_2
-    -1.5f, // trace
+    -1.5f, // trace(mat0)
+    4, 5, 5, // cx, cy, cz
     Objectiver32, // objective
     { J0r32, J1r32, J2r32, J3r32 }
 };
@@ -12,7 +13,8 @@ static const NLSLGNUT_r64_t TestData_r64_Square_and_Trace =
 {
     { 1.0f, 2.3f, -1.5f, -2.5f }, // mat0
     { -2.45f, -3.45f, 2.25f, 2.8f }, // mat0_2
-    -1.5f, // trace
+    -1.5f, // trace(mat0)
+    4, 5, 5, // cx, cy, cz
     Objectiver64, // objective
     { J0r64, J1r64, J2r64, J3r64 }
 };
@@ -21,7 +23,8 @@ static const NLSLGNUT_c64_t TestData_c64_Square_and_Trace =
 {
     { CMPLXF(1.0f, 2.3f), CMPLXF(-1.5f, -2.5f), CMPLXF(-2.5f, 1.0f), CMPLXF(2.3f, -1.5f) },
     { CMPLXF(1.96f, 9.35f), CMPLXF(-2.95f, -9.45f), CMPLXF(-9.05f, 1.3f), CMPLXF(9.29f, -2.15f) },
-    CMPLXF(3.3f, 0.8f),
+    CMPLXF(3.3f, 0.8f), // trace(mat0)
+    4, 5, 5, // cx, cy, cz
     Objectivec64, // objective
     { J0c64, J1c64, J2c64, J3c64 }
 };
@@ -30,7 +33,8 @@ static const NLSLGNUT_c128_t TestData_c128_Square_and_Trace =
 {
     { CMPLX(1.0, 2.3), CMPLX(-1.5, -2.5), CMPLX(-2.5, 1.0), CMPLX(2.3, -1.5) },
     { CMPLX(1.96, 9.35), CMPLX(-2.95, -9.45), CMPLX(-9.05, 1.3), CMPLX(9.29, -2.15) },
-    CMPLX(3.3, 0.8),
+    CMPLX(3.3, 0.8), // trace(mat0)
+    4, 5, 5, // cx, cy, cz
     Objectivec128, // objective
     { J0c128, J1c128, J2c128, J3c128 }
 };
@@ -43,7 +47,10 @@ SLC_errno_t SLC_NLSLGNUT(SLC_i32_t settings)
     SLC_TestArgs_t args_c64 = { settings, &TestData_c64_Square_and_Trace };
     SLC_TestArgs_t args_c128 = { settings, &TestData_c128_Square_and_Trace };
     do {
-
+        SLC_test2(err, SLC_NLSLGNUTr32_Square_and_Trace, &args_r32, __func__, __LINE__);
+        SLC_test2(err, SLC_NLSLGNUTr64_Square_and_Trace, &args_r64, __func__, __LINE__);
+        SLC_test2(err, SLC_NLSLGNUTc64_Square_and_Trace, &args_c64, __func__, __LINE__);
+        SLC_test2(err, SLC_NLSLGNUTc128_Square_and_Trace, &args_c128, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

@@ -13,7 +13,18 @@ SLC_errno_t Objective<NTID>(
     const SLC_<NTID>_t* x, SLC_size_t cx,
     const SLC_<NTID>_t* c, SLC_size_t cc
 ) {
-    return EXIT_SUCCESS;
+    SLC_errno_t err = EXIT_SUCCESS;
+    assert(cx == 4);
+    assert(cy == 5);
+    assert(cc == 5);
+    do {
+        y[0] = x[0]*x[0]+x[1]*x[2] - c[0];
+        y[1] = x[0]*x[1] + x[1]*x[3] - c[1];
+        y[2] = x[2]*x[0] + x[3]*x[2] - c[2];
+        y[3] = x[2]*x[1] + x[3]*x[3] - c[3];
+        y[4] = x[0] + x[3] - c[4];
+    } while (0);
+    return err;
 }
 
 
@@ -22,7 +33,18 @@ SLC_errno_t J0<NTID>(
     const SLC_<NTID>_t* x, SLC_size_t cx,
     const SLC_<NTID>_t* c, SLC_size_t cc
 ) {
-    return EXIT_SUCCESS;
+    SLC_errno_t err = EXIT_SUCCESS;
+    assert(cx == 4);
+    assert(cy == 5);
+    assert(cc == 5);
+    do {
+        y[0] = ((SLC_<NTID>_t)2)*x[0];
+        y[1] = x[1];
+        y[2] = x[2];
+        y[3] = SLC_<NTID>_units[0];
+        y[4] = SLC_<NTID>_units[1];
+    } while (0);
+    return err;
 }
 
 SLC_errno_t J1<NTID>(
@@ -30,7 +52,17 @@ SLC_errno_t J1<NTID>(
     const SLC_<NTID>_t* x, SLC_size_t cx,
     const SLC_<NTID>_t* c, SLC_size_t cc
 ) {
-    return EXIT_SUCCESS;
+    SLC_errno_t err = EXIT_SUCCESS;
+    assert(cx == 4);
+    assert(cy == 5);
+    assert(cc == 5);
+    do {
+        y[0] = x[2];
+        y[1] = x[0] + x[3];
+        y[4] = y[2] = SLC_<NTID>_units[0];
+        y[3] = x[2];
+    } while (0);
+    return err;
 }
 
 SLC_errno_t J2<NTID>(
@@ -38,7 +70,17 @@ SLC_errno_t J2<NTID>(
     const SLC_<NTID>_t* x, SLC_size_t cx,
     const SLC_<NTID>_t* c, SLC_size_t cc
 ) {
-    return EXIT_SUCCESS;
+    SLC_errno_t err = EXIT_SUCCESS;
+    assert(cx == 4);
+    assert(cy == 5);
+    assert(cc == 5);
+    do {
+        y[0] = x[1];
+        y[4] = y[1] = SLC_<NTID>_units[0];
+        y[2] = x[0] + x[3];
+        y[3] = x[1];
+    } while (0);
+    return err;
 }
 
 SLC_errno_t J3<NTID>(
@@ -46,16 +88,69 @@ SLC_errno_t J3<NTID>(
     const SLC_<NTID>_t* x, SLC_size_t cx,
     const SLC_<NTID>_t* c, SLC_size_t cc
 ) {
-    return EXIT_SUCCESS;
+    SLC_errno_t err = EXIT_SUCCESS;
+    assert(cx == 4);
+    assert(cy == 5);
+    assert(cc == 5);
+    do {
+        y[0] = SLC_<NTID>_units[0];
+        y[1] = x[1];
+        y[2] = x[2];
+        y[3] = ((SLC_<NTID>_t)2)*x[3];
+        y[4] = SLC_<NTID>_units[1];
+    } while (0);
+    return err;
+}
+
+// fill x with random numbers
+void FillX<NTID>(SLC_<NTID>_t* x, SLC_size_t cx)
+{
+    for (SLC_size_t i = 0; i < cx; i++)
+    {
+        x[i] = SLC_<NTID>_rand;
+    }
 }
 
 SLC_errno_t SLC_NLSLGNUT<NTID>_Square_and_Trace(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     PCNLSLGNUT_<NTID>_t params = (PCNLSLGNUT_<NTID>_t)args->data;
+    SLC_PNLSLGNSolver<NTID>_t solver = NULL;
+    SLC_<NTID>_t *x = alloca(sizeof(SLC_<NTID>_t) * (params->cx + params->cy + params->cc));
+    SLC_<NTID>_t *y = x + params->cx;
+    SLC_<NTID>_t *c = y + params->cy;
     do {
-
+        // create x, y, c vectors
+        SLC_Array_t mat0 = {{sizeof(SLC_<NTID>_t), 2, 2, 1 }, { params->mat0}};
+        SLC_Array_t mat0_x_mat0 = { { sizeof(SLC_<NTID>_t), 2, 2, 1 }, { c } };
+        SLC_Array_t matwork = { { sizeof(SLC_<NTID>_t), 2, 2, 1 }, { y } };
+        SLC_Mat<NTID>_Mul(&mat0_x_mat0, &mat0, &mat0, &matwork);
+        solver = SLC_NLSLGNSolver<NTID>_New(params->cx, params->cy, params->cc);
+        c[4] = params->mat0[0] + params->mat0[3];
+        FillX<NTID>(x, params->cx);
+        SLC_PNLSLGNConf<NTID>_t conf = SLC_NLSLGNSolver<NTID>_Conf(solver);
+        conf->jacobian[0] = J0<NTID>;
+        conf->jacobian[1] = J1<NTID>;
+        conf->jacobian[2] = J2<NTID>;
+        conf->jacobian[3] = J3<NTID>;
+        conf->base.objective = Objective<NTID>;
+        conf->base.c = c;
+        conf->base.xInitial = x;
+        conf->base.maxIter = 50;
+        SLC_NLSLGNSolver<NTID>_Init(solver);
+        SLC_NLSLGNSolver<NTID>_Execute(solver);
+        const SLC_<NTID>_t* xSolved = SLC_NLSLGNSolver<NTID>_X(solver);
+        for (SLC_size_t i = 0; i < params->cx; i++)
+        {
+            if (!SLC_<NTID>_areequal(params->mat0[i], xSolved[i], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
     } while (0);
+    SLC_NLSLGNSolver<NTID>_Delete(&solver);
     SLC_testend(err, __func__, __LINE__);
     return err;
 }

@@ -15,6 +15,7 @@ SLC_errno_t MathUT(SLC_i32_t settings);
     SLC_errno_t SLC_MiniBLASUT(SLC_i32_t settings);
     SLC_errno_t SLC_MiniLAUT(SLC_i32_t settings);
     SLC_errno_t SLC_GeometryUT(SLC_i32_t settings);
+    SLC_errno_t SLC_NLSLGNUT(SLC_i32_t settings);
 SLC_errno_t IoDiagUT(SLC_i32_t settings);
     SLC_errno_t SLC_LogUT(SLC_i32_t settings);
 
@@ -61,6 +62,7 @@ SLC_errno_t MathUT(SLC_i32_t settings)
         SLC_test(err, SLC_MiniBLASUT, 0, __func__, __LINE__);
         SLC_test(err, SLC_MiniLAUT, 0, __func__, __LINE__);
         SLC_test(err, SLC_GeometryUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_NLSLGNUT, 0, __func__, __LINE__);
     } while (0);
     return err;
 }

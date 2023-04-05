@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 static const char* LogLabelERR = "ERR";
-static const char* LogLabels[] = { "INF", "DBG", NULL, NULL, "PERF", NULL, NULL, NULL,
+static const char* LogLabels[] = { NULL, "INF", "DBG", NULL, "PERF", NULL, NULL, NULL,
     "TEST" };
 
 void SLC_LogWriteHeader(SLC_LogLevel_t loglevel)
@@ -29,9 +29,9 @@ void SLC_LogWriteErrHeader(SLC_errno_t err)
     struct tm tm;
     clock_gettime(CLOCK_REALTIME, &ts);
     localtime_r(&ts.tv_sec, &tm);
-    fprintf(SLC_LogSink, "%04d-%02d-%02d %02d:%02d:%02d.%06ld,%s,",
+    fprintf(SLC_LogSink, "%04d-%02d-%02d %02d:%02d:%02d.%06ld,%s,0x%08x(%d)",
         tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-        ts.tv_nsec/1000, LogLabelERR);
+        ts.tv_nsec/1000, LogLabelERR, err, err);
 }
 
 static pthread_spinlock_t lock;

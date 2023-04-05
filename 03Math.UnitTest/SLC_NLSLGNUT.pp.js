@@ -42,6 +42,7 @@ function CreateSourceFile(cin, cinfooter, c)
         "#include \"SLC/SLC_MiniBLAS.h\"",
         "#include \"SLC/SLC_MiniLA.h\"",
         "#include <assert.h>",
+        "#include <alloca.h>",
         ""
     ];
     headerText.forEach((e) => { text.push(e); });

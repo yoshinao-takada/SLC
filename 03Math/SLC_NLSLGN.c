@@ -14,8 +14,8 @@ struct SLC_NLSLGNSolverr32 {
 
     // working matrices
     SLC_PArray_t 
-        _xcv, // X column vector
         _xcv_new, // renewed _xcv
+        _xcv, // X column vector
         _delta_xcv, // 
         _xcv_workT, // transposed _xcv size matrix for work area
         _ycv, // Y column vector
@@ -61,10 +61,10 @@ SLC_PNLSLGNSolverr32_t SLC_NLSLGNSolverr32_New(SLC_size_t cx, SLC_size_t cy, SLC
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_PNLSLGNSolverr32_t p = NULL;
     do {
-        SLC_size_t alloc_size = 
-            SLC_ALIGN8(sizeof(SLC_NLSLGNSolverr32_t)) + 
-            SLC_ALIGN8(sizeof(SLC_GVVF_r32) * cx);
-        SLC_PNLSLGNSolverr32_t p = aligned_alloc(8, alloc_size);
+        SLC_size_t alloc_size_core = SLC_ALIGN8(sizeof(SLC_NLSLGNSolverr32_t));
+        SLC_size_t alloc_size_jacobian = SLC_ALIGN8(sizeof(SLC_GVVF_r32) * cx);
+        SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
+        p = (SLC_PNLSLGNSolverr32_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
@@ -74,7 +74,7 @@ SLC_PNLSLGNSolverr32_t SLC_NLSLGNSolverr32_New(SLC_size_t cx, SLC_size_t cy, SLC
         p->conf.base.dxNormMax = cx * SLC_r32_stdtol;
         p->conf.base.yNormMax = cy * (SLC_r32_stdtol * (SLC_r32_t)1000);
         p->conf.base.objective = NULL;
-        p->conf.jacobian = (SLC_GVVF_r32*)(p + 1);
+        p->conf.jacobian = (SLC_GVVF_r32*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
     } while (0);
     return p;
@@ -102,7 +102,7 @@ SLC_errno_t SLC_NLSLGNSolverr32_Init(SLC_PNLSLGNSolverr32_t solver)
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_i16_t unit_size = sizeof(SLC_r32_t);
     assert(solver->conf.base.objective);
-    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    assert(solver->conf.base.cc > 0 && solver->conf.base.c); // const parameters has been initialized.
     for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
     {
         assert(solver->conf.jacobian[i]);
@@ -135,7 +135,6 @@ SLC_errno_t SLC_NLSLGNSolverr32_Init(SLC_PNLSLGNSolverr32_t solver)
             SLC_IfNullERR(solver->_inv_jtc_j = SLC_Array_Alloc(jtc_j_size), err, __FILE__, __func__, __LINE__);
             SLC_IfNullERR(solver->_invwork = SLC_Array_Alloc(invwork_size), err, __FILE__, __func__, __LINE__);
         }
-        // fill _xcv and _ycv with initial values.
         SLC_r32_copy(solver->_xcv->data._r32, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
             solver->_ycv->data._r32, solver->conf.base.cy,
@@ -153,8 +152,8 @@ SLC_errno_t RenewXr32(SLC_PNLSLGNSolverr32_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     do {
-        SLC_size_t jacobian_columns = solver->conf.base.cx; // column count of Jacobina matrix
-        SLC_size_t jacobian_rows = solver->conf.base.cy; // row count of Jacobian matrix
+        SLC_size_t jacobian_columns = solver->conf.base.cx;
+        SLC_size_t jacobian_rows = solver->conf.base.cy;
         for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
         {
             err = solver->conf.jacobian[i](
@@ -172,7 +171,7 @@ SLC_errno_t RenewXr32(SLC_PNLSLGNSolverr32_t solver)
                 solver->_jcolbuf->data._r32, 1, jacobian_rows);
         }
         if (err) break;
-        SLC_Matr32_TransConj(solver->_jtc, solver->_j); // create the transpose-conjugate of the Jacobian
+        SLC_Matr32_TransConj(solver->_jtc, solver->_j);
         SLC_Matr32_Mul(solver->_jtc_j, solver->_jtc, solver->_j, solver->_jtworkT);
         SLC_Matr32_Mul(solver->_jtc_y, solver->_jtc, solver->_ycv, solver->_ycvworkT);
         err = SLC_Matr32_Inv(solver->_inv_jtc_j, solver->_jtc_j, solver->_invwork);
@@ -183,8 +182,8 @@ SLC_errno_t RenewXr32(SLC_PNLSLGNSolverr32_t solver)
         }
         SLC_Matr32_Mul(solver->_jtc_y, solver->_jtc, solver->_ycv, solver->_ycvworkT);
         SLC_Matr32_Mul(solver->_delta_xcv, solver->_inv_jtc_j, solver->_jtc_y, solver->_xcv_workT);
-        SLC_Matr32_ScaleAdd(solver->_xcv_new, solver->_xcv, &SLC_r32_units[1] /* = 1 */, 
-            solver->_delta_xcv, &SLC_r32_units[2] /* = -1 */);
+        SLC_Matr32_ScaleAdd(solver->_xcv_new, solver->_xcv, &SLC_r32_units[1], 
+            solver->_delta_xcv, &SLC_r32_units[2]);
         SLC_r32_copy(solver->_xcv->data._r32, 1, solver->_xcv_new->data._r32, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
             solver->_ycv->data._r32, solver->conf.base.cy,
@@ -201,6 +200,23 @@ SLC_errno_t RenewXr32(SLC_PNLSLGNSolverr32_t solver)
     return err;
 }
 
+void Tracer32(SLC_size_t iter, SLC_PNLSLGNSolverr32_t solver)
+{
+    SLC_LogDBG("iter:%ld\n\tx = {", iter);
+    SLC_PArray_t x = solver->_xcv;
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        SLC_r32_print(stdout, "\t", x->data._r32[i]);
+    }
+    fprintf(stdout, "\t}\n\ty = {");
+    SLC_PArray_t y = solver->_ycv;
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        SLC_r32_print(stdout, "\t", y->data._r32[i]);
+    }
+    fprintf(stdout, "\t}\n");
+}
+
 SLC_errno_t SLC_NLSLGNSolverr32_Execute(SLC_PNLSLGNSolverr32_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -209,6 +225,7 @@ SLC_errno_t SLC_NLSLGNSolverr32_Execute(SLC_PNLSLGNSolverr32_t solver)
         solver->state = NLSLState_running;
         for (; iter < solver->conf.base.maxIter; iter++)
         {
+            Tracer32(iter, solver);
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewXr32(solver)))
             {
@@ -298,10 +315,10 @@ SLC_PNLSLGNSolverr64_t SLC_NLSLGNSolverr64_New(SLC_size_t cx, SLC_size_t cy, SLC
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_PNLSLGNSolverr64_t p = NULL;
     do {
-        SLC_size_t alloc_size = 
-            SLC_ALIGN8(sizeof(SLC_NLSLGNSolverr64_t)) + 
-            SLC_ALIGN8(sizeof(SLC_GVVF_r64) * cx);
-        SLC_PNLSLGNSolverr64_t p = aligned_alloc(8, alloc_size);
+        SLC_size_t alloc_size_core = SLC_ALIGN8(sizeof(SLC_NLSLGNSolverr64_t));
+        SLC_size_t alloc_size_jacobian = SLC_ALIGN8(sizeof(SLC_GVVF_r64) * cx);
+        SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
+        p = (SLC_PNLSLGNSolverr64_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
@@ -311,7 +328,7 @@ SLC_PNLSLGNSolverr64_t SLC_NLSLGNSolverr64_New(SLC_size_t cx, SLC_size_t cy, SLC
         p->conf.base.dxNormMax = cx * SLC_r64_stdtol;
         p->conf.base.yNormMax = cy * (SLC_r64_stdtol * (SLC_r64_t)1000);
         p->conf.base.objective = NULL;
-        p->conf.jacobian = (SLC_GVVF_r64*)(p + 1);
+        p->conf.jacobian = (SLC_GVVF_r64*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
     } while (0);
     return p;
@@ -339,7 +356,7 @@ SLC_errno_t SLC_NLSLGNSolverr64_Init(SLC_PNLSLGNSolverr64_t solver)
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_i16_t unit_size = sizeof(SLC_r64_t);
     assert(solver->conf.base.objective);
-    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    assert(solver->conf.base.cc > 0 && solver->conf.base.c); // const parameters has been initialized.
     for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
     {
         assert(solver->conf.jacobian[i]);
@@ -374,8 +391,8 @@ SLC_errno_t SLC_NLSLGNSolverr64_Init(SLC_PNLSLGNSolverr64_t solver)
         }
         SLC_r64_copy(solver->_xcv->data._r64, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
-            solver->_xcv->data._r64, solver->conf.base.cx,
             solver->_ycv->data._r64, solver->conf.base.cy,
+            solver->_xcv->data._r64, solver->conf.base.cx,
             solver->conf.base.c, solver->conf.base.cc
         );
         solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
@@ -394,8 +411,8 @@ SLC_errno_t RenewXr64(SLC_PNLSLGNSolverr64_t solver)
         for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
         {
             err = solver->conf.jacobian[i](
+                solver->_jcolbuf->data._r64, solver->conf.base.cy,
                 solver->_xcv->data._r64, solver->conf.base.cx,
-                solver->_jcolbuf->data._r64, solver->conf.base.cx,
                 solver->conf.base.c, solver->conf.base.cc
             );
             if (err)
@@ -437,6 +454,23 @@ SLC_errno_t RenewXr64(SLC_PNLSLGNSolverr64_t solver)
     return err;
 }
 
+void Tracer64(SLC_size_t iter, SLC_PNLSLGNSolverr64_t solver)
+{
+    SLC_LogDBG("iter:%ld\n\tx = {", iter);
+    SLC_PArray_t x = solver->_xcv;
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        SLC_r64_print(stdout, "\t", x->data._r64[i]);
+    }
+    fprintf(stdout, "\t}\n\ty = {");
+    SLC_PArray_t y = solver->_ycv;
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        SLC_r64_print(stdout, "\t", y->data._r64[i]);
+    }
+    fprintf(stdout, "\t}\n");
+}
+
 SLC_errno_t SLC_NLSLGNSolverr64_Execute(SLC_PNLSLGNSolverr64_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -445,6 +479,7 @@ SLC_errno_t SLC_NLSLGNSolverr64_Execute(SLC_PNLSLGNSolverr64_t solver)
         solver->state = NLSLState_running;
         for (; iter < solver->conf.base.maxIter; iter++)
         {
+            Tracer64(iter, solver);
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewXr64(solver)))
             {
@@ -534,10 +569,10 @@ SLC_PNLSLGNSolverc64_t SLC_NLSLGNSolverc64_New(SLC_size_t cx, SLC_size_t cy, SLC
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_PNLSLGNSolverc64_t p = NULL;
     do {
-        SLC_size_t alloc_size = 
-            SLC_ALIGN8(sizeof(SLC_NLSLGNSolverc64_t)) + 
-            SLC_ALIGN8(sizeof(SLC_GVVF_c64) * cx);
-        SLC_PNLSLGNSolverc64_t p = aligned_alloc(8, alloc_size);
+        SLC_size_t alloc_size_core = SLC_ALIGN8(sizeof(SLC_NLSLGNSolverc64_t));
+        SLC_size_t alloc_size_jacobian = SLC_ALIGN8(sizeof(SLC_GVVF_c64) * cx);
+        SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
+        p = (SLC_PNLSLGNSolverc64_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
@@ -547,7 +582,7 @@ SLC_PNLSLGNSolverc64_t SLC_NLSLGNSolverc64_New(SLC_size_t cx, SLC_size_t cy, SLC
         p->conf.base.dxNormMax = cx * SLC_c64_stdtol;
         p->conf.base.yNormMax = cy * (SLC_c64_stdtol * (SLC_r32_t)1000);
         p->conf.base.objective = NULL;
-        p->conf.jacobian = (SLC_GVVF_c64*)(p + 1);
+        p->conf.jacobian = (SLC_GVVF_c64*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
     } while (0);
     return p;
@@ -575,7 +610,7 @@ SLC_errno_t SLC_NLSLGNSolverc64_Init(SLC_PNLSLGNSolverc64_t solver)
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_i16_t unit_size = sizeof(SLC_c64_t);
     assert(solver->conf.base.objective);
-    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    assert(solver->conf.base.cc > 0 && solver->conf.base.c); // const parameters has been initialized.
     for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
     {
         assert(solver->conf.jacobian[i]);
@@ -610,8 +645,8 @@ SLC_errno_t SLC_NLSLGNSolverc64_Init(SLC_PNLSLGNSolverc64_t solver)
         }
         SLC_c64_copy(solver->_xcv->data._c64, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
-            solver->_xcv->data._c64, solver->conf.base.cx,
             solver->_ycv->data._c64, solver->conf.base.cy,
+            solver->_xcv->data._c64, solver->conf.base.cx,
             solver->conf.base.c, solver->conf.base.cc
         );
         solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
@@ -630,8 +665,8 @@ SLC_errno_t RenewXc64(SLC_PNLSLGNSolverc64_t solver)
         for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
         {
             err = solver->conf.jacobian[i](
+                solver->_jcolbuf->data._c64, solver->conf.base.cy,
                 solver->_xcv->data._c64, solver->conf.base.cx,
-                solver->_jcolbuf->data._c64, solver->conf.base.cx,
                 solver->conf.base.c, solver->conf.base.cc
             );
             if (err)
@@ -673,6 +708,23 @@ SLC_errno_t RenewXc64(SLC_PNLSLGNSolverc64_t solver)
     return err;
 }
 
+void Tracec64(SLC_size_t iter, SLC_PNLSLGNSolverc64_t solver)
+{
+    SLC_LogDBG("iter:%ld\n\tx = {", iter);
+    SLC_PArray_t x = solver->_xcv;
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        SLC_c64_print(stdout, "\t", x->data._c64[i]);
+    }
+    fprintf(stdout, "\t}\n\ty = {");
+    SLC_PArray_t y = solver->_ycv;
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        SLC_c64_print(stdout, "\t", y->data._c64[i]);
+    }
+    fprintf(stdout, "\t}\n");
+}
+
 SLC_errno_t SLC_NLSLGNSolverc64_Execute(SLC_PNLSLGNSolverc64_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -681,6 +733,7 @@ SLC_errno_t SLC_NLSLGNSolverc64_Execute(SLC_PNLSLGNSolverc64_t solver)
         solver->state = NLSLState_running;
         for (; iter < solver->conf.base.maxIter; iter++)
         {
+            Tracec64(iter, solver);
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewXc64(solver)))
             {
@@ -770,10 +823,10 @@ SLC_PNLSLGNSolverc128_t SLC_NLSLGNSolverc128_New(SLC_size_t cx, SLC_size_t cy, S
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_PNLSLGNSolverc128_t p = NULL;
     do {
-        SLC_size_t alloc_size = 
-            SLC_ALIGN8(sizeof(SLC_NLSLGNSolverc128_t)) + 
-            SLC_ALIGN8(sizeof(SLC_GVVF_c128) * cx);
-        SLC_PNLSLGNSolverc128_t p = aligned_alloc(8, alloc_size);
+        SLC_size_t alloc_size_core = SLC_ALIGN8(sizeof(SLC_NLSLGNSolverc128_t));
+        SLC_size_t alloc_size_jacobian = SLC_ALIGN8(sizeof(SLC_GVVF_c128) * cx);
+        SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
+        p = (SLC_PNLSLGNSolverc128_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
@@ -783,7 +836,7 @@ SLC_PNLSLGNSolverc128_t SLC_NLSLGNSolverc128_New(SLC_size_t cx, SLC_size_t cy, S
         p->conf.base.dxNormMax = cx * SLC_c128_stdtol;
         p->conf.base.yNormMax = cy * (SLC_c128_stdtol * (SLC_r64_t)1000);
         p->conf.base.objective = NULL;
-        p->conf.jacobian = (SLC_GVVF_c128*)(p + 1);
+        p->conf.jacobian = (SLC_GVVF_c128*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
     } while (0);
     return p;
@@ -811,7 +864,7 @@ SLC_errno_t SLC_NLSLGNSolverc128_Init(SLC_PNLSLGNSolverc128_t solver)
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_i16_t unit_size = sizeof(SLC_c128_t);
     assert(solver->conf.base.objective);
-    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    assert(solver->conf.base.cc > 0 && solver->conf.base.c); // const parameters has been initialized.
     for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
     {
         assert(solver->conf.jacobian[i]);
@@ -846,8 +899,8 @@ SLC_errno_t SLC_NLSLGNSolverc128_Init(SLC_PNLSLGNSolverc128_t solver)
         }
         SLC_c128_copy(solver->_xcv->data._c128, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
-            solver->_xcv->data._c128, solver->conf.base.cx,
             solver->_ycv->data._c128, solver->conf.base.cy,
+            solver->_xcv->data._c128, solver->conf.base.cx,
             solver->conf.base.c, solver->conf.base.cc
         );
         solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
@@ -866,8 +919,8 @@ SLC_errno_t RenewXc128(SLC_PNLSLGNSolverc128_t solver)
         for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
         {
             err = solver->conf.jacobian[i](
+                solver->_jcolbuf->data._c128, solver->conf.base.cy,
                 solver->_xcv->data._c128, solver->conf.base.cx,
-                solver->_jcolbuf->data._c128, solver->conf.base.cx,
                 solver->conf.base.c, solver->conf.base.cc
             );
             if (err)
@@ -909,6 +962,23 @@ SLC_errno_t RenewXc128(SLC_PNLSLGNSolverc128_t solver)
     return err;
 }
 
+void Tracec128(SLC_size_t iter, SLC_PNLSLGNSolverc128_t solver)
+{
+    SLC_LogDBG("iter:%ld\n\tx = {", iter);
+    SLC_PArray_t x = solver->_xcv;
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        SLC_c128_print(stdout, "\t", x->data._c128[i]);
+    }
+    fprintf(stdout, "\t}\n\ty = {");
+    SLC_PArray_t y = solver->_ycv;
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        SLC_c128_print(stdout, "\t", y->data._c128[i]);
+    }
+    fprintf(stdout, "\t}\n");
+}
+
 SLC_errno_t SLC_NLSLGNSolverc128_Execute(SLC_PNLSLGNSolverc128_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -917,6 +987,7 @@ SLC_errno_t SLC_NLSLGNSolverc128_Execute(SLC_PNLSLGNSolverc128_t solver)
         solver->state = NLSLState_running;
         for (; iter < solver->conf.base.maxIter; iter++)
         {
+            Tracec128(iter, solver);
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewXc128(solver)))
             {

@@ -52,10 +52,10 @@ SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t c
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_PNLSLGNSolver<NTID>_t p = NULL;
     do {
-        SLC_size_t alloc_size = 
-            SLC_ALIGN8(sizeof(SLC_NLSLGNSolver<NTID>_t)) + 
-            SLC_ALIGN8(sizeof(SLC_GVVF_<NTID>) * cx);
-        SLC_PNLSLGNSolver<NTID>_t p = aligned_alloc(8, alloc_size);
+        SLC_size_t alloc_size_core = SLC_ALIGN8(sizeof(SLC_NLSLGNSolver<NTID>_t));
+        SLC_size_t alloc_size_jacobian = SLC_ALIGN8(sizeof(SLC_GVVF_<NTID>) * cx);
+        SLC_size_t alloc_size = alloc_size_core + alloc_size_jacobian;
+        p = (SLC_PNLSLGNSolver<NTID>_t)aligned_alloc(8, alloc_size);
         SLC_IfNullERR(p, err, __FILE__, __func__, __LINE__);
         p->conf.base.cx = cx;
         p->conf.base.cy = cy;
@@ -65,7 +65,7 @@ SLC_PNLSLGNSolver<NTID>_t SLC_NLSLGNSolver<NTID>_New(SLC_size_t cx, SLC_size_t c
         p->conf.base.dxNormMax = cx * SLC_<NTID>_stdtol;
         p->conf.base.yNormMax = cy * (SLC_<NTID>_stdtol * (SLC_<RTID>_t)1000);
         p->conf.base.objective = NULL;
-        p->conf.jacobian = (SLC_GVVF_<NTID>*)(p + 1);
+        p->conf.jacobian = (SLC_GVVF_<NTID>*)((SLC_u8_t*)p + alloc_size_core);
         p->state = NLSLState_created;
     } while (0);
     return p;
@@ -93,7 +93,7 @@ SLC_errno_t SLC_NLSLGNSolver<NTID>_Init(SLC_PNLSLGNSolver<NTID>_t solver)
     SLC_errno_t err = EXIT_SUCCESS;
     SLC_i16_t unit_size = sizeof(SLC_<NTID>_t);
     assert(solver->conf.base.objective);
-    assert(solver->conf.base.cc > 0 && !solver->conf.base.c); // const parameters has not been initialized.
+    assert(solver->conf.base.cc > 0 && solver->conf.base.c); // const parameters has been initialized.
     for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
     {
         assert(solver->conf.jacobian[i]);
@@ -128,8 +128,8 @@ SLC_errno_t SLC_NLSLGNSolver<NTID>_Init(SLC_PNLSLGNSolver<NTID>_t solver)
         }
         SLC_<NTID>_copy(solver->_xcv->data._<NTID>, 1, solver->conf.base.xInitial, 1, solver->conf.base.cx);
         err = solver->conf.base.objective(
-            solver->_xcv->data._<NTID>, solver->conf.base.cx,
             solver->_ycv->data._<NTID>, solver->conf.base.cy,
+            solver->_xcv->data._<NTID>, solver->conf.base.cx,
             solver->conf.base.c, solver->conf.base.cc
         );
         solver->state = (err) ? NLSLState_errabort : NLSLState_initialized;
@@ -148,8 +148,8 @@ SLC_errno_t RenewX<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
         for (SLC_size_t i = 0; i < solver->conf.base.cx; i++)
         {
             err = solver->conf.jacobian[i](
+                solver->_jcolbuf->data._<NTID>, solver->conf.base.cy,
                 solver->_xcv->data._<NTID>, solver->conf.base.cx,
-                solver->_jcolbuf->data._<NTID>, solver->conf.base.cx,
                 solver->conf.base.c, solver->conf.base.cc
             );
             if (err)
@@ -191,6 +191,23 @@ SLC_errno_t RenewX<NTID>(SLC_PNLSLGNSolver<NTID>_t solver)
     return err;
 }
 
+void Trace<NTID>(SLC_size_t iter, SLC_PNLSLGNSolver<NTID>_t solver)
+{
+    SLC_LogDBG("iter:%ld\n\tx = {", iter);
+    SLC_PArray_t x = solver->_xcv;
+    for (SLC_i16_t i = 0; i < x->cont.i16[2]; i++)
+    {
+        SLC_<NTID>_print(stdout, "\t", x->data._<NTID>[i]);
+    }
+    fprintf(stdout, "\t}\n\ty = {");
+    SLC_PArray_t y = solver->_ycv;
+    for (SLC_i16_t i = 0; i < y->cont.i16[2]; i++)
+    {
+        SLC_<NTID>_print(stdout, "\t", y->data._<NTID>[i]);
+    }
+    fprintf(stdout, "\t}\n");
+}
+
 SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -199,6 +216,7 @@ SLC_errno_t SLC_NLSLGNSolver<NTID>_Execute(SLC_PNLSLGNSolver<NTID>_t solver)
         solver->state = NLSLState_running;
         for (; iter < solver->conf.base.maxIter; iter++)
         {
+            Trace<NTID>(iter, solver);
             // calculating a new X vector to update solver->_xcv_new.
             if (EXIT_SUCCESS != (err = RenewX<NTID>(solver)))
             {
