@@ -1,4 +1,32 @@
 #pragma region Unit_Tests_for_Geometry_functions_with_base_number_type_SLC_<NTID>_t
+typedef struct {
+    SLC_<NTID>_t mat0[16], pnts[4*3], ref_transformed[4*3];
+} GeometryUT<NTID>_Params_t, *PGeometryUT<NTID>_Params_t;
+typedef const GeometryUT<NTID>_Params_t *PCGeometryUT<NTID>_Params_t;
+
+SLC_errno_t SLC_<NTID>_GeometryInvMulUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    PCGeometryUT<NTID>_Params_t params = (PCGeometryUT<NTID>_Params_t)args->data;
+    SLC_TMat<NTID>_t _matinv = (SLC_TMat<NTID>_t)alloca(sizeof(SLC_<NTID>_t) * 16);
+    SLC_Pnt<NTID>_t _transformed = 
+        (SLC_TMat<NTID>_t)alloca(sizeof(SLC_<NTID>_t) * 4 * 3);
+    SLC_TMat<NTID>_t _matinv_mat0 = (SLC_TMat<NTID>_t)alloca(sizeof(SLC_<NTID>_t) * 16);
+    SLC_TMat<NTID>_t const imat = SLC_TMat<NTID>_IMat();
+    do {
+        // get inv mat0
+        SLC_TMat<NTID>_t matinv = SLC_TMat<NTID>_Inv((SLC_TMat<NTID>_t)params->mat0, _matinv);
+
+        // get (inv mat0) * mat0
+        SLC_TMat<NTID>_t matinv_mat0 = SLC_TMat<NTID>_Mul(
+            matinv, (SLC_TMat<NTID>_t)params->mat0, _matinv_mat0);
+
+        // compare identity matrix and the product (inv mat0) * mat0.
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
 SLC_errno_t SLC_<NTID>_GeometryUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;

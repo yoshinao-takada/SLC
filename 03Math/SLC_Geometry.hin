@@ -10,6 +10,9 @@ typedef const SLC_Polar<NTID>_t *SLC_PCPolar<NTID>_t;
 #pragma endregion <NTID>_basic_geometrical_data_types
 
 #pragma region <NTID>_function_prototypes
+// 4x4 identity matrix
+SLC_TMat<NTID>_t const SLC_TMat<NTID>_IMat();
+
 // mprod = mleft * mright, and returned by SLC_TMat<NTID>_Mul.
 // work is used as work area. It must have more than 16 elements.
 SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(

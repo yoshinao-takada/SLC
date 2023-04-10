@@ -1,24 +1,50 @@
-#pragma region r32_test_data
-static const struct {
-
-} r32_params;
-#pragma endregion
-#pragma region r64_test_data
-static const struct {
-
-} r64_params;
-#pragma endregion
-
-static const SLC_TestArgs_t r32_args = { 0, (void*)&r32_params };
-static const SLC_TestArgs_t r64_args = { 0, (void*)&r64_params };
+static const GeometryUTr32_Params_t r32_args = 
+{
+    { // mat0
+        1.0f, 2.5f, 3.5f, 1.5f,
+        -2.5f, 1.0f, 0.0f, -2.0f,
+        3.5f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    },
+    { // pnts
+        1.0f, 1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, 1.0f,
+    },
+    { // ref_transformed
+        8.5f, -3.5f, 4.5f, 1.0f,
+        6.5f, 1.5f, -2.5f, 1.0f,
+        3.5f, -5.5f, 4.5f, 1.0f
+    }
+};
+static const GeometryUTr64_Params_t r64_args = 
+{
+    { // mat0
+        1.0, 2.5, 3.5, 1.5,
+        -2.5, 1.0, 0.0, -2.0,
+        3.5, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    },
+    { // pnts
+        1.0, 1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0, 1.0,
+    },
+    { // ref_transformed
+        8.5, -3.5, 4.5, 1.0,
+        6.5, 1.5, -2.5, 1.0,
+        3.5, -5.5, 4.5, 1.0
+    }
+};
 
 
 SLC_errno_t SLC_GeometryUT(SLC_i32_t settings)
 {
     SLC_errno_t err = EXIT_SUCCESS;
+    SLC_TestArgs_t testargs32 = { 0, &r32_args }, testargs64 = { 0, &r64_args };
     do {
-        SLC_test2(err, SLC_r32_GeometryUT, &r32_args, __func__, __LINE__);
-        SLC_test2(err, SLC_r64_GeometryUT, &r64_args, __func__, __LINE__);
+        SLC_test2(err, SLC_r32_GeometryUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_GeometryUT, &testargs64, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

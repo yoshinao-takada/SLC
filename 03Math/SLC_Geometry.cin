@@ -1,5 +1,8 @@
 #pragma region <NTID>_function_impl
 #pragma region matrix_multiplication
+// 4x4 identity matrix
+const SLC_TMat<NTID>_t SLC_TMat<NTID>_IMat() { return (const SLC_TMat<NTID>_t)IMat_<NTID>; }
+
 SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
     SLC_TMat<NTID>_t mleft, SLC_TMat<NTID>_t mright, SLC_TMat<NTID>_t mprod
 ) {

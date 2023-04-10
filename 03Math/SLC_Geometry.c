@@ -9,6 +9,9 @@ static const SLC_r64_t IMat_r64[] = {
 	0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
 #pragma region r32_function_impl
 #pragma region matrix_multiplication
+// 4x4 identity matrix
+const SLC_TMatr32_t SLC_TMatr32_IMat() { return (const SLC_TMatr32_t)IMat_r32; }
+
 SLC_TMatr32_t SLC_TMatr32_Mul(
     SLC_TMatr32_t mleft, SLC_TMatr32_t mright, SLC_TMatr32_t mprod
 ) {
@@ -115,6 +118,9 @@ void SLC_PolarToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar)
 #pragma endregion r32_function_impl
 #pragma region r64_function_impl
 #pragma region matrix_multiplication
+// 4x4 identity matrix
+const SLC_TMatr64_t SLC_TMatr64_IMat() { return (const SLC_TMatr64_t)IMat_r64; }
+
 SLC_TMatr64_t SLC_TMatr64_Mul(
     SLC_TMatr64_t mleft, SLC_TMatr64_t mright, SLC_TMatr64_t mprod
 ) {

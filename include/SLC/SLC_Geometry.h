@@ -15,6 +15,9 @@ typedef const SLC_Polarr32_t *SLC_PCPolarr32_t;
 #pragma endregion r32_basic_geometrical_data_types
 
 #pragma region r32_function_prototypes
+// 4x4 identity matrix
+const SLC_TMatr32_t SLC_TMatr32_IMat();
+
 // mprod = mleft * mright, and returned by SLC_TMatr32_Mul.
 // work is used as work area. It must have more than 16 elements.
 SLC_TMatr32_t SLC_TMatr32_Mul(
@@ -66,6 +69,9 @@ typedef const SLC_Polarr64_t *SLC_PCPolarr64_t;
 #pragma endregion r64_basic_geometrical_data_types
 
 #pragma region r64_function_prototypes
+// 4x4 identity matrix
+const SLC_TMatr64_t SLC_TMatr64_IMat();
+
 // mprod = mleft * mright, and returned by SLC_TMatr64_Mul.
 // work is used as work area. It must have more than 16 elements.
 SLC_TMatr64_t SLC_TMatr64_Mul(
