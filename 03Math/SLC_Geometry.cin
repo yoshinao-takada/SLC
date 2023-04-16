@@ -1,19 +1,20 @@
 #pragma region <NTID>_function_impl
 #pragma region matrix_multiplication
 // 4x4 identity matrix
-const SLC_TMat<NTID>_t SLC_TMat<NTID>_IMat() { return (const SLC_TMat<NTID>_t)IMat_<NTID>; }
+const SLC_CTMat<NTID>_t SLC_TMat<NTID>_IMat() { return (const SLC_TMat<NTID>_t)IMat_<NTID>; }
 
-SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
-    SLC_TMat<NTID>_t mleft, SLC_TMat<NTID>_t mright, SLC_TMat<NTID>_t mprod
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_Mul(
+    SLC_CTMat<NTID>_t mleft, SLC_CTMat<NTID>_t mright, SLC_TMat<NTID>_t mprod
 ) {
     for (SLC_size_t row = 0; row < 4; row++)
     {
+        const SLC_<NTID>_t* _mright = mright;
         for (SLC_size_t column = 0; column < 4; column ++)
         {
             mprod[column + row * 4] =
-                mleft[0] * mright[0] + mleft[1] * mright[4] +
-                mleft[2] * mright[8] + mleft[3] * mright[12];
-            mright++;
+                mleft[0] * _mright[0] + mleft[1] * _mright[4] +
+                mleft[2] * _mright[8] + mleft[3] * _mright[12];
+            _mright++;
         }
         mleft += 4;
     }
@@ -22,7 +23,7 @@ SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
 
 #define MATSIZE4X4 { sizeof(SLC_<NTID>_t), 4, 4, 1 }
 #define MATSIZE5X8 { sizeof(SLC_<NTID>_t), 8, 5, 1 }
-SLC_TMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_TMat<NTID>_t m, SLC_TMat<NTID>_t minv)
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_CTMat<NTID>_t m, SLC_TMat<NTID>_t minv)
 {
     SLC_4i16_t worksize = MATSIZE5X8;
     SLC_Array_t _m = { { MATSIZE4X4 }, { m } };
@@ -32,8 +33,8 @@ SLC_TMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_TMat<NTID>_t m, SLC_TMat<NTID>_t minv)
     return err ? NULL : minv;
 }
 
-SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
-    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed
+const SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
+    SLC_CTMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed
 ) {
     transformed[0] = m[0] * original[0] + m[1] * original[1] + m[2] * original[2] + m[3] * original[3];
     transformed[1] = m[4] * original[0] + m[5] * original[1] + m[6] * original[2] + m[7] * original[3];
@@ -42,8 +43,8 @@ SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
     return transformed;
 }
 
-SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
-    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count
+const SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
+    SLC_CTMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count
 ) {
     const SLC_<NTID>_t* _original = original;
     SLC_<NTID>_t* _transformed = transformed;
@@ -58,7 +59,7 @@ SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
 #pragma endregion matrix_multiplication
 
 #pragma region rotation_matrix
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
 {
     memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
     result[0] = result[5] = c;
@@ -66,15 +67,15 @@ SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_
     return result;
 }
 
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
 {
     memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
     result[5] = result[10] = c;
-    result[9] = -(result[6] = s);
+    result[6] = -(result[9] = s);
     return result;
 }
 
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result)
 {
     memcpy(result, IMat_<NTID>, sizeof(IMat_<NTID>));
     result[0] = result[10] = c;
@@ -84,7 +85,7 @@ SLC_<NTID>_t* SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_
 #pragma endregion rotation_matrix
 
 #pragma region polar_cartesian_conversion
-void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian)
+void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t cartesian)
 {
     SLC_<NTID>_t _w = SLC_<NTID>_units[1]/cartesian[3];
     SLC_3<NTID>_t xyz = { _w * cartesian[0], _w * cartesian[1], _w * cartesian[2] };
@@ -104,6 +105,191 @@ void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t p
     cartesian[3] = SLC_<NTID>_units[1];
 }
 #pragma region polar_cartesian_conversion
+SLC_CVec<NTID>_t SLC_Vec<NTID>_CrossProduct(SLC_CVec<NTID>_t x0, SLC_CVec<NTID>_t x1, SLC_Vec<NTID>_t result)
+{
+    result[0] = x0[1] * x1[2] - x1[1] * x0[2];
+    result[1] = x0[2] * x1[0] - x1[2] * x0[0];
+    result[2] = x0[0] * x1[1] - x1[0] * x0[1];
+    result[3] = x0[3] * x1[3];
+    return result;
+}
+#pragma region printing
+void SLC_TMat<NTID>_Print(FILE* out, SLC_CTMat<NTID>_t mat)
+{
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            const char* delimiter = (column == 0) ? "" : ", ";
+            SLC_<NTID>_print(out, delimiter, mat[column + row*4]);
+        }
+        fprintf(out, "\n");
+    }
+}
+
+void SLC_Pnt<NTID>_Print(FILE* out, SLC_CPnt<NTID>_t pnt)
+{
+    SLC_<NTID>_print(out, "", pnt[0]);
+    SLC_<NTID>_print(out, ", ", pnt[1]);
+    SLC_<NTID>_print(out, ", ", pnt[2]);
+    SLC_<NTID>_print(out, ", ", pnt[3]);
+    SLC_<NTID>_print(out, ",(", pnt[0]/pnt[3]);
+    SLC_<NTID>_print(out, ", ", pnt[1]/pnt[3]);
+    SLC_<NTID>_print(out, ", ", pnt[2]/pnt[3]);
+    fprintf(out, ")\n");
+}
+
+void SLC_Vec<NTID>_Print(FILE* out, SLC_CVec<NTID>_t vec)
+{
+    SLC_<NTID>_print(out, "", vec[0]);
+    SLC_<NTID>_print(out, ", ", vec[1]);
+    SLC_<NTID>_print(out, ", ", vec[2]);
+    SLC_<NTID>_print(out, ", ", vec[3]);
+    SLC_<NTID>_print(out, ",(", vec[0]/vec[3]);
+    SLC_<NTID>_print(out, ", ", vec[1]/vec[3]);
+    SLC_<NTID>_print(out, ", ", vec[2]/vec[3]);
+    fprintf(out, ")\n");
+}
+#pragma endregion printing
+#pragma region high-level_geometry_functions
+SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1)
+{
+    SLC_<NTID>_t normalizer = SLC_<NTID>_units[1] / (v0[3] * v1[3]);
+    return normalizer * (v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]);
+}
+
+SLC_bool_t SLC_Line<NTID>_IsIn(SLC_PCLinePlane<NTID>_t line, SLC_CPnt<NTID>_t pnt, SLC_<NTID>_t tol)
+{
+    SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    SLC_<NTID>_t pnt_scaling = _1 / pnt[3];
+    SLC_<NTID>_t p0_scaling = _1 / line->p0[3];
+    SLC_4<NTID>_t pnt_p0 = 
+    {
+        pnt[0] * pnt_scaling - line->p0[0] * p0_scaling,
+        pnt[1] * pnt_scaling - line->p0[1] * p0_scaling,
+        pnt[2] * pnt_scaling - line->p0[2] * p0_scaling,
+        _1
+    };
+    SLC_<NTID>_t pnt_p0_length = SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(pnt_p0, pnt_p0));
+    if (pnt_p0_length < tol)
+    {
+        return true;
+    }
+    SLC_<NTID>_t normalizer = _1 / pnt_p0_length;
+    pnt_p0[0] *= normalizer;
+    pnt_p0[1] *= normalizer;
+    pnt_p0[2] *= normalizer;
+    SLC_<NTID>_t discrimination_param = SLC_Vec<NTID>_InnerProduct(pnt_p0, line->v0);
+    return (SLC_<NTID>_abs(discrimination_param - _1) < tol) ||
+        (SLC_<NTID>_abs(discrimination_param + _1) < tol);
+}
+
+void SLC_LinePlane<NTID>_Print(FILE* out, SLC_PCLinePlane<NTID>_t lineplane)
+{
+    fprintf(out, "Line-Plane:\n\tp0: ");
+    SLC_Vec<NTID>_Print(out, lineplane->p0);
+    fprintf(out, ",\n\tv0: ");
+    SLC_Vec<NTID>_Print(out, lineplane->p0);
+    fprintf(out, "\n");
+}
+
+SLC_bool_t SLC_Plane<NTID>_IsIn(SLC_PCLinePlane<NTID>_t plane, SLC_CPnt<NTID>_t pnt, SLC_<NTID>_t tol)
+{
+    SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    SLC_<NTID>_t pnt_scaling = _1 / pnt[3];
+    SLC_<NTID>_t p0_scaling = _1 / plane->p0[3];
+    SLC_4<NTID>_t pnt_p0 = 
+    {
+        pnt[0] * pnt_scaling - plane->p0[0] * p0_scaling,
+        pnt[1] * pnt_scaling - plane->p0[1] * p0_scaling,
+        pnt[2] * pnt_scaling - plane->p0[2] * p0_scaling,
+        _1
+    };
+    SLC_<NTID>_t pnt_p0_length = SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(pnt_p0, pnt_p0));
+    if (pnt_p0_length < tol)
+    {
+        return true;
+    }
+    SLC_<NTID>_t normalizer = _1 / pnt_p0_length;
+    pnt_p0[0] *= normalizer;
+    pnt_p0[1] *= normalizer;
+    pnt_p0[2] *= normalizer;
+    SLC_<NTID>_t discrimination_param = SLC_Vec<NTID>_InnerProduct(pnt_p0, plane->v0);
+    return SLC_<NTID>_abs(discrimination_param) < tol;
+}
+
+SLC_errno_t SLC_LinePlane<NTID>_Crosssection(
+    SLC_PCLinePlane<NTID>_t line, SLC_PCLinePlane<NTID>_t plane, SLC_Pnt<NTID>_t cross)
+{
+    const SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_t a;
+        SLC_4<NTID>_t p1_p0;
+        SLC_<NTID>_t DN = SLC_Vec<NTID>_InnerProduct(line->v0, plane->v0);
+        if (SLC_<NTID>_abs(DN) < SLC_<NTID>_stdtol)
+        { // line and plane are nearly parallel.
+            err = SLC_ESINGULAR;
+            break;
+        }
+        p1_p0[0] = plane->p0[0] * line->p0[3] - line->p0[0] * plane->p0[3];
+        p1_p0[1] = plane->p0[1] * line->p0[3] - line->p0[1] * plane->p0[3];
+        p1_p0[2] = plane->p0[2] * line->p0[3] - line->p0[2] * plane->p0[3];
+        p1_p0[3] = plane->p0[3] * line->p0[3];
+        a = SLC_Vec<NTID>_InnerProduct(p1_p0, plane->v0) / DN;
+        { // calc crosssection coordinate
+            SLC_<NTID>_t normalizerP0 = _1 / line->p0[3];
+            SLC_<NTID>_t normalizerD = _1 / line->v0[3];
+            cross[0] = normalizerP0 * line->p0[0] + a * normalizerD * line->v0[0];
+            cross[1] = normalizerP0 * line->p0[1] + a * normalizerD * line->v0[1];
+            cross[2] = normalizerP0 * line->p0[2] + a * normalizerD * line->v0[2];
+            cross[3] = _1;
+        }
+    } while (0);
+    return err;
+}
+
+SLC_errno_t SLC_Plane<NTID>_2Crosssection(SLC_PCLinePlane<NTID>_t planes, SLC_PLinePlane<NTID>_t cross)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_LinePlane<NTID>_t _3planes[3];
+    do {
+        memcpy(_3planes, planes, 2 * sizeof(SLC_LinePlane<NTID>_t));
+        SLC_Vec<NTID>_CrossProduct(planes[0].v0, planes[1].v0, _3planes[2].v0);
+        SLC_COPY4(_3planes[2].p0, planes[0].p0);
+        err = SLC_Plane<NTID>_3Crosssection(_3planes, cross->p0);
+        SLC_COPY4(cross->v0, _3planes[2].v0)
+    } while (0);
+    return err;
+}
+
+SLC_errno_t SLC_Plane<NTID>_3Crosssection(SLC_PCLinePlane<NTID>_t planes, SLC_Pnt<NTID>_t cross)
+{
+    const SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_4i16_t left_size = { sizeof(SLC_<NTID>_t), 3, 3, 1 }, right_size = { sizeof(SLC_<NTID>_t), 1, 3, 1 };
+    SLC_4i16_t work_size = SLC_SolveWorkSize(left_size, right_size);
+    SLC_PArray_t left = SLC_Array_Alloca(left_size), right = SLC_Array_Alloca(right_size),
+        work = SLC_Array_Alloca(work_size);
+    SLC_Array_t px = { { sizeof(SLC_<NTID>_t), 1, 3, 1 }, { cross } };
+    do {
+        left->data._<NTID>[0] = planes[0].v0[0];
+        left->data._<NTID>[1] = planes[0].v0[1];
+        left->data._<NTID>[2] = planes[0].v0[2];
+        left->data._<NTID>[3] = planes[1].v0[0];
+        left->data._<NTID>[4] = planes[1].v0[1];
+        left->data._<NTID>[5] = planes[1].v0[2];
+        left->data._<NTID>[6] = planes[2].v0[0];
+        left->data._<NTID>[7] = planes[2].v0[1];
+        left->data._<NTID>[8] = planes[2].v0[2];
+        right->data._<NTID>[0] = SLC_Vec<NTID>_InnerProduct(planes[0].p0, planes[0].v0);
+        right->data._<NTID>[1] = SLC_Vec<NTID>_InnerProduct(planes[1].p0, planes[1].v0);
+        right->data._<NTID>[2] = SLC_Vec<NTID>_InnerProduct(planes[2].p0, planes[2].v0);
+        SLC_Mat<NTID>_Solve(&px, left, right, work);
+    } while (0);
+    return err;
+}
+#pragma endregion high-level_geometry_functions
 #undef MATSIZE4X4
 #undef MATSIZE5X8
 #pragma endregion <NTID>_function_impl

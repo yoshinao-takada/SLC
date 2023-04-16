@@ -37,6 +37,56 @@ static const GeometryUTr64_Params_t r64_args =
     }
 };
 
+static const SLC_LinePlaner32_TestParams_t r32_lineplane =
+{
+    // ref plane/line ref point is { 1.5, 1.5, 0.0 }, normal/direction vector = { 0.0, 0.0, -1.0, 1.0 }
+    // coordinate in the test plane
+    { 1.5f, -1.5f, 0.0f,  1.0f },
+    // coordinate in the test line
+    { 1.5f, 1.5f, 3.0f,  1.0f },
+    // coordinate not in the test plane or the test line.
+    { 1.2f, 1.5f, 1.0f,  1.0f },
+    { // array of line or planes 
+        // [0]: test plane and test line of IsIn methods, and
+        // test line of line-plane crosssection and test plane of 2-plane, 3-plane crosssection
+        {
+            { 1.5f, 1.5f, 0.0f,  1.0f }, { 0.0f, 0.0f, -1.0f,  1.0f }
+        },
+        // [1]: test plane of line-plane crosssection and the 2nd plane of 2-plane, 3-plane crosssection
+        {
+            { 1.5f, 1.5f, 0.0f,  1.0f }, { 0.0f, 0.7071f, -.7071f,  1.0f }
+        },
+        // [2]: test plane of 3-plane crosssection
+        {
+            { 2.0f, -1.0f, 0.3f,  1.0f }, { 1.0f, 0.0f, 0.0f,  1.0f }
+        }
+    }
+};
+static const SLC_LinePlaner64_TestParams_t r64_lineplane =
+{
+    // ref plane/line ref point is { 1.5, 1.5, 0.0 }, normal/direction vector = { 0.0, 0.0, -1.0, 1.0 }
+    // coordinate in the test plane
+    { 1.5, -1.5, 0.0,  1.0 },
+    // coordinate in the test line
+    { 1.5, 1.5, 3.0,  1.0 },
+    // coordinate not in the test plane or the test line.
+    { 1.2, 1.5, 1.0,  1.0 },
+    { // array of line or planes 
+        // [0]: test plane and test line of IsIn methods, and
+        // test line of line-plane crosssection and test plane of 2-plane, 3-plane crosssection
+        {
+            { 1.5, 1.5, 0.0,  1.0 }, { 0.0, 0.0, -1.0,  1.0 }
+        },
+        // [1]: test plane of line-plane crosssection and the 2nd plane of 2-plane, 3-plane crosssection
+        {
+            { 1.5, 1.5, 0.0,  1.0 }, { 0.0, 0.7071, -.7071,  1.0 }
+        },
+        // [2]: test plane of 3-plane crosssection
+        {
+            { 2.0, -1.0, 0.3,  1.0 }, { 1.0, 0.0, 0.0,  1.0 }
+        }
+    }
+};
 
 SLC_errno_t SLC_GeometryUT(SLC_i32_t settings)
 {
@@ -45,6 +95,10 @@ SLC_errno_t SLC_GeometryUT(SLC_i32_t settings)
     do {
         SLC_test2(err, SLC_r32_GeometryUT, &testargs32, __func__, __LINE__);
         SLC_test2(err, SLC_r64_GeometryUT, &testargs64, __func__, __LINE__);
+        testargs32.data = &r32_lineplane;
+        testargs64.data = &r64_lineplane;
+        SLC_test2(err, SLC_r32_GeometryHLAPIUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_GeometryHLAPIUT, &testargs64, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

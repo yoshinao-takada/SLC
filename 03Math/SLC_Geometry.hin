@@ -3,6 +3,10 @@
 typedef SLC_<NTID>_t* SLC_Pnt<NTID>_t;
 typedef SLC_<NTID>_t* SLC_Vec<NTID>_t;
 typedef SLC_<NTID>_t* SLC_TMat<NTID>_t;
+typedef const SLC_<NTID>_t* SLC_CPnt<NTID>_t;
+typedef const SLC_<NTID>_t* SLC_CVec<NTID>_t;
+typedef const SLC_<NTID>_t* SLC_CTMat<NTID>_t;
+
 typedef struct {
     SLC_<NTID>_t r, cphi, sphi, ctheta, stheta;
 } SLC_Polar<NTID>_t, *SLC_PPolar<NTID>_t;
@@ -11,44 +15,116 @@ typedef const SLC_Polar<NTID>_t *SLC_PCPolar<NTID>_t;
 
 #pragma region <NTID>_function_prototypes
 // 4x4 identity matrix
-SLC_TMat<NTID>_t const SLC_TMat<NTID>_IMat();
+SLC_CTMat<NTID>_t const SLC_TMat<NTID>_IMat();
 
 // mprod = mleft * mright, and returned by SLC_TMat<NTID>_Mul.
 // work is used as work area. It must have more than 16 elements.
-SLC_TMat<NTID>_t SLC_TMat<NTID>_Mul(
-    SLC_TMat<NTID>_t mleft, SLC_TMat<NTID>_t mright, SLC_TMat<NTID>_t mprod);
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_Mul(
+    SLC_CTMat<NTID>_t mleft, SLC_CTMat<NTID>_t mright, SLC_TMat<NTID>_t mprod);
 
 // minv = (m)^(-1)
 // work is used as work area. It must have more than 40 elements.
-SLC_TMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_TMat<NTID>_t m, SLC_TMat<NTID>_t minv);
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_Inv(SLC_CTMat<NTID>_t m, SLC_TMat<NTID>_t minv);
 
 // transformed = m * original
 // transform points in original to transformed.
-SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
-    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed);
-SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
-    SLC_TMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count);
+const SLC_<NTID>_t* SLC_TMat<NTID>_Transform(
+    SLC_CTMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed);
+const SLC_<NTID>_t* SLC_TMat<NTID>_MultiTransform(
+    SLC_CTMat<NTID>_t m, const SLC_<NTID>_t* original, SLC_<NTID>_t* transformed, SLC_size_t count);
 
 // homogeneous coordinate 3D rotation matrix around Z axis; i.e. in x-y -plane
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* resut);
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateZ(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* resut);
 #define SLC_TMat<NTID>_rotateZrad(__rad, __result) \
-    SLC_TMat<NTID>_rotateZ(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+    SLC_TMat<NTID>_rotateZ(SLC_<NTID>cos(__rad), SLC_<NTID>sin(__rad), __result)
 #define SLC_TMat<NTID>_rotateZdeg(__deg, __result) \
-    SLC_TMat<NT>_rotateZrad(SLC_<NTID>deg2rad(__deg))
+    SLC_TMat<NTID>_rotateZrad(SLC_<NTID>deg2rad(__deg), __result)
 
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateX(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
 #define SLC_TMat<NTID>_rotateXrad(__rad, __result) \
-    SLC_TMat<NTID>_rotateX(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+    SLC_TMat<NTID>_rotateX(SLC_<NTID>cos(__rad), SLC_<NTID>sin(__rad), __result)
 #define SLC_TMat<NTID>_rotateXdeg(__deg, __result) \
-    SLC_TMat<NT>_rotateXrad(SLC_<NTID>deg2rad(__deg))
+    SLC_TMat<NTID>_rotateXrad(SLC_<NTID>deg2rad(__deg), __result)
 
-SLC_<NTID>_t* SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
+SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NTID>_t* result);
 #define SLC_TMat<NTID>_rotateYrad(__rad, __result) \
-    SLC_TMat<NTID>_rotateY(SLC_cos<NTID>(__rad), SLC_sin<NTID>(__rad), __result)
+    SLC_TMat<NTID>_rotateY(SLC_<NTID>cos(__rad), SLC_<NTID>sin(__rad), __result)
 #define SLC_TMat<NTID>_rotateYdeg(__deg, __result) \
-    SLC_TMat<NT>_rotateYrad(SLC_<NTID>deg2rad(__deg))
+    SLC_TMat<NTID>_rotateYrad(SLC_<NTID>deg2rad(__deg), __result)
 
 // polar-Cartesian coordinate translation
-void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian);
+void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t cartesian);
 void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar);
+
+SLC_CVec<NTID>_t SLC_Vec<NTID>_CrossProduct(SLC_CVec<NTID>_t x0, SLC_CVec<NTID>_t x1, SLC_Vec<NTID>_t result);
+// print
+void SLC_TMat<NTID>_Print(FILE* out, SLC_CTMat<NTID>_t mat);
+void SLC_Pnt<NTID>_Print(FILE* out, SLC_CPnt<NTID>_t pnt);
+void SLC_Vec<NTID>_Print(FILE* out, SLC_CVec<NTID>_t vec);
+
+#pragma region high-level_geometry_functions
+SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1);
+
+// A line and a plane can be represented by a point and a unit vector.
+typedef struct {
+    SLC_4<NTID>_t p0; // reference point
+    SLC_4<NTID>_t v0; // direction of line or normal of plane
+} SLC_LinePlane<NTID>_t, *SLC_PLinePlane<NTID>_t;
+typedef const SLC_LinePlane<NTID>_t *SLC_PCLinePlane<NTID>_t;
+
+/*!
+\brief Print Line-plane object
+\param out [in] output stream
+\param lineplane [in] object to print
+*/
+void SLC_LinePlane<NTID>_Print(FILE* out, SLC_PCLinePlane<NTID>_t lineplane);
+
+/*!
+\brief Return true if pnt is in line.
+\param line [in] reference line
+\param pnt [in] target point to discriminate.
+\param tol [in] criteria to discriminate an absolute value of an inner product 
+                of two unit vectors is nearly equal to 1 or not.
+\return true: pnt is in line, false: pnt is NOT in line.
+*/
+SLC_bool_t SLC_Line<NTID>_IsIn(SLC_PCLinePlane<NTID>_t line, SLC_CPnt<NTID>_t pnt, SLC_<NTID>_t tol);
+
+// Return true if pnt is in plane. tol is a criteria in discriminating two unit vector product is
+// nearly equal to 0 or not.
+/*!
+\brief Return false if pnt is not in plane.
+\param plane [in] reference plane
+\param pnt [in] target point to discriminate
+\param tol [in] criteria to discriminate an inner product of two unit vectors is nearly equal to 0 or not.
+\return true: pnt is in line, false: pnt is NOT in line.
+*/
+SLC_bool_t SLC_Plane<NTID>_IsIn(SLC_PCLinePlane<NTID>_t plane, SLC_CPnt<NTID>_t pnt, SLC_<NTID>_t tol);
+
+/*!
+\brief Get a crosssection of a line and a plane.
+\param line [in] reference point and direction vector of the line
+\param plane [in] reference point and normal vector of the plane
+\param cross [out] crosssection of the line and the plane
+\return SLC_ESINGULAR(line and plane are parallel) or EXIT_SUCCESS
+*/
+SLC_errno_t SLC_LinePlane<NTID>_Crosssection(
+    SLC_PCLinePlane<NTID>_t line, SLC_PCLinePlane<NTID>_t plane, SLC_Pnt<NTID>_t cross);
+
+/*!
+\brief Crosssection of three planes
+\param planes [in]
+\param cross [out]
+\return SLC_ESINGULAR (two of three planes are near parallel) or EXIT_SUCCESS.
+*/
+SLC_errno_t SLC_Plane<NTID>_2Crosssection(SLC_PCLinePlane<NTID>_t planes, SLC_PLinePlane<NTID>_t cross);
+
+
+/*!
+\brief Crosssection of three planes
+\param planes [in]
+\param cross [out]
+\return SLC_ESINGULAR (two of three planes are near parallel) or EXIT_SUCCESS.
+*/
+SLC_errno_t SLC_Plane<NTID>_3Crosssection(SLC_PCLinePlane<NTID>_t planes, SLC_Pnt<NTID>_t cross);
+#pragma endregion high-level_geometry_functions
 #pragma endregion <NTID>_function_prototypes

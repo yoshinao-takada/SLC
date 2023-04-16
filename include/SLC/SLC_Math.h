@@ -1,6 +1,9 @@
+#include <features.h>
 #include <math.h>
 #include <complex.h>
-
+#if !defined(M_PIf)
+#define M_PIf   ((float)M_PI)
+#endif
 #define SLC_r32deg2rad(__deg)  M_PIf * __deg / 180.0f
 #define SLC_r64deg2rad(__deg)  M_PI * __deg / 180.0
 #define SLC_r32cos(__a) cosf(__a)

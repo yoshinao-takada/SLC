@@ -12,16 +12,171 @@ SLC_errno_t SLC_<NTID>_GeometryInvMulUT(SLC_PCTestArgs_t args)
     SLC_Pnt<NTID>_t _transformed = 
         (SLC_TMat<NTID>_t)alloca(sizeof(SLC_<NTID>_t) * 4 * 3);
     SLC_TMat<NTID>_t _matinv_mat0 = (SLC_TMat<NTID>_t)alloca(sizeof(SLC_<NTID>_t) * 16);
-    SLC_TMat<NTID>_t const imat = SLC_TMat<NTID>_IMat();
+    SLC_CTMat<NTID>_t imat = SLC_TMat<NTID>_IMat();
     do {
         // get inv mat0
-        SLC_TMat<NTID>_t matinv = SLC_TMat<NTID>_Inv((SLC_TMat<NTID>_t)params->mat0, _matinv);
+        SLC_CTMat<NTID>_t matinv = SLC_TMat<NTID>_Inv((SLC_CTMat<NTID>_t)params->mat0, _matinv);
 
         // get (inv mat0) * mat0
-        SLC_TMat<NTID>_t matinv_mat0 = SLC_TMat<NTID>_Mul(
-            matinv, (SLC_TMat<NTID>_t)params->mat0, _matinv_mat0);
+        SLC_CTMat<NTID>_t matinv_mat0 = SLC_TMat<NTID>_Mul(
+            matinv, (SLC_CTMat<NTID>_t)params->mat0, _matinv_mat0);
 
         // compare identity matrix and the product (inv mat0) * mat0.
+        for (int i = 0; i < 16; i++)
+        {
+            if (!SLC_<NTID>_areequal(imat[i], _matinv_mat0[i], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+
+        // transform params->pnts
+        for (int i = 0; i < 3; i++)
+        {
+            SLC_size_t offset = i * 4;
+            SLC_TMat<NTID>_Transform(params->mat0, params->pnts + offset, _transformed + offset);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            SLC_size_t offset = i * 4;
+            if (!SLC_<NTID>_areequal
+                ((params->ref_transformed + offset)[0], (_transformed + offset)[0], SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryRotateXUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_<NTID>_t mrot[16];
+    SLC_<NTID>_t uvecY[4] = { SLC_<NTID>_units[0], SLC_<NTID>_units[1], SLC_<NTID>_units[0], SLC_<NTID>_units[1] },
+                rotated1[4], rotated2[4], rotated3[4];
+    do {
+        // rotation around X-axis
+        SLC_CTMat<NTID>_t m = SLC_TMat<NTID>_rotateXdeg((SLC_<NTID>_t)30, mrot);        
+        SLC_CVec<NTID>_t _rotated = 
+            SLC_TMat<NTID>_Transform(m, 
+                SLC_TMat<NTID>_Transform(m,
+                    SLC_TMat<NTID>_Transform(m, uvecY, rotated1),
+                rotated2),
+            rotated3);
+        if ((const void*)_rotated != (const void*)rotated3)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[0], SLC_<NTID>_stdtol)) // x == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[1], SLC_<NTID>_stdtol)) // y == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[1], _rotated[2], SLC_<NTID>_stdtol)) // z == 1
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryRotateYUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_<NTID>_t mrot[16];
+    SLC_<NTID>_t uvecZ[4] = { SLC_<NTID>_units[0], SLC_<NTID>_units[0], SLC_<NTID>_units[1], SLC_<NTID>_units[1] },
+                rotated1[4], rotated2[4];
+    do {
+        // rotation around Y-axis
+        SLC_CTMat<NTID>_t m = SLC_TMat<NTID>_rotateYdeg((SLC_<NTID>_t)45, mrot);
+        SLC_CVec<NTID>_t _rotated = 
+            SLC_TMat<NTID>_Transform(m,
+                SLC_TMat<NTID>_Transform(m, uvecZ, rotated1),
+            rotated2);
+        if ((const void*)_rotated != (const void*)rotated2)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[1], _rotated[0], SLC_<NTID>_stdtol)) // x == 1
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[1], SLC_<NTID>_stdtol)) // y == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[2], SLC_<NTID>_stdtol)) // z == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryRotateZUT(SLC_i32_t settings)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_<NTID>_t mrot[16];
+    SLC_<NTID>_t uvecX[4] = { SLC_<NTID>_units[1], SLC_<NTID>_units[0], SLC_<NTID>_units[0], SLC_<NTID>_units[1] },
+                rotated1[4], rotated2[4];
+    do {
+        // rotation around Z-axis
+        SLC_CTMat<NTID>_t m = SLC_TMat<NTID>_rotateZdeg((SLC_<NTID>_t)45, mrot);
+        SLC_CVec<NTID>_t _rotated = 
+            SLC_TMat<NTID>_Transform(m,
+                SLC_TMat<NTID>_Transform(m, uvecX, rotated1),
+            rotated2);
+        if ((const void*)_rotated != (const void*)rotated2)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[0], SLC_<NTID>_stdtol)) // x == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[1], _rotated[1], SLC_<NTID>_stdtol)) // y == 1
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(SLC_<NTID>_units[0], _rotated[2], SLC_<NTID>_stdtol)) // z == 0
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;
@@ -31,7 +186,183 @@ SLC_errno_t SLC_<NTID>_GeometryUT(SLC_PCTestArgs_t args)
 {
     SLC_errno_t err = EXIT_SUCCESS;
     do {
-        
+        SLC_test2(err, SLC_<NTID>_GeometryInvMulUT, args, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_GeometryRotateXUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_GeometryRotateYUT, 0, __func__, __LINE__);
+        SLC_test(err, SLC_<NTID>_GeometryRotateZUT, 0, __func__, __LINE__);
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+typedef struct {
+    SLC_4<NTID>_t isInPlane, isInLine, isNotIn;
+    SLC_LinePlane<NTID>_t linePlanes[3];
+} SLC_LinePlane<NTID>_TestParams_t, *SLC_PLinePlane<NTID>_TestParams_t;
+typedef const SLC_LinePlane<NTID>_TestParams_t *SLC_PCLinePlane<NTID>_TestParams_t;
+
+SLC_errno_t SLC_<NTID>_GeometryHLIsInLineUT(SLC_PCTestArgs_t args)
+{
+    SLC_PCLinePlane<NTID>_TestParams_t params = (SLC_PCLinePlane<NTID>_TestParams_t)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_bool_t isIn =
+            SLC_Line<NTID>_IsIn(&params->linePlanes[0], params->isInLine, SLC_<NTID>_stdtol);
+        if (!isIn)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        isIn = SLC_Line<NTID>_IsIn(&params->linePlanes[0], params->isNotIn, SLC_<NTID>_stdtol);
+        if (isIn)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryHLIsInPlaneUT(SLC_PCTestArgs_t args)
+{
+    SLC_PCLinePlane<NTID>_TestParams_t params = (SLC_PCLinePlane<NTID>_TestParams_t)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_bool_t isIn =
+            SLC_Plane<NTID>_IsIn(&params->linePlanes[0], params->isInPlane, SLC_<NTID>_stdtol);
+        if (!isIn)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        isIn = SLC_Plane<NTID>_IsIn(&params->linePlanes[0], params->isNotIn, SLC_<NTID>_stdtol);
+        if (isIn)
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryHLLinePlaneCrosssectionUT(SLC_PCTestArgs_t args)
+{
+    SLC_PCLinePlane<NTID>_TestParams_t params = (SLC_PCLinePlane<NTID>_TestParams_t)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_4<NTID>_t crosssection;
+        if (EXIT_SUCCESS != (err = SLC_LinePlane<NTID>_Crosssection(&params->linePlanes[0], &params->linePlanes[1], crosssection)))
+        {
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        SLC_<NTID>_t tol = (SLC_<NTID>_t)10 * SLC_<NTID>_stdtol;
+        if (!SLC_Line<NTID>_IsIn(&params->linePlanes[0], crosssection, tol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_Plane<NTID>_IsIn(&params->linePlanes[1], crosssection, tol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryHL3PlaneCrosssectionUT(SLC_PCTestArgs_t args)
+{
+    SLC_PCLinePlane<NTID>_TestParams_t params = (SLC_PCLinePlane<NTID>_TestParams_t)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_4<NTID>_t crosssection;
+        if (EXIT_SUCCESS != (err = SLC_Plane<NTID>_3Crosssection(params->linePlanes, crosssection)))
+        {
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_Plane<NTID>_IsIn(&params->linePlanes[0], crosssection, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_Plane<NTID>_IsIn(&params->linePlanes[1], crosssection, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_Plane<NTID>_IsIn(&params->linePlanes[2], crosssection, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_GeometryHL2PlaneCrosssectionUT(SLC_PCTestArgs_t args)
+{
+    SLC_PCLinePlane<NTID>_TestParams_t params = (SLC_PCLinePlane<NTID>_TestParams_t)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    const SLC_<NTID>_t _1 = SLC_<NTID>_units[1], _minus1 = SLC_<NTID>_units[2];
+    const SLC_<NTID>_t As[] = { _1, _minus1, _1 + _minus1, _1 - _minus1 };
+    do {
+        SLC_LinePlane<NTID>_t crosssection;
+        SLC_4<NTID>_t pnt;
+        if (EXIT_SUCCESS != (err = SLC_Plane<NTID>_2Crosssection(params->linePlanes, &crosssection)))
+        {
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        for (SLC_size_t i = 0; i < SLC_ARRAYSIZE(As); i++)
+        {
+            SLC_<NTID>_t A = As[i];
+            SLC_<NTID>_t normalizerP0 = crosssection.p0[3];
+            SLC_<NTID>_t normalizerV0 = crosssection.v0[3];
+            SLC_4<NTID>_t pnt = 
+            {
+                normalizerP0 * crosssection.p0[0] + A * normalizerV0 * crosssection.v0[0],
+                normalizerP0 * crosssection.p0[1] + A * normalizerV0 * crosssection.v0[1],
+                normalizerP0 * crosssection.p0[2] + A * normalizerV0 * crosssection.v0[2],
+                _1
+            };
+            SLC_bool_t isIn = SLC_Plane<NTID>_IsIn(&params->linePlanes[0], pnt, SLC_<NTID>_stdtol);
+            if (!isIn)
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+// unit test function for Geometry High-Level APIs
+SLC_errno_t SLC_<NTID>_GeometryHLAPIUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_test2(err, SLC_<NTID>_GeometryHLIsInLineUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_<NTID>_GeometryHLIsInPlaneUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_<NTID>_GeometryHLLinePlaneCrosssectionUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_<NTID>_GeometryHL3PlaneCrosssectionUT, args, __func__, __LINE__);
+        SLC_test2(err, SLC_<NTID>_GeometryHL2PlaneCrosssectionUT, args, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

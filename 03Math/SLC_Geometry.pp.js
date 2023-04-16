@@ -43,6 +43,7 @@ function CreateHeaderFile(hin, h)
         "#include \"SLC/SLC_MiniLA.h\"",
         "#include \"SLC/SLC_Math.h\"",
         "#include <memory.h>",
+        "#include <stdio.h>",
     ];
     headerText.forEach((e) => {
         text.push(e);
