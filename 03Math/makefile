@@ -5,7 +5,8 @@ OBJDIR = ../o
 DEBUG_OBJDIR = $(OBJDIR)/debug
 RELEASE_OBJDIR = $(OBJDIR)/release
 DEBUG_OBJECTS = $(DEBUG_OBJDIR)/SLC_MiniBLAS.o $(DEBUG_OBJDIR)/SLC_MiniLA.o \
-	$(DEBUG_OBJDIR)/SLC_Geometry.o $(DEBUG_OBJDIR)/SLC_NLSLGN.o
+	$(DEBUG_OBJDIR)/SLC_Geometry.o $(DEBUG_OBJDIR)/SLC_NLSLGN.o \
+	$(DEBUG_OBJDIR)/SLC_Shapes.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_OBJECTS)
@@ -23,6 +24,10 @@ $(DEBUG_OBJDIR)/SLC_Geometry.o	:	SLC_Geometry.c $(INCDIR)/SLC/SLC_Geometry.h
 	$(CC) $(CFLAGS) -g -o $@ $<
 
 $(DEBUG_OBJDIR)/SLC_NLSLGN.o	:	SLC_NLSLGN.c $(INCDIR)/SLC/SLC_NLSLGN.h $(INCDIR)/SLC/SLC_NLSL.h
+	mkdir -p $(DEBUG_OBJDIR)
+	$(CC) $(CFLAGS) -g -o $@ $<
+
+$(DEBUG_OBJDIR)/SLC_Shapes.o	:	SLC_Shapes.c $(INCDIR)/SLC/SLC_Shapes.h
 	mkdir -p $(DEBUG_OBJDIR)
 	$(CC) $(CFLAGS) -g -o $@ $<
 
