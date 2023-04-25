@@ -159,12 +159,78 @@ void SLC_Vecr32_Print(FILE* out, SLC_CVecr32_t vec)
     SLC_r32_print(out, ", ", vec[2]/vec[3]);
     fprintf(out, ")\n");
 }
-#pragma endregion printing
-#pragma region high-level_geometry_functions
+
 SLC_r32_t SLC_Vecr32_InnerProduct(SLC_CVecr32_t v0, SLC_CVecr32_t v1)
 {
     SLC_r32_t normalizer = SLC_r32_units[1] / (v0[3] * v1[3]);
     return normalizer * (v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]);
+}
+
+SLC_errno_t SLC_Vecr32_Normalize(SLC_Vecr32_t vnormalized, SLC_CVecr32_t vsrc)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_r32_t L2norm = SLC_r32sqrt(SLC_Vecr32_InnerProduct(vsrc, vsrc));
+        if (L2norm < SLC_r32_stdtol)
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+        SLC_r32_t normalizer = SLC_r32_units[1] / (L2norm * vsrc[3]);
+        vnormalized[0] = vsrc[0] * normalizer;
+        vnormalized[1] = vsrc[1] * normalizer;
+        vnormalized[2] = vsrc[2] * normalizer;
+        vnormalized[3] = SLC_r32_units[1];
+    } while (0);
+    return err;
+}
+
+void SLC_Vecr32_Vector(SLC_Vecr32_t v, SLC_CPntr32_t pbegin, SLC_CPntr32_t pend)
+{
+    const SLC_r32_t _1 = SLC_r32_units[1];
+    const SLC_r32_t pbegin_normalizer = _1 / pbegin[3];
+    const SLC_r32_t pend_normalizer = _1 / pend[3];
+    v[0] = pend_normalizer * pend[0] - pbegin_normalizer * pbegin[0];
+    v[1] = pend_normalizer * pend[1] - pbegin_normalizer * pbegin[1];
+    v[2] = pend_normalizer * pend[2] - pbegin_normalizer * pbegin[2];
+    v[3] = _1;
+}
+
+#pragma endregion printing
+#pragma region high-level_geometry_functions
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Liner32_Property
+(SLC_PLinePlaner32_t line, const SLC_Pntr32_t p0, const SLC_Pntr32_t p1)
+{
+    SLC_COPY4(line->p0, p0);
+    SLC_Vecr32_t p1p0;
+    SLC_Vecr32_Vector(p1p0, p0, p1);
+    return SLC_Vecr32_Normalize(line->v0, p1p0);
+}
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param plane [out] plane object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Planer32_Property
+(SLC_PLinePlaner32_t plane, const SLC_Pntr32_t p0, const SLC_Pntr32_t p1, const SLC_Pntr32_t p2)
+{
+    SLC_Vecr32_t p0p1, p0p2, p0p1_x_p0p2;
+    SLC_Vecr32_Vector(p0p1, p0, p1);
+    SLC_Vecr32_Vector(p0p2, p0, p2);
+    SLC_Vecr32_CrossProduct(p0p1, p0p2, p0p1_x_p0p2);
+    SLC_COPY4(plane->p0, p0);
+    return SLC_Vecr32_Normalize(plane->v0, p0p1_x_p0p2);
 }
 
 SLC_bool_t SLC_Liner32_IsIn(SLC_PCLinePlaner32_t line, SLC_CPntr32_t pnt, SLC_r32_t tol)
@@ -454,12 +520,78 @@ void SLC_Vecr64_Print(FILE* out, SLC_CVecr64_t vec)
     SLC_r64_print(out, ", ", vec[2]/vec[3]);
     fprintf(out, ")\n");
 }
-#pragma endregion printing
-#pragma region high-level_geometry_functions
+
 SLC_r64_t SLC_Vecr64_InnerProduct(SLC_CVecr64_t v0, SLC_CVecr64_t v1)
 {
     SLC_r64_t normalizer = SLC_r64_units[1] / (v0[3] * v1[3]);
     return normalizer * (v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]);
+}
+
+SLC_errno_t SLC_Vecr64_Normalize(SLC_Vecr64_t vnormalized, SLC_CVecr64_t vsrc)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_r64_t L2norm = SLC_r64sqrt(SLC_Vecr64_InnerProduct(vsrc, vsrc));
+        if (L2norm < SLC_r64_stdtol)
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+        SLC_r64_t normalizer = SLC_r64_units[1] / (L2norm * vsrc[3]);
+        vnormalized[0] = vsrc[0] * normalizer;
+        vnormalized[1] = vsrc[1] * normalizer;
+        vnormalized[2] = vsrc[2] * normalizer;
+        vnormalized[3] = SLC_r64_units[1];
+    } while (0);
+    return err;
+}
+
+void SLC_Vecr64_Vector(SLC_Vecr64_t v, SLC_CPntr64_t pbegin, SLC_CPntr64_t pend)
+{
+    const SLC_r64_t _1 = SLC_r64_units[1];
+    const SLC_r64_t pbegin_normalizer = _1 / pbegin[3];
+    const SLC_r64_t pend_normalizer = _1 / pend[3];
+    v[0] = pend_normalizer * pend[0] - pbegin_normalizer * pbegin[0];
+    v[1] = pend_normalizer * pend[1] - pbegin_normalizer * pbegin[1];
+    v[2] = pend_normalizer * pend[2] - pbegin_normalizer * pbegin[2];
+    v[3] = _1;
+}
+
+#pragma endregion printing
+#pragma region high-level_geometry_functions
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Liner64_Property
+(SLC_PLinePlaner64_t line, const SLC_Pntr64_t p0, const SLC_Pntr64_t p1)
+{
+    SLC_COPY4(line->p0, p0);
+    SLC_Vecr64_t p1p0;
+    SLC_Vecr64_Vector(p1p0, p0, p1);
+    return SLC_Vecr64_Normalize(line->v0, p1p0);
+}
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param plane [out] plane object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Planer64_Property
+(SLC_PLinePlaner64_t plane, const SLC_Pntr64_t p0, const SLC_Pntr64_t p1, const SLC_Pntr64_t p2)
+{
+    SLC_Vecr64_t p0p1, p0p2, p0p1_x_p0p2;
+    SLC_Vecr64_Vector(p0p1, p0, p1);
+    SLC_Vecr64_Vector(p0p2, p0, p2);
+    SLC_Vecr64_CrossProduct(p0p1, p0p2, p0p1_x_p0p2);
+    SLC_COPY4(plane->p0, p0);
+    return SLC_Vecr64_Normalize(plane->v0, p0p1_x_p0p2);
 }
 
 SLC_bool_t SLC_Liner64_IsIn(SLC_PCLinePlaner64_t line, SLC_CPntr64_t pnt, SLC_r64_t tol)

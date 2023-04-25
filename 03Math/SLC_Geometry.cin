@@ -150,12 +150,78 @@ void SLC_Vec<NTID>_Print(FILE* out, SLC_CVec<NTID>_t vec)
     SLC_<NTID>_print(out, ", ", vec[2]/vec[3]);
     fprintf(out, ")\n");
 }
-#pragma endregion printing
-#pragma region high-level_geometry_functions
+
 SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1)
 {
     SLC_<NTID>_t normalizer = SLC_<NTID>_units[1] / (v0[3] * v1[3]);
     return normalizer * (v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]);
+}
+
+SLC_errno_t SLC_Vec<NTID>_Normalize(SLC_Vec<NTID>_t vnormalized, SLC_CVec<NTID>_t vsrc)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    do {
+        SLC_<NTID>_t L2norm = SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(vsrc, vsrc));
+        if (L2norm < SLC_<NTID>_stdtol)
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+        SLC_<NTID>_t normalizer = SLC_<NTID>_units[1] / (L2norm * vsrc[3]);
+        vnormalized[0] = vsrc[0] * normalizer;
+        vnormalized[1] = vsrc[1] * normalizer;
+        vnormalized[2] = vsrc[2] * normalizer;
+        vnormalized[3] = SLC_<NTID>_units[1];
+    } while (0);
+    return err;
+}
+
+void SLC_Vec<NTID>_Vector(SLC_Vec<NTID>_t v, SLC_CPnt<NTID>_t pbegin, SLC_CPnt<NTID>_t pend)
+{
+    const SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    const SLC_<NTID>_t pbegin_normalizer = _1 / pbegin[3];
+    const SLC_<NTID>_t pend_normalizer = _1 / pend[3];
+    v[0] = pend_normalizer * pend[0] - pbegin_normalizer * pbegin[0];
+    v[1] = pend_normalizer * pend[1] - pbegin_normalizer * pbegin[1];
+    v[2] = pend_normalizer * pend[2] - pbegin_normalizer * pbegin[2];
+    v[3] = _1;
+}
+
+#pragma endregion printing
+#pragma region high-level_geometry_functions
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Line<NTID>_Property
+(SLC_PLinePlane<NTID>_t line, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1)
+{
+    SLC_COPY4(line->p0, p0);
+    SLC_Vec<NTID>_t p1p0;
+    SLC_Vec<NTID>_Vector(p1p0, p0, p1);
+    return SLC_Vec<NTID>_Normalize(line->v0, p1p0);
+}
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param plane [out] plane object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Plane<NTID>_Property
+(SLC_PLinePlane<NTID>_t plane, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1, const SLC_Pnt<NTID>_t p2)
+{
+    SLC_Vec<NTID>_t p0p1, p0p2, p0p1_x_p0p2;
+    SLC_Vec<NTID>_Vector(p0p1, p0, p1);
+    SLC_Vec<NTID>_Vector(p0p2, p0, p2);
+    SLC_Vec<NTID>_CrossProduct(p0p1, p0p2, p0p1_x_p0p2);
+    SLC_COPY4(plane->p0, p0);
+    return SLC_Vec<NTID>_Normalize(plane->v0, p0p1_x_p0p2);
 }
 
 SLC_bool_t SLC_Line<NTID>_IsIn(SLC_PCLinePlane<NTID>_t line, SLC_CPnt<NTID>_t pnt, SLC_<NTID>_t tol)

@@ -6,7 +6,7 @@ DEBUG_OBJDIR = $(OBJDIR)/debug
 RELEASE_OBJDIR = $(OBJDIR)/release
 DEBUG_OBJECTS = $(DEBUG_OBJDIR)/SLC_MiniBLAS.o $(DEBUG_OBJDIR)/SLC_MiniLA.o \
 	$(DEBUG_OBJDIR)/SLC_Geometry.o $(DEBUG_OBJDIR)/SLC_NLSLGN.o \
-	$(DEBUG_OBJDIR)/SLC_Shapes.o
+	$(DEBUG_OBJDIR)/SLC_Shapes.o $(DEBUG_OBJDIR)/SLC_Polyline.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_OBJECTS)
@@ -28,6 +28,10 @@ $(DEBUG_OBJDIR)/SLC_NLSLGN.o	:	SLC_NLSLGN.c $(INCDIR)/SLC/SLC_NLSLGN.h $(INCDIR)
 	$(CC) $(CFLAGS) -g -o $@ $<
 
 $(DEBUG_OBJDIR)/SLC_Shapes.o	:	SLC_Shapes.c $(INCDIR)/SLC/SLC_Shapes.h
+	mkdir -p $(DEBUG_OBJDIR)
+	$(CC) $(CFLAGS) -g -o $@ $<
+
+$(DEBUG_OBJDIR)/SLC_Polyline.o	:	SLC_Polyline.c $(INCDIR)/SLC/SLC_Polyline.h
 	mkdir -p $(DEBUG_OBJDIR)
 	$(CC) $(CFLAGS) -g -o $@ $<
 
@@ -56,6 +60,12 @@ $(INCDIR)/SLC/SLC_NLSLGN.h	:	SLC_NLSLGN.pp.js SLC_NLSLGN.hin
 	node $<
 
 $(INCDIR)/SLC/SLC_NLSL.h	:	SLC_NLSL.pp.js SLC_NLSL.hin
+	node $<
+
+SLC_Polyline.c	:	SLC_Polyline.pp.js SLC_Polyline.cin
+	node $<
+	
+$(INCDIR)/SLC/SLC_Polyline.h	:	SLC_Polyline.pp.js SLC_Polyline.hin
 	node $<
 
 .PHONY	:	clean_debug

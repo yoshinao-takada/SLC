@@ -63,13 +63,20 @@ void SLC_PolarFromCartesianr32(SLC_PPolarr32_t polar, SLC_CPntr32_t cartesian);
 void SLC_PolarToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar);
 
 SLC_CVecr32_t SLC_Vecr32_CrossProduct(SLC_CVecr32_t x0, SLC_CVecr32_t x1, SLC_Vecr32_t result);
+SLC_r32_t SLC_Vecr32_InnerProduct(SLC_CVecr32_t v0, SLC_CVecr32_t v1);
+
+// create a vector with same direction and length = 1.
+SLC_errno_t SLC_Vecr32_Normalize(SLC_Vecr32_t vnormalized, SLC_CVecr32_t vsrc);
+
+// create a vector from two points
+void SLC_Vecr32_Vector(SLC_Vecr32_t v, SLC_CPntr32_t pbegin, SLC_CPntr32_t pend);
+
 // print
 void SLC_TMatr32_Print(FILE* out, SLC_CTMatr32_t mat);
 void SLC_Pntr32_Print(FILE* out, SLC_CPntr32_t pnt);
 void SLC_Vecr32_Print(FILE* out, SLC_CVecr32_t vec);
 
 #pragma region high-level_geometry_functions
-SLC_r32_t SLC_Vecr32_InnerProduct(SLC_CVecr32_t v0, SLC_CVecr32_t v1);
 
 // A line and a plane can be represented by a point and a unit vector.
 typedef struct {
@@ -77,6 +84,27 @@ typedef struct {
     SLC_4r32_t v0; // direction of line or normal of plane
 } SLC_LinePlaner32_t, *SLC_PLinePlaner32_t;
 typedef const SLC_LinePlaner32_t *SLC_PCLinePlaner32_t;
+
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Liner32_Property
+(SLC_PLinePlaner32_t line, const SLC_Pntr32_t p0, const SLC_Pntr32_t p1);
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Planer32_Property
+(SLC_PLinePlaner32_t line, const SLC_Pntr32_t p0, const SLC_Pntr32_t p1, const SLC_Pntr32_t p2);
 
 /*!
 \brief Print Line-plane object
@@ -193,13 +221,20 @@ void SLC_PolarFromCartesianr64(SLC_PPolarr64_t polar, SLC_CPntr64_t cartesian);
 void SLC_PolarToCartesianr64(SLC_Pntr64_t cartesian, SLC_PCPolarr64_t polar);
 
 SLC_CVecr64_t SLC_Vecr64_CrossProduct(SLC_CVecr64_t x0, SLC_CVecr64_t x1, SLC_Vecr64_t result);
+SLC_r64_t SLC_Vecr64_InnerProduct(SLC_CVecr64_t v0, SLC_CVecr64_t v1);
+
+// create a vector with same direction and length = 1.
+SLC_errno_t SLC_Vecr64_Normalize(SLC_Vecr64_t vnormalized, SLC_CVecr64_t vsrc);
+
+// create a vector from two points
+void SLC_Vecr64_Vector(SLC_Vecr64_t v, SLC_CPntr64_t pbegin, SLC_CPntr64_t pend);
+
 // print
 void SLC_TMatr64_Print(FILE* out, SLC_CTMatr64_t mat);
 void SLC_Pntr64_Print(FILE* out, SLC_CPntr64_t pnt);
 void SLC_Vecr64_Print(FILE* out, SLC_CVecr64_t vec);
 
 #pragma region high-level_geometry_functions
-SLC_r64_t SLC_Vecr64_InnerProduct(SLC_CVecr64_t v0, SLC_CVecr64_t v1);
 
 // A line and a plane can be represented by a point and a unit vector.
 typedef struct {
@@ -207,6 +242,27 @@ typedef struct {
     SLC_4r64_t v0; // direction of line or normal of plane
 } SLC_LinePlaner64_t, *SLC_PLinePlaner64_t;
 typedef const SLC_LinePlaner64_t *SLC_PCLinePlaner64_t;
+
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Liner64_Property
+(SLC_PLinePlaner64_t line, const SLC_Pntr64_t p0, const SLC_Pntr64_t p1);
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Planer64_Property
+(SLC_PLinePlaner64_t line, const SLC_Pntr64_t p0, const SLC_Pntr64_t p1, const SLC_Pntr64_t p2);
 
 /*!
 \brief Print Line-plane object

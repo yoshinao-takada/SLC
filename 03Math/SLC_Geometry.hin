@@ -57,13 +57,20 @@ void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t car
 void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar);
 
 SLC_CVec<NTID>_t SLC_Vec<NTID>_CrossProduct(SLC_CVec<NTID>_t x0, SLC_CVec<NTID>_t x1, SLC_Vec<NTID>_t result);
+SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1);
+
+// create a vector with same direction and length = 1.
+SLC_errno_t SLC_Vec<NTID>_Normalize(SLC_Vec<NTID>_t vnormalized, SLC_CVec<NTID>_t vsrc);
+
+// create a vector from two points
+void SLC_Vec<NTID>_Vector(SLC_Vec<NTID>_t v, SLC_CPnt<NTID>_t pbegin, SLC_CPnt<NTID>_t pend);
+
 // print
 void SLC_TMat<NTID>_Print(FILE* out, SLC_CTMat<NTID>_t mat);
 void SLC_Pnt<NTID>_Print(FILE* out, SLC_CPnt<NTID>_t pnt);
 void SLC_Vec<NTID>_Print(FILE* out, SLC_CVec<NTID>_t vec);
 
 #pragma region high-level_geometry_functions
-SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1);
 
 // A line and a plane can be represented by a point and a unit vector.
 typedef struct {
@@ -71,6 +78,27 @@ typedef struct {
     SLC_4<NTID>_t v0; // direction of line or normal of plane
 } SLC_LinePlane<NTID>_t, *SLC_PLinePlane<NTID>_t;
 typedef const SLC_LinePlane<NTID>_t *SLC_PCLinePlane<NTID>_t;
+
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Line<NTID>_Property
+(SLC_PLinePlane<NTID>_t line, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1);
+
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Plane<NTID>_Property
+(SLC_PLinePlane<NTID>_t line, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1, const SLC_Pnt<NTID>_t p2);
 
 /*!
 \brief Print Line-plane object

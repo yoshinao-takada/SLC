@@ -211,3 +211,48 @@ typedef const SLC_Polar<NTID>_t *SLC_PCPolar<NTID>_t;
 void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, const SLC_Pnt<NTID>_t cartesian);
 void SLC_PolarToCartesian<NTID>(SLC_Pnt_t cartesian, SLC_PCPolar<NTID>_t polar);
 ```
+## Line Properties
+A line property is declared as
+```
+// A line and a plane can be represented by a point and a unit vector.
+typedef struct {
+    SLC_4<NTID>_t p0; // reference point
+    SLC_4<NTID>_t v0; // a unit vector of line direction or plane normal
+} SLC_LinePlane<NTID>_t, *SLC_PLinePlane<NTID>_t;
+typedef const SLC_LinePlane<NTID>_t *SLC_PCLinePlane<NTID>_t;
+```
+, which is also used for a plane property and where `<NTID>` is `r32` or `r64`.
+The line property can be determined by two points, __P__<sub>0</sub> and __P__<sub>1</sub> .
+The reference point is __P__<sub>0</sub> and the unit direction vector is
+(__P__<sub>1</sub> - __P__<sub>0</sub>)/|__P__<sub>1</sub> - __P__<sub>0</sub>|.
+
+The API to get the line property is declared as
+```
+/*!
+\brief Create a line object from two 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\return SLC_ESINGULAR if p0 and p1 are too close.
+*/
+SLC_errno_t SLC_Line<NTID>_Property
+(SLC_PLinePlane<NTID>_t line, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1);
+```
+
+## Plane Properties
+A plane property is determined by three points, __P__<sub>0</sub>, __P__<sub>1</sub> and __P__<sub>2</sub> .
+The plane normal is determined by cross-product of (__P__<sub>1</sub> - __P__<sub>0</sub>)
+and (__P__<sub>2</sub> - __P__<sub>0</sub>). The reference point is __P__<sub>0</sub>.
+The API to get the plane property is declared as
+```
+/*!
+\brief Create a plane object from three 3D points in homobeneous coordinate
+\param line [out] line object
+\param p0 [in] a point
+\param p1 [in] another point
+\param p2 [in] 2nd another point
+\return SLC_ESINGULAR if |(p1-p0)x(p2-p0)| is too small
+*/
+SLC_errno_t SLC_Plane<NTID>_Property
+(SLC_PLinePlane<NTID>_t line, const SLC_Pnt<NTID>_t p0, const SLC_Pnt<NTID>_t p1, const SLC_Pnt<NTID>_t p2);
+```

@@ -36,6 +36,7 @@ typedef struct {
     SLC_ArrayControl_t cont;
     SLC_ArrayData_t data;
 } SLC_Array_t, *SLC_PArray_t;
+typedef const SLC_Array_t *SLC_PCArray_t;
 
 SLC_PArray_t SLC_Array_InitHeader(void* ptr, SLC_i16_t nmemb, SLC_i16_t unit_size);
 SLC_PArray_t SLC_Array_InitHeader2(void* ptr, const SLC_4i16_t size);

@@ -134,6 +134,14 @@ typedef bool SLC_16bool_t[16];
 typedef void* SLC_16ptr_t[16];
 #pragma endregion
 
+#define SLC_r32_min(__number0, __number1) fminf(__number0, __number1)
+#define SLC_r64_min(__number0, __number1) fmin(__number0, __number1)
+#define SLC_r32_max(__number0, __number1) fmaxf(__number0, __number1)
+#define SLC_r64_max(__number0, __number1) fmax(__number0, __number1)
+#define SLC_r32_floor(__number) floorf(__number)
+#define SLC_r64_floor(__number) floor(__number)
+#define SLC_r32_ceil(__number) ceilf(__number)
+#define SLC_r64_ceil(__number) ceil(__number)
 #define SLC_r32_abs(__number)  fabsf(__number)
 #define SLC_r64_abs(__number)   fabs(__number)
 #define SLC_c64_abs(__number)   cabsf(__number)
