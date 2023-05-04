@@ -352,6 +352,7 @@ SLC_errno_t SLC_Plane<NTID>_3Crosssection(SLC_PCLinePlane<NTID>_t planes, SLC_Pn
         right->data._<NTID>[1] = SLC_Vec<NTID>_InnerProduct(planes[1].p0, planes[1].v0);
         right->data._<NTID>[2] = SLC_Vec<NTID>_InnerProduct(planes[2].p0, planes[2].v0);
         SLC_Mat<NTID>_Solve(&px, left, right, work);
+        cross[3] = _1;
     } while (0);
     return err;
 }

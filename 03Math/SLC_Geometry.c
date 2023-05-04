@@ -361,6 +361,7 @@ SLC_errno_t SLC_Planer32_3Crosssection(SLC_PCLinePlaner32_t planes, SLC_Pntr32_t
         right->data._r32[1] = SLC_Vecr32_InnerProduct(planes[1].p0, planes[1].v0);
         right->data._r32[2] = SLC_Vecr32_InnerProduct(planes[2].p0, planes[2].v0);
         SLC_Matr32_Solve(&px, left, right, work);
+        cross[3] = _1;
     } while (0);
     return err;
 }
@@ -722,6 +723,7 @@ SLC_errno_t SLC_Planer64_3Crosssection(SLC_PCLinePlaner64_t planes, SLC_Pntr64_t
         right->data._r64[1] = SLC_Vecr64_InnerProduct(planes[1].p0, planes[1].v0);
         right->data._r64[2] = SLC_Vecr64_InnerProduct(planes[2].p0, planes[2].v0);
         SLC_Matr64_Solve(&px, left, right, work);
+        cross[3] = _1;
     } while (0);
     return err;
 }
