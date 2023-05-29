@@ -8,6 +8,16 @@ static const SLC_r64_t IMat_r64[] = {
 	1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
 #pragma region r32_function_impl
+bool SLC_Pntr32_areequal(SLC_CPntr32_t p0, SLC_CPntr32_t p1, SLC_r32_t tol)
+{
+    bool b = true;
+    for (int i = 0; i < 3; i++)
+    {
+        b &= SLC_r32_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
+    }
+    return b;
+}
+
 #pragma region matrix_multiplication
 // 4x4 identity matrix
 const SLC_CTMatr32_t SLC_TMatr32_IMat() { return (const SLC_TMatr32_t)IMat_r32; }
@@ -20,14 +30,15 @@ SLC_CTMatr32_t SLC_TMatr32_Mul(
         const SLC_r32_t* _mright = mright;
         for (SLC_size_t column = 0; column < 4; column ++)
         {
-            mprod[column + row * 4] =
+            *mprod =
                 mleft[0] * _mright[0] + mleft[1] * _mright[4] +
                 mleft[2] * _mright[8] + mleft[3] * _mright[12];
             _mright++;
+            mprod++;
         }
         mleft += 4;
     }
-    return mprod;
+    return mprod-16;
 }
 
 #define MATSIZE4X4 { sizeof(SLC_r32_t), 4, 4, 1 }
@@ -111,6 +122,26 @@ void SLC_PolarToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar)
     cartesian[0] = polar->r * polar->ctheta * polar->cphi;
     cartesian[1] = polar->r * polar->ctheta * polar->sphi;
     cartesian[2] = polar->r * polar->stheta;
+    cartesian[3] = SLC_r32_units[1];
+}
+
+void SLC_PolarYFromCartesianr32(SLC_PPolarr32_t polar, SLC_CPntr32_t cartesian)
+{
+    SLC_r32_t _w = SLC_r32_units[1] / cartesian[3];
+    SLC_3r32_t xyz = { _w * cartesian[0], _w * cartesian[1], _w * cartesian[2] };
+    SLC_r32_t Rh = SLC_r32sqrt(xyz[0]*xyz[0] + xyz[2]*xyz[2]);
+    polar->r = SLC_r32sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+    polar->cphi = xyz[2]/Rh;
+    polar->sphi = xyz[0]/Rh;
+    polar->ctheta = xyz[1]/polar->r;
+    polar->stheta = Rh/polar->r;
+}
+
+void SLC_PolarYToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar)
+{
+    cartesian[2] = polar->r * polar->stheta * polar->cphi;
+    cartesian[0] = polar->r * polar->stheta * polar->sphi;
+    cartesian[1] = polar->r * polar->ctheta;
     cartesian[3] = SLC_r32_units[1];
 }
 #pragma region polar_cartesian_conversion
@@ -370,6 +401,16 @@ SLC_errno_t SLC_Planer32_3Crosssection(SLC_PCLinePlaner32_t planes, SLC_Pntr32_t
 #undef MATSIZE5X8
 #pragma endregion r32_function_impl
 #pragma region r64_function_impl
+bool SLC_Pntr64_areequal(SLC_CPntr64_t p0, SLC_CPntr64_t p1, SLC_r64_t tol)
+{
+    bool b = true;
+    for (int i = 0; i < 3; i++)
+    {
+        b &= SLC_r64_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
+    }
+    return b;
+}
+
 #pragma region matrix_multiplication
 // 4x4 identity matrix
 const SLC_CTMatr64_t SLC_TMatr64_IMat() { return (const SLC_TMatr64_t)IMat_r64; }
@@ -382,14 +423,15 @@ SLC_CTMatr64_t SLC_TMatr64_Mul(
         const SLC_r64_t* _mright = mright;
         for (SLC_size_t column = 0; column < 4; column ++)
         {
-            mprod[column + row * 4] =
+            *mprod =
                 mleft[0] * _mright[0] + mleft[1] * _mright[4] +
                 mleft[2] * _mright[8] + mleft[3] * _mright[12];
             _mright++;
+            mprod++;
         }
         mleft += 4;
     }
-    return mprod;
+    return mprod-16;
 }
 
 #define MATSIZE4X4 { sizeof(SLC_r64_t), 4, 4, 1 }
@@ -473,6 +515,26 @@ void SLC_PolarToCartesianr64(SLC_Pntr64_t cartesian, SLC_PCPolarr64_t polar)
     cartesian[0] = polar->r * polar->ctheta * polar->cphi;
     cartesian[1] = polar->r * polar->ctheta * polar->sphi;
     cartesian[2] = polar->r * polar->stheta;
+    cartesian[3] = SLC_r64_units[1];
+}
+
+void SLC_PolarYFromCartesianr64(SLC_PPolarr64_t polar, SLC_CPntr64_t cartesian)
+{
+    SLC_r64_t _w = SLC_r64_units[1] / cartesian[3];
+    SLC_3r64_t xyz = { _w * cartesian[0], _w * cartesian[1], _w * cartesian[2] };
+    SLC_r64_t Rh = SLC_r64sqrt(xyz[0]*xyz[0] + xyz[2]*xyz[2]);
+    polar->r = SLC_r64sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+    polar->cphi = xyz[2]/Rh;
+    polar->sphi = xyz[0]/Rh;
+    polar->ctheta = xyz[1]/polar->r;
+    polar->stheta = Rh/polar->r;
+}
+
+void SLC_PolarYToCartesianr64(SLC_Pntr64_t cartesian, SLC_PCPolarr64_t polar)
+{
+    cartesian[2] = polar->r * polar->stheta * polar->cphi;
+    cartesian[0] = polar->r * polar->stheta * polar->sphi;
+    cartesian[1] = polar->r * polar->ctheta;
     cartesian[3] = SLC_r64_units[1];
 }
 #pragma region polar_cartesian_conversion

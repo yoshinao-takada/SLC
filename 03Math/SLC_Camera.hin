@@ -1,0 +1,36 @@
+#pragma region Camera-matrix-with-basetype-<NTID>
+// create a camera position matrix
+typedef struct {
+    SLC_4<NTID>_t cameraIsAt;
+    SLC_4<NTID>_t lookAt;
+    SLC_2<NTID>_t viewAxisRotationCosSin;
+} SLC_CameraPosition<NTID>_t, *SLC_PCameraPosition<NTID>_t;
+typedef const SLC_CameraPosition<NTID>_t *SLC_PCCameraPosition<NTID>_t;
+
+// create a camera opsition matrix.
+// It transforms 
+// object vertex coordinates in world coordinate system
+// to those in camera coordinate system.
+// It is the inverse of camera position coordinate and attitude in the world coordinate system.
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Position(SLC_PCCameraPosition<NTID>_t pos, SLC_TMat<NTID>_t work);
+
+// create a direction rotatioin matrix from (0,0,-1) to cameraIsAt => cameraLookAt vector
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Direction(
+    SLC_CPnt<NTID>_t cameraIsAt, SLC_CPnt<NTID>_t cameraLookAt, SLC_Vec<NTID>_t work);
+
+typedef struct {
+    SLC_2<NTID>_t width_height;
+    SLC_2<NTID>_t far_near; // far: negative larger number, near: usually negative smaller number
+} SLC_Projection<NTID>_t, *SLC_PProjection<NTID>_t;
+typedef const SLC_Projection<NTID>_t *SLC_PCProjection<NTID>_t;
+
+// create a camera projection matrix of orthnormal mode
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Orth(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work);
+
+// create a camera projection matrix of perspective mode
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Perspective(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work);
+#pragma endregion Camera-matrix-with-basetype-<NTID>

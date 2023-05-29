@@ -120,10 +120,10 @@ static const SLC_r64_t fpr64_Triangle[] =
 
 static const SLC_r64_t fpr64_Tetrahedron[] = 
 {
-    -0.5f, -0.2887f, -0.2041f, 1.0f,
-    0.5f, -0.2887f, -0.2041f, 1.0f,
-    0.0f, -0.5774f, -0.2041f, 1.0f,
-    0.0f, 0.0f, 0.6124f, 1.0f
+    -0.5, -0.2887, -0.2041, 1.0,
+    0.5, -0.2887, -0.2041, 1.0,
+    0.0, -0.5774, -0.2041, 1.0,
+    0.0, 0.0, 0.6124, 1.0
 };
 
 static const SLC_r64_t* fpr64[] =
@@ -132,12 +132,12 @@ static const SLC_r64_t* fpr64[] =
     fpr64_Triangle, fpr64_Tetrahedron
 };
 
-SLC_CPntr32_t SLC_Shapser_FeaturePointr32(SLC_Shapes_t shape, int featurePoint)
+SLC_CPntr32_t SLC_Shapes_FeaturePointr32(SLC_Shapes_t shape, int featurePoint)
 {
     return fpr32[(int)shape] + 4 * featurePoint;
 }
 
-SLC_CPntr64_t SLC_Shapser_FeaturePointr64(SLC_Shapes_t shape, int featurePoint)
+SLC_CPntr64_t SLC_Shapes_FeaturePointr64(SLC_Shapes_t shape, int featurePoint)
 {
     return fpr64[(int)shape] + 4 * featurePoint;
 }

@@ -2,6 +2,7 @@
 #define _SLC_GEOMETRY_H
 #include "SLC/SLC_MiniLA.h"
 #include "SLC/SLC_Math.h"
+#include "SLC/SLC_Log.h"
 #include <memory.h>
 #include <stdio.h>
 
@@ -12,6 +13,7 @@ typedef SLC_r32_t* SLC_TMatr32_t;
 typedef const SLC_r32_t* SLC_CPntr32_t;
 typedef const SLC_r32_t* SLC_CVecr32_t;
 typedef const SLC_r32_t* SLC_CTMatr32_t;
+bool SLC_Pntr32_areequal(SLC_CPntr32_t p0, SLC_CPntr32_t p1, SLC_r32_t tol);
 
 typedef struct {
     SLC_r32_t r, cphi, sphi, ctheta, stheta;
@@ -61,6 +63,8 @@ SLC_CTMatr32_t SLC_TMatr32_rotateY(SLC_r32_t c, SLC_r32_t s, SLC_r32_t* result);
 // polar-Cartesian coordinate translation
 void SLC_PolarFromCartesianr32(SLC_PPolarr32_t polar, SLC_CPntr32_t cartesian);
 void SLC_PolarToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar);
+void SLC_PolarYFromCartesianr32(SLC_PPolarr32_t polar, SLC_CPntr32_t cartesian);
+void SLC_PolarYToCartesianr32(SLC_Pntr32_t cartesian, SLC_PCPolarr32_t polar);
 
 SLC_CVecr32_t SLC_Vecr32_CrossProduct(SLC_CVecr32_t x0, SLC_CVecr32_t x1, SLC_Vecr32_t result);
 SLC_r32_t SLC_Vecr32_InnerProduct(SLC_CVecr32_t v0, SLC_CVecr32_t v1);
@@ -145,7 +149,7 @@ SLC_errno_t SLC_LinePlaner32_Crosssection(
     SLC_PCLinePlaner32_t line, SLC_PCLinePlaner32_t plane, SLC_Pntr32_t cross);
 
 /*!
-\brief Crosssection of three planes
+\brief Crosssection of two planes
 \param planes [in]
 \param cross [out]
 \return SLC_ESINGULAR (two of three planes are near parallel) or EXIT_SUCCESS.
@@ -170,6 +174,7 @@ typedef SLC_r64_t* SLC_TMatr64_t;
 typedef const SLC_r64_t* SLC_CPntr64_t;
 typedef const SLC_r64_t* SLC_CVecr64_t;
 typedef const SLC_r64_t* SLC_CTMatr64_t;
+bool SLC_Pntr64_areequal(SLC_CPntr64_t p0, SLC_CPntr64_t p1, SLC_r64_t tol);
 
 typedef struct {
     SLC_r64_t r, cphi, sphi, ctheta, stheta;
@@ -219,6 +224,8 @@ SLC_CTMatr64_t SLC_TMatr64_rotateY(SLC_r64_t c, SLC_r64_t s, SLC_r64_t* result);
 // polar-Cartesian coordinate translation
 void SLC_PolarFromCartesianr64(SLC_PPolarr64_t polar, SLC_CPntr64_t cartesian);
 void SLC_PolarToCartesianr64(SLC_Pntr64_t cartesian, SLC_PCPolarr64_t polar);
+void SLC_PolarYFromCartesianr64(SLC_PPolarr64_t polar, SLC_CPntr64_t cartesian);
+void SLC_PolarYToCartesianr64(SLC_Pntr64_t cartesian, SLC_PCPolarr64_t polar);
 
 SLC_CVecr64_t SLC_Vecr64_CrossProduct(SLC_CVecr64_t x0, SLC_CVecr64_t x1, SLC_Vecr64_t result);
 SLC_r64_t SLC_Vecr64_InnerProduct(SLC_CVecr64_t v0, SLC_CVecr64_t v1);
@@ -303,7 +310,7 @@ SLC_errno_t SLC_LinePlaner64_Crosssection(
     SLC_PCLinePlaner64_t line, SLC_PCLinePlaner64_t plane, SLC_Pntr64_t cross);
 
 /*!
-\brief Crosssection of three planes
+\brief Crosssection of two planes
 \param planes [in]
 \param cross [out]
 \return SLC_ESINGULAR (two of three planes are near parallel) or EXIT_SUCCESS.

@@ -6,7 +6,7 @@ DEBUG_OBJDIR = $(OBJDIR)/debug
 RELEASE_OBJDIR = $(OBJDIR)/release
 DEBUG_OBJECTS = $(DEBUG_OBJDIR)/SLC_MiniBLAS.o $(DEBUG_OBJDIR)/SLC_MiniLA.o \
 	$(DEBUG_OBJDIR)/SLC_Geometry.o $(DEBUG_OBJDIR)/SLC_NLSLGN.o \
-	$(DEBUG_OBJDIR)/SLC_Shapes.o $(DEBUG_OBJDIR)/SLC_Polyline.o
+	$(DEBUG_OBJDIR)/SLC_Shapes.o $(DEBUG_OBJDIR)/SLC_Polyline.o $(DEBUG_OBJDIR)/SLC_Camera.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_OBJECTS)
@@ -32,6 +32,10 @@ $(DEBUG_OBJDIR)/SLC_Shapes.o	:	SLC_Shapes.c $(INCDIR)/SLC/SLC_Shapes.h
 	$(CC) $(CFLAGS) -g -o $@ $<
 
 $(DEBUG_OBJDIR)/SLC_Polyline.o	:	SLC_Polyline.c $(INCDIR)/SLC/SLC_Polyline.h
+	mkdir -p $(DEBUG_OBJDIR)
+	$(CC) $(CFLAGS) -g -o $@ $<
+
+$(DEBUG_OBJDIR)/SLC_Camera.o	:	SLC_Camera.c $(INCDIR)/SLC/SLC_Camera.h
 	mkdir -p $(DEBUG_OBJDIR)
 	$(CC) $(CFLAGS) -g -o $@ $<
 
@@ -68,8 +72,15 @@ SLC_Polyline.c	:	SLC_Polyline.pp.js SLC_Polyline.cin
 $(INCDIR)/SLC/SLC_Polyline.h	:	SLC_Polyline.pp.js SLC_Polyline.hin
 	node $<
 
+$(INCDIR)/SLC/SLC_Camera.h	:	SLC_Camera.pp.js SLC_Camera.hin
+	node $<
+
+SLC_Camera.c	:	SLC_Camera.pp.js SLC_Camera.cin
+	node $<
+	
 .PHONY	:	clean_debug
 clean_debug	:
 	rm -f $(DEBUG_OBJECTS)
-	rm -f $(INCDIR)/SLC/SLC_Mini*.h $(INCDIR)/SLC/SLC_Geometry.h
-	rm -f SLC_Mini*.c SLC_Geometry.c
+	rm -f $(INCDIR)/SLC/SLC_Mini*.h $(INCDIR)/SLC/SLC_Geometry.h $(INCDIR)/SLC/SLC_NLSL*.h
+	rm -f $(INCDIR)/SLC/SLC_Camera.h
+	rm -f SLC_Mini*.c SLC_Geometry.c $ SLC_NLSL*.c SLC_Camera.c

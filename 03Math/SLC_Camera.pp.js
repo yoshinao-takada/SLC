@@ -9,10 +9,10 @@
 const fs = require('fs');
 const process = require('process');
 const path = require('path');
-const fname_c = "SLC_Geometry.c"; // Output C source file
-const fname_h = "SLC/SLC_Geometry.h"; // Output C header file
-const fname_cin = "SLC_Geometry.cin"; // Input C source template file
-const fname_hin = "SLC_Geometry.hin"; // Input C header template file
+const fname_c = "SLC_Camera.c"; // Output C source file
+const fname_h = "SLC/SLC_Camera.h"; // Output C header file
+const fname_cin = "SLC_Camera.cin"; // Input C source template file
+const fname_hin = "SLC_Camera.hin"; // Input C header template file
 const curdir = path.dirname(process.argv[1]);
 const incdir = path.join(curdir, "../include");
 const typeIDs = [ "r32", "r64" ];
@@ -38,13 +38,15 @@ function CreateHeaderFile(hin, h)
     let text = [];
     // 1) Generate file header
     const headerText = [
-        "#if !defined(_SLC_GEOMETRY_H)",
-        "#define _SLC_GEOMETRY_H",
-        "#include \"SLC/SLC_MiniLA.h\"",
-        "#include \"SLC/SLC_Math.h\"",
-        "#include \"SLC/SLC_Log.h\"",
-        "#include <memory.h>",
-        "#include <stdio.h>",
+        "#if !defined(_SLC_Camera_H)",
+        "#define _SLC_Camera_H",
+        "#include \"SLC/SLC_Geometry.h\"",
+        "#define IMat_r32 { \\",
+        "\t1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f, \\",
+        "\t0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f }",
+        "#define IMat_r64 { \\",
+        "\t1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0, \\",
+        "\t0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0 }",
     ];
     headerText.forEach((e) => {
         text.push(e);
@@ -80,15 +82,9 @@ function CreateSourceFile(cin, c)
     let text = [];
     // 1) Generate file header
     const headerText = [
-        "#include \"SLC/SLC_Geometry.h\"",
-        "#include \"SLC/SLC_MiniLA.h\"",
-        "#include \"SLC/SLC_MiniBLAS.h\"",
-        "static const SLC_r32_t IMat_r32[] = {",
-        "\t1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,",
-        "\t0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };",
-        "static const SLC_r64_t IMat_r64[] = {",
-        "\t1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,",
-        "\t0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };",
+        "#include \"SLC/SLC_Camera.h\"",
+        "#include \"SLC/SLC_NumbersCopy.h\"",
+        "#include <errno.h>",
     ];
     headerText.forEach((e) => { text.push(e); });
 

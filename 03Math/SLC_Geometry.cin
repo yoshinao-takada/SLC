@@ -1,4 +1,14 @@
 #pragma region <NTID>_function_impl
+bool SLC_Pnt<NTID>_areequal(SLC_CPnt<NTID>_t p0, SLC_CPnt<NTID>_t p1, SLC_<NTID>_t tol)
+{
+    bool b = true;
+    for (int i = 0; i < 3; i++)
+    {
+        b &= SLC_<NTID>_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
+    }
+    return b;
+}
+
 #pragma region matrix_multiplication
 // 4x4 identity matrix
 const SLC_CTMat<NTID>_t SLC_TMat<NTID>_IMat() { return (const SLC_TMat<NTID>_t)IMat_<NTID>; }
@@ -11,14 +21,15 @@ SLC_CTMat<NTID>_t SLC_TMat<NTID>_Mul(
         const SLC_<NTID>_t* _mright = mright;
         for (SLC_size_t column = 0; column < 4; column ++)
         {
-            mprod[column + row * 4] =
+            *mprod =
                 mleft[0] * _mright[0] + mleft[1] * _mright[4] +
                 mleft[2] * _mright[8] + mleft[3] * _mright[12];
             _mright++;
+            mprod++;
         }
         mleft += 4;
     }
-    return mprod;
+    return mprod-16;
 }
 
 #define MATSIZE4X4 { sizeof(SLC_<NTID>_t), 4, 4, 1 }
@@ -102,6 +113,26 @@ void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t p
     cartesian[0] = polar->r * polar->ctheta * polar->cphi;
     cartesian[1] = polar->r * polar->ctheta * polar->sphi;
     cartesian[2] = polar->r * polar->stheta;
+    cartesian[3] = SLC_<NTID>_units[1];
+}
+
+void SLC_PolarYFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t cartesian)
+{
+    SLC_<NTID>_t _w = SLC_<NTID>_units[1] / cartesian[3];
+    SLC_3<NTID>_t xyz = { _w * cartesian[0], _w * cartesian[1], _w * cartesian[2] };
+    SLC_<NTID>_t Rh = SLC_<NTID>sqrt(xyz[0]*xyz[0] + xyz[2]*xyz[2]);
+    polar->r = SLC_<NTID>sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+    polar->cphi = xyz[2]/Rh;
+    polar->sphi = xyz[0]/Rh;
+    polar->ctheta = xyz[1]/polar->r;
+    polar->stheta = Rh/polar->r;
+}
+
+void SLC_PolarYToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar)
+{
+    cartesian[2] = polar->r * polar->stheta * polar->cphi;
+    cartesian[0] = polar->r * polar->stheta * polar->sphi;
+    cartesian[1] = polar->r * polar->ctheta;
     cartesian[3] = SLC_<NTID>_units[1];
 }
 #pragma region polar_cartesian_conversion

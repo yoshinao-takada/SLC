@@ -7,6 +7,9 @@
         "slc_log.h": "c",
         "slc_array.h": "c",
         "slc_nlslgn.h": "c",
-        "slc_geometry.h": "c"
+        "slc_geometry.h": "c",
+        "slc_shapes.h": "c",
+        "slc_camera.h": "c",
+        "errno.h": "c"
     }
 }

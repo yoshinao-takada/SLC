@@ -71,7 +71,10 @@ typedef enum {
     SLC_Tetrahedron_FeaturePoint_Rear, // (0, -1/sqrt(3), -1/(2*sqrt(6)))
     SLC_Tetrahedron_FeaturePoint_Top, // (0, 0, sqrt(3)/(2*sqrt(2)))
 } SLC_Tetrahedron_FeaturePoints_t;
-SLC_CPntr32_t SLC_Shapser_FeaturePointr32(SLC_Shapes_t shape, int featurePoint);
 
-SLC_CPntr64_t SLC_Shapser_FeaturePointr64(SLC_Shapes_t shape, int featurePoint);
+// Get a 3D homogeneous coordinate with w = 1.0
+SLC_CPntr32_t SLC_Shapes_FeaturePointr32(SLC_Shapes_t shape, int featurePoint);
+
+// Get a 3D homogeneous coordinate with w = 1.0
+SLC_CPntr64_t SLC_Shapes_FeaturePointr64(SLC_Shapes_t shape, int featurePoint);
 #endif

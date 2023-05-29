@@ -6,6 +6,7 @@ typedef SLC_<NTID>_t* SLC_TMat<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CPnt<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CVec<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CTMat<NTID>_t;
+bool SLC_Pnt<NTID>_areequal(SLC_CPnt<NTID>_t p0, SLC_CPnt<NTID>_t p1, SLC_<NTID>_t tol);
 
 typedef struct {
     SLC_<NTID>_t r, cphi, sphi, ctheta, stheta;
@@ -55,6 +56,8 @@ SLC_CTMat<NTID>_t SLC_TMat<NTID>_rotateY(SLC_<NTID>_t c, SLC_<NTID>_t s, SLC_<NT
 // polar-Cartesian coordinate translation
 void SLC_PolarFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t cartesian);
 void SLC_PolarToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar);
+void SLC_PolarYFromCartesian<NTID>(SLC_PPolar<NTID>_t polar, SLC_CPnt<NTID>_t cartesian);
+void SLC_PolarYToCartesian<NTID>(SLC_Pnt<NTID>_t cartesian, SLC_PCPolar<NTID>_t polar);
 
 SLC_CVec<NTID>_t SLC_Vec<NTID>_CrossProduct(SLC_CVec<NTID>_t x0, SLC_CVec<NTID>_t x1, SLC_Vec<NTID>_t result);
 SLC_<NTID>_t SLC_Vec<NTID>_InnerProduct(SLC_CVec<NTID>_t v0, SLC_CVec<NTID>_t v1);
@@ -139,7 +142,7 @@ SLC_errno_t SLC_LinePlane<NTID>_Crosssection(
     SLC_PCLinePlane<NTID>_t line, SLC_PCLinePlane<NTID>_t plane, SLC_Pnt<NTID>_t cross);
 
 /*!
-\brief Crosssection of three planes
+\brief Crosssection of two planes
 \param planes [in]
 \param cross [out]
 \return SLC_ESINGULAR (two of three planes are near parallel) or EXIT_SUCCESS.

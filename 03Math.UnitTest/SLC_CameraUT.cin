@@ -1,0 +1,164 @@
+#pragma region Polar-Y__Cartesian__Conversion_<NTID>
+typedef struct {
+    SLC_4<NTID>_t Nx, Ny, Nz;
+    SLC_Polar<NTID>_t NxPolarY, NyPolarY, NzPolarY;
+} CameraUTPolarYData<NTID>_t, *pCameraUTPolarYData<NTID>_t;
+typedef const CameraUTPolarYData<NTID>_t *pcCameraUTPolarYData<NTID>_t;
+
+bool AreEqualPolarY<NTID>(SLC_PCPolar<NTID>_t ref, SLC_PCPolar<NTID>_t tested, SLC_<NTID>_t tol)
+{
+    bool b = SLC_<NTID>_areequal(ref->r, tested->r, tol);
+    b &= SLC_<NTID>_areequal(ref->cphi, tested->cphi, tol);
+    b &= SLC_<NTID>_areequal(ref->sphi, tested->sphi, tol);
+    b &= SLC_<NTID>_areequal(ref->ctheta, tested->ctheta, tol);
+    b &= SLC_<NTID>_areequal(ref->stheta, tested->stheta, tol);
+    return b;
+}
+
+bool AreEqual4<NTID>(SLC_CPnt<NTID>_t ref, SLC_CPnt<NTID>_t tested, SLC_<NTID>_t tol)
+{
+    bool b = SLC_<NTID>_areequal(ref[0]/ref[3], tested[0]/tested[3], tol);
+    b &= SLC_<NTID>_areequal(ref[1]/ref[3], tested[1]/tested[3], tol);
+    b &= SLC_<NTID>_areequal(ref[2]/ref[3], tested[2]/tested[3], tol);
+    return b;
+}
+
+SLC_errno_t SLC_<NTID>_PolarYUT(SLC_PCTestArgs_t args)
+{
+    const CameraUTPolarYData<NTID>_t* data = (const CameraUTPolarYData<NTID>_t*)args->data;
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_Polar<NTID>_t polar;
+    SLC_4<NTID>_t restored;
+    do {
+        SLC_PolarYFromCartesian<NTID>(&polar, data->Nx);
+        if (!AreEqualPolarY<NTID>(&data->NxPolarY, &polar, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        SLC_PolarYToCartesian<NTID>(restored, &polar);
+        if (!AreEqual4<NTID>(data->Nx, restored, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+
+        SLC_PolarYFromCartesian<NTID>(&polar, data->Ny);
+        if (!AreEqualPolarY<NTID>(&data->NyPolarY, &polar, ((SLC_<NTID>_t)1000) * SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        SLC_PolarYToCartesian<NTID>(restored, &polar);
+        if (!AreEqual4<NTID>(data->Ny, restored, ((SLC_<NTID>_t)1000) * SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+
+        SLC_PolarYFromCartesian<NTID>(&polar, data->Nz);
+        if (!AreEqualPolarY<NTID>(&data->NzPolarY, &polar, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        SLC_PolarYToCartesian<NTID>(restored, &polar);
+        if (!AreEqual4<NTID>(data->Nz, restored, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    } while (0);
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_CameraDirectionUT(SLC_PCTestArgs_t args)
+{
+    const SLC_<NTID>_t _0 = SLC_<NTID>_units[0], _1 = SLC_<NTID>_units[1], _minus1 = SLC_<NTID>_units[2];
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PCCameraPosition<NTID>_t arg = args->data;
+    SLC_<NTID>_t m_rot_[16], v_lookAt_[4], v_lookAt_ref[4];
+    SLC_4<NTID>_t negZ = { _0, _0, _minus1, _1 };
+    for (int i = 0; i < 4; i++, arg++)
+    {
+        SLC_CTMat<NTID>_t m_rot = SLC_Camera<NTID>_Direction(
+            arg-> cameraIsAt, arg->lookAt, m_rot_);
+        SLC_CVec<NTID>_t v_lookAt = SLC_TMat<NTID>_Transform(m_rot, negZ, v_lookAt_);
+        SLC_Vec<NTID>_Vector(v_lookAt_ref, arg-> cameraIsAt, arg->lookAt);
+        SLC_<NTID>_t len_v_lookAt = SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(v_lookAt, v_lookAt));
+        SLC_<NTID>_t len_v_lookAt_ref = SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(v_lookAt_ref, v_lookAt_ref));
+        SLC_<NTID>_t v_lookAt_dot_v_lookAt_ref = SLC_Vec<NTID>_InnerProduct(v_lookAt, v_lookAt_ref);
+        //printf("--- m_rot =\n");
+        //SLC_TMat<NTID>_Print(stdout, m_rot);
+        //printf("--- v_lookAt = ");
+        //SLC_Vec<NTID>_Print(stdout, v_lookAt);
+        //printf("--- v_lookAt_ref = ");
+        //SLC_Vec<NTID>_Print(stdout, v_lookAt_ref);
+        if (!SLC_<NTID>_areequal(len_v_lookAt, _1, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_<NTID>_areequal(v_lookAt_dot_v_lookAt_ref, len_v_lookAt_ref, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    }
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_CameraPositionUT(SLC_PCTestArgs_t args)
+{
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PCCameraPosition<NTID>_t arg = args->data;
+    SLC_<NTID>_t mpos_[16], cameraIsAt_transformed_[4], lookAt_transformed_[4];
+    SLC_<NTID>_t _0 = SLC_<NTID>_units[0], _1 = SLC_<NTID>_units[1];
+    for (int i = 0; i < 4; i++, args++)
+    {
+        const SLC_<NTID>_t origin[4] = { _0, _0, _0, _1 };
+        SLC_<NTID>_t camera_lookAt_vector[4];
+        SLC_Vec<NTID>_Vector(camera_lookAt_vector, arg->cameraIsAt, arg->lookAt);
+        const SLC_<NTID>_t lookAt_ref[4] = {
+             _0, _0, 
+             -SLC_<NTID>sqrt(SLC_Vec<NTID>_InnerProduct(camera_lookAt_vector, camera_lookAt_vector)), 
+             _1 };
+        SLC_CTMat<NTID>_t mpos = SLC_Camera<NTID>_Position(arg, mpos_);
+        SLC_CPnt<NTID>_t cameraIsAt_transformed = SLC_TMat<NTID>_Transform(mpos, arg->cameraIsAt, cameraIsAt_transformed_);
+        SLC_CPnt<NTID>_t lookAt_transformed = SLC_TMat<NTID>_Transform(mpos, arg->lookAt, lookAt_transformed_);
+        if (!SLC_Pnt<NTID>_areequal(origin, cameraIsAt_transformed, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        if (!SLC_Pnt<NTID>_areequal(lookAt_ref, lookAt_transformed, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+    }
+    return err;
+}
+
+SLC_errno_t SLC_<NTID>_CameraOrthUT(SLC_PCTestArgs_t args)
+{
+    const SLC_<NTID>_t _0 = SLC_<NTID>_units[0], _1 = SLC_<NTID>_units[1], _minus1 = SLC_<NTID>_units[2];
+    SLC_errno_t err = EXIT_SUCCESS;
+    for (int i = 0; i < 4; i++)
+    {
+
+    }
+    return err;
+}
+#pragma endregion Polar-Y__Cartesian__Conversion_<NTID>

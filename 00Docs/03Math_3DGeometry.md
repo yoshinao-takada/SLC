@@ -14,6 +14,7 @@ Table of contents
     * 2.7. Rotation around arbitrary axes
     * 2.8. Vector-Vector rotation
     * [2.9. Tetrahedron mass-center](03Math_3DGeometry.d/Tetrahedron.md)
+    * [3.0. Camera matrix](03Math_3DGeometry.d/CameraMatrix.md)
 
 Study 1. Homography Matrix
 Study 2. Camera Calibration

@@ -1,0 +1,141 @@
+#pragma region Camera-matrix-with-basetype-<NTID>
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Direction(
+    SLC_CPnt<NTID>_t cameraIsAt, SLC_CPnt<NTID>_t cameraLookAt, SLC_Vec<NTID>_t work)
+{
+    SLC_<NTID>_t dir_rot_right[16] = IMat_r32, dir_rot_left[16] = IMat_r32; // first and second rotation matrix from negative z-axis to actual view-direction
+    SLC_<NTID>_t dir_90degs[16] = IMat_r32, local_work[16];
+    SLC_4<NTID>_t viewlineVector;
+    SLC_Polar<NTID>_t polar;
+    // rotate 90 degs around x-axis (Y-axis to Z-axis)
+    // This convers from default camera viewline axis to Polar-Y coordinate reference axis.
+    dir_90degs[10] = (dir_90degs[5] = SLC_<NTID>_units[0]);
+    dir_90degs[6] = -(dir_90degs[9] = SLC_<NTID>_units[1]);
+    SLC_Vec<NTID>_Vector(viewlineVector, cameraIsAt, cameraLookAt);
+
+    // convert viewline vector to polar representation
+    SLC_PolarYFromCartesian<NTID>(&polar, viewlineVector);
+
+    // rotate theta around x-axis (Y-axis to Z-axis)
+    dir_rot_right[5] = dir_rot_right[10] = polar.ctheta;
+    dir_rot_right[6] = -(dir_rot_right[9] = polar.stheta);
+
+    // rotate phi around y-axis (Z-axis to X-axis)
+    dir_rot_left[0] = dir_rot_left[10] = polar.cphi;
+    dir_rot_left[8] = -(dir_rot_left[2] = polar.sphi);
+    return SLC_TMat<NTID>_Mul(dir_rot_left, 
+        SLC_TMat<NTID>_Mul(dir_rot_right, dir_90degs, local_work), work);
+}
+
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Position(SLC_PCCameraPosition<NTID>_t pos, SLC_TMat<NTID>_t work)
+{
+    int err = EXIT_SUCCESS;
+    SLC_<NTID>_t dir_rot_[16];
+    SLC_CTMat<NTID>_t dir_rot;
+    SLC_<NTID>_t viewline_rotation[16] = IMat_r32; // rotation matrix around view-line
+    SLC_<NTID>_t moving_origin[16] = IMat_r32; // parallel moving matrix from origin to camera positioin
+    do {
+        // 1) Set rotation around view axis
+        viewline_rotation[0] = viewline_rotation[5] = pos->viewAxisRotationCosSin[0];
+        viewline_rotation[1] = -(viewline_rotation[4] = pos->viewAxisRotationCosSin[1]);
+
+        // 2) Set viewline angle
+        dir_rot = SLC_Camera<NTID>_Direction(pos->cameraIsAt, pos->lookAt, dir_rot_);
+
+        // 3) Set parallel movement
+        moving_origin[3] = pos->cameraIsAt[0] / pos->cameraIsAt[3];
+        moving_origin[7] = pos->cameraIsAt[1] / pos->cameraIsAt[3];
+        moving_origin[11] = pos->cameraIsAt[2] / pos->cameraIsAt[3];
+
+        // 4) multiply moving_origin, camera direction, and viewline_rotation
+        SLC_CTMat<NTID>_t prod_all = NULL;
+        {
+            SLC_16<NTID>_t prod1, prod2;
+            prod_all = SLC_TMat<NTID>_Mul(
+                moving_origin, SLC_TMat<NTID>_Mul(
+                    dir_rot, viewline_rotation, prod1
+                ), prod2
+            );
+        }
+
+        // 5) invert the product of the four matrices
+        if  (!SLC_TMat<NTID>_Inv(prod_all, work))
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+    } while (0);
+    if (err)
+    {
+        work = NULL;
+    }
+    return work;
+}
+
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Orth(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work
+) {
+    int err = EXIT_SUCCESS;
+    const SLC_<NTID>_t _2 = SLC_<NTID>_units[1] + SLC_<NTID>_units[1];
+    SLC_<NTID>_copy(work, 1, SLC_<NTID>_units, 0, 16); // zero clear work
+    do {
+        SLC_<NTID>_t zspan = projconf->far_near[1] - projconf->far_near[0];
+        SLC_<NTID>_t max_wh = SLC_<NTID>_max(projconf->width_height[0], projconf->width_height[1]);
+        if (zspan < SLC_<NTID>_units[0])
+        { // zspan is negative
+            err = EINVAL;
+        }
+        if (zspan < (max_wh * SLC_<NTID>_stdtol))
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+        work[0] = _2 / projconf->width_height[0];
+        work[5] = _2 / projconf->width_height[1];
+        work[10] = _2 / (projconf->far_near[1] - projconf->far_near[0]);
+        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / _2;
+        work[15] = SLC_<NTID>_units[1];
+    } while (0);
+    if (err)
+    {
+        errno = err;
+        work = NULL;
+    }
+    return work;
+}
+
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_Perspective(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work
+) {
+    int err = EXIT_SUCCESS;
+    const SLC_<NTID>_t _2 = SLC_<NTID>_units[1] + SLC_<NTID>_units[1];
+    SLC_<NTID>_copy(work, 1, SLC_<NTID>_units, 0, 16); // zero clear work
+    do {
+        SLC_<NTID>_t zspan = projconf->far_near[0] - projconf->far_near[1];
+        if (zspan < SLC_<NTID>_units[0])
+        { // zspan is negative
+            err = EINVAL;
+            break;
+        }
+        SLC_<NTID>_t max_wh = SLC_<NTID>_max(projconf->width_height[0], projconf->width_height[1]);
+        if (zspan < (max_wh * SLC_<NTID>_stdtol))
+        {
+            err = SLC_ESINGULAR;
+            break;
+        }
+        work[0] = _2 / projconf->width_height[0];
+        work[5] = _2 / projconf->width_height[1];
+        SLC_<NTID>_t znear_zfar = projconf->far_near[1] - projconf->far_near[0];
+        work[10] = (projconf->far_near[0] + projconf->far_near[1])/znear_zfar;
+        work[11] = _2 * projconf->far_near[0] * projconf->far_near[1]/znear_zfar;
+        work[14] = SLC_<NTID>_units[2];
+    } while (0);
+    if (err)
+    {
+        errno = err;
+        work = NULL;
+    }
+    return work;
+}
+#pragma endregion Camera-matrix-with-basetype-<NTID>
