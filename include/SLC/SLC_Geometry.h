@@ -2,7 +2,6 @@
 #define _SLC_GEOMETRY_H
 #include "SLC/SLC_MiniLA.h"
 #include "SLC/SLC_Math.h"
-#include "SLC/SLC_Log.h"
 #include <memory.h>
 #include <stdio.h>
 
@@ -13,7 +12,6 @@ typedef SLC_r32_t* SLC_TMatr32_t;
 typedef const SLC_r32_t* SLC_CPntr32_t;
 typedef const SLC_r32_t* SLC_CVecr32_t;
 typedef const SLC_r32_t* SLC_CTMatr32_t;
-bool SLC_Pntr32_areequal(SLC_CPntr32_t p0, SLC_CPntr32_t p1, SLC_r32_t tol);
 
 typedef struct {
     SLC_r32_t r, cphi, sphi, ctheta, stheta;
@@ -174,7 +172,6 @@ typedef SLC_r64_t* SLC_TMatr64_t;
 typedef const SLC_r64_t* SLC_CPntr64_t;
 typedef const SLC_r64_t* SLC_CVecr64_t;
 typedef const SLC_r64_t* SLC_CTMatr64_t;
-bool SLC_Pntr64_areequal(SLC_CPntr64_t p0, SLC_CPntr64_t p1, SLC_r64_t tol);
 
 typedef struct {
     SLC_r64_t r, cphi, sphi, ctheta, stheta;

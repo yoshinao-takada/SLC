@@ -6,7 +6,6 @@ typedef SLC_<NTID>_t* SLC_TMat<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CPnt<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CVec<NTID>_t;
 typedef const SLC_<NTID>_t* SLC_CTMat<NTID>_t;
-bool SLC_Pnt<NTID>_areequal(SLC_CPnt<NTID>_t p0, SLC_CPnt<NTID>_t p1, SLC_<NTID>_t tol);
 
 typedef struct {
     SLC_<NTID>_t r, cphi, sphi, ctheta, stheta;

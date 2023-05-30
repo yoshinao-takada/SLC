@@ -114,6 +114,7 @@ SLC_errno_t SLC_<NTID>_CameraDirectionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -148,6 +149,7 @@ SLC_errno_t SLC_<NTID>_CameraPositionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 

@@ -8,15 +8,6 @@ static const SLC_r64_t IMat_r64[] = {
 	1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
 #pragma region r32_function_impl
-bool SLC_Pntr32_areequal(SLC_CPntr32_t p0, SLC_CPntr32_t p1, SLC_r32_t tol)
-{
-    bool b = true;
-    for (int i = 0; i < 3; i++)
-    {
-        b &= SLC_r32_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
-    }
-    return b;
-}
 
 #pragma region matrix_multiplication
 // 4x4 identity matrix
@@ -401,15 +392,6 @@ SLC_errno_t SLC_Planer32_3Crosssection(SLC_PCLinePlaner32_t planes, SLC_Pntr32_t
 #undef MATSIZE5X8
 #pragma endregion r32_function_impl
 #pragma region r64_function_impl
-bool SLC_Pntr64_areequal(SLC_CPntr64_t p0, SLC_CPntr64_t p1, SLC_r64_t tol)
-{
-    bool b = true;
-    for (int i = 0; i < 3; i++)
-    {
-        b &= SLC_r64_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
-    }
-    return b;
-}
 
 #pragma region matrix_multiplication
 // 4x4 identity matrix

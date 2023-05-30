@@ -119,6 +119,7 @@ SLC_errno_t SLC_r32_CameraDirectionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -153,6 +154,7 @@ SLC_errno_t SLC_r32_CameraPositionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -283,6 +285,7 @@ SLC_errno_t SLC_r64_CameraDirectionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 
@@ -317,6 +320,7 @@ SLC_errno_t SLC_r64_CameraPositionUT(SLC_PCTestArgs_t args)
             break;
         }
     }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 

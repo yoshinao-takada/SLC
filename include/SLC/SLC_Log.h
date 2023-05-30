@@ -122,6 +122,10 @@ void SLC_Timespec_A_minus_B(struct timespec* a_minus_b, struct timespec* a, stru
 #define SLC_r32_areequal(__a, __b, __tol) \
     (((SLC_r32_abs(__a) < __tol) || (SLC_r32_abs(__b) < __tol)) ? \
     (SLC_r32_absdiff(__a, __b) < __tol) : (SLC_r32_relabsdiff(__a, __b) < __tol))
+#define SLC_Pntr32_areequal(__p0, __p1, __tol) ( \
+    SLC_r32_areequal((__p0)[0]/(__p0)[3], (__p1)[0]/(__p1)[3], __tol) && \
+    SLC_r32_areequal((__p0)[1]/(__p0)[3], (__p1)[1]/(__p1)[3], __tol) && \
+    SLC_r32_areequal((__p0)[2]/(__p0)[3], (__p1)[2]/(__p1)[3], __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_r64_t_numbers
 #define SLC_r64_abssum2(__a, __b) (SLC_r64_abs(__a) + SLC_r64_abs(__b))
@@ -130,6 +134,10 @@ void SLC_Timespec_A_minus_B(struct timespec* a_minus_b, struct timespec* a, stru
 #define SLC_r64_areequal(__a, __b, __tol) \
     (((SLC_r64_abs(__a) < __tol) || (SLC_r64_abs(__b) < __tol)) ? \
     (SLC_r64_absdiff(__a, __b) < __tol) : (SLC_r64_relabsdiff(__a, __b) < __tol))
+#define SLC_Pntr64_areequal(__p0, __p1, __tol) ( \
+    SLC_r64_areequal((__p0)[0]/(__p0)[3], (__p1)[0]/(__p1)[3], __tol) && \
+    SLC_r64_areequal((__p0)[1]/(__p0)[3], (__p1)[1]/(__p1)[3], __tol) && \
+    SLC_r64_areequal((__p0)[2]/(__p0)[3], (__p1)[2]/(__p1)[3], __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_c64_t_numbers
 #define SLC_c64_abssum2(__a, __b) (SLC_c64_abs(__a) + SLC_c64_abs(__b))
@@ -138,6 +146,10 @@ void SLC_Timespec_A_minus_B(struct timespec* a_minus_b, struct timespec* a, stru
 #define SLC_c64_areequal(__a, __b, __tol) \
     (((SLC_c64_abs(__a) < __tol) || (SLC_c64_abs(__b) < __tol)) ? \
     (SLC_c64_absdiff(__a, __b) < __tol) : (SLC_c64_relabsdiff(__a, __b) < __tol))
+#define SLC_Pntc64_areequal(__p0, __p1, __tol) ( \
+    SLC_c64_areequal((__p0)[0]/(__p0)[3], (__p1)[0]/(__p1)[3], __tol) && \
+    SLC_c64_areequal((__p0)[1]/(__p0)[3], (__p1)[1]/(__p1)[3], __tol) && \
+    SLC_c64_areequal((__p0)[2]/(__p0)[3], (__p1)[2]/(__p1)[3], __tol))
 #pragma endregion
 #pragma region comparison_of_SLC_c128_t_numbers
 #define SLC_c128_abssum2(__a, __b) (SLC_c128_abs(__a) + SLC_c128_abs(__b))
@@ -146,5 +158,9 @@ void SLC_Timespec_A_minus_B(struct timespec* a_minus_b, struct timespec* a, stru
 #define SLC_c128_areequal(__a, __b, __tol) \
     (((SLC_c128_abs(__a) < __tol) || (SLC_c128_abs(__b) < __tol)) ? \
     (SLC_c128_absdiff(__a, __b) < __tol) : (SLC_c128_relabsdiff(__a, __b) < __tol))
+#define SLC_Pntc128_areequal(__p0, __p1, __tol) ( \
+    SLC_c128_areequal((__p0)[0]/(__p0)[3], (__p1)[0]/(__p1)[3], __tol) && \
+    SLC_c128_areequal((__p0)[1]/(__p0)[3], (__p1)[1]/(__p1)[3], __tol) && \
+    SLC_c128_areequal((__p0)[2]/(__p0)[3], (__p1)[2]/(__p1)[3], __tol))
 #pragma endregion
 #endif

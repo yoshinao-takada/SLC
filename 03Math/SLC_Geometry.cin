@@ -1,13 +1,4 @@
 #pragma region <NTID>_function_impl
-bool SLC_Pnt<NTID>_areequal(SLC_CPnt<NTID>_t p0, SLC_CPnt<NTID>_t p1, SLC_<NTID>_t tol)
-{
-    bool b = true;
-    for (int i = 0; i < 3; i++)
-    {
-        b &= SLC_<NTID>_areequal(p0[i]/p0[3], p1[i]/p1[3], tol);
-    }
-    return b;
-}
 
 #pragma region matrix_multiplication
 // 4x4 identity matrix

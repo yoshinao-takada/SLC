@@ -42,7 +42,6 @@ function CreateHeaderFile(hin, h)
         "#define _SLC_GEOMETRY_H",
         "#include \"SLC/SLC_MiniLA.h\"",
         "#include \"SLC/SLC_Math.h\"",
-        "#include \"SLC/SLC_Log.h\"",
         "#include <memory.h>",
         "#include <stdio.h>",
     ];
