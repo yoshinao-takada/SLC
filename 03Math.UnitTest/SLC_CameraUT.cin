@@ -157,10 +157,118 @@ SLC_errno_t SLC_<NTID>_CameraOrthUT(SLC_PCTestArgs_t args)
 {
     const SLC_<NTID>_t _0 = SLC_<NTID>_units[0], _1 = SLC_<NTID>_units[1], _minus1 = SLC_<NTID>_units[2];
     SLC_errno_t err = EXIT_SUCCESS;
-    for (int i = 0; i < 4; i++)
+    SLC_PCProjection<NTID>_t proj = args->data;
+    const SLC_4<NTID>_t 
+        projected_left_bottom_far_ref = { _minus1, _minus1, _minus1, _1 },
+        projected_right_top_near_ref = { _1, _1, _1, _1 };
+    for (int i = 0; i < 2; i++, proj++)
     {
-
+        SLC_<NTID>_t workPnt[4], workMat[16];
+        SLC_CTMat<NTID>_t projMat = SLC_Camera<NTID>_Orth(proj, workMat);
+        SLC_<NTID>_t xLeft = -proj->width_height[0]/(2 * _1);
+        SLC_<NTID>_t yBottom = -proj->width_height[1]/(2 * _1);
+        SLC_<NTID>_t zFar = proj->far_near[0];
+        SLC_<NTID>_t zNear = proj->far_near[1];
+        const SLC_4<NTID>_t
+            left_bottom_far = { xLeft, yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 };
+        fprintf(stderr, "--- projMat =\n");
+        SLC_TMat<NTID>_Print(stderr, projMat);
+        SLC_CPnt<NTID>_t projected = SLC_TMat<NTID>_Transform(projMat, left_bottom_far, workPnt);
+        fprintf(stderr, "--- projected left_bottom_far = ");
+        SLC_Pnt<NTID>_Print(stderr, projected);
+        if (!SLC_Pnt<NTID>_areequal(
+            projected_left_bottom_far_ref, projected, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        projected = SLC_TMat<NTID>_Transform(projMat, right_top_near, workPnt);
+        fprintf(stderr, "--- projected right_top_near = ");
+        SLC_Pnt<NTID>_Print(stderr, projected);
+        if (!SLC_Pnt<NTID>_areequal(
+            projected_right_top_near_ref, projected, SLC_<NTID>_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
     }
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+
+SLC_errno_t SLC_<NTID>_CameraPersUT(SLC_PCTestArgs_t args)
+{
+    const SLC_<NTID>_t _0 = SLC_<NTID>_units[0], _1 = SLC_<NTID>_units[1], _minus1 = SLC_<NTID>_units[2];
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PCProjection<NTID>_t proj = args->data;
+    SLC_<NTID>_t workmat[16], workpnt[4];
+    for (int i = 0; i < 2; i++, proj++)
+    {
+        SLC_<NTID>_t xLeft = -proj->width_height[0]/((SLC_<NTID>_t)2);
+        SLC_<NTID>_t yBottom = -proj->width_height[1]/((SLC_<NTID>_t)2);
+        SLC_<NTID>_t zFar = proj->far_near[0], zNear = proj->far_near[1];
+        SLC_<NTID>_t zRatio = zFar/zNear;
+        const SLC_4<NTID>_t
+            left_bottom_far = { zRatio * xLeft, zRatio * yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 },
+            center_far = { _0, _0, zFar, _1 },
+            center_near = { _0, _0, zNear, _1 };
+        SLC_CTMat<NTID>_t projmat = SLC_Camera<NTID>_Perspective(proj, workmat);
+        //printf("--- projmat = \n"); SLC_TMat<NTID>_Print(stdout, projmat);
+        {
+            const SLC_4<NTID>_t transformed_ref = { -_1, -_1, -_1, _1 };
+            SLC_CPnt<NTID>_t transformed = SLC_TMat<NTID>_Transform(projmat, left_bottom_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pnt<NTID>_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pnt<NTID>_Print(stdout, transformed);
+            if (!SLC_Pnt<NTID>_areequal(transformed_ref, transformed, SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4<NTID>_t transformed_ref = { _1, _1, _1, _1 };
+            SLC_CPnt<NTID>_t transformed = SLC_TMat<NTID>_Transform(projmat, right_top_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pnt<NTID>_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pnt<NTID>_Print(stdout, transformed);
+            if (!SLC_Pnt<NTID>_areequal(transformed_ref, transformed, SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4<NTID>_t transformed_ref = { _0, _0, -_1, _1 };
+            SLC_CPnt<NTID>_t transformed = SLC_TMat<NTID>_Transform(projmat, center_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pnt<NTID>_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pnt<NTID>_Print(stdout, transformed);
+            if (!SLC_Pnt<NTID>_areequal(transformed_ref, transformed, SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4<NTID>_t transformed_ref = { _0, _0, _1, _1 };
+            SLC_CPnt<NTID>_t transformed = SLC_TMat<NTID>_Transform(projmat, center_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pnt<NTID>_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pnt<NTID>_Print(stdout, transformed);
+            if (!SLC_Pnt<NTID>_areequal(transformed_ref, transformed, SLC_<NTID>_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 #pragma endregion Polar-Y__Cartesian__Conversion_<NTID>

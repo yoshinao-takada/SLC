@@ -79,21 +79,24 @@ SLC_CTMat<NTID>_t SLC_Camera<NTID>_Orth(
     const SLC_<NTID>_t _2 = SLC_<NTID>_units[1] + SLC_<NTID>_units[1];
     SLC_<NTID>_copy(work, 1, SLC_<NTID>_units, 0, 16); // zero clear work
     do {
-        SLC_<NTID>_t zspan = projconf->far_near[1] - projconf->far_near[0];
+        SLC_<NTID>_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_<NTID>_t zspan = znear - zfar;
         SLC_<NTID>_t max_wh = SLC_<NTID>_max(projconf->width_height[0], projconf->width_height[1]);
-        if (zspan < SLC_<NTID>_units[0])
-        { // zspan is negative
+        if ((zspan < SLC_<NTID>_units[0]) || (znear > SLC_<NTID>_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
+            break;
         }
         if (zspan < (max_wh * SLC_<NTID>_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
         work[0] = _2 / projconf->width_height[0];
         work[5] = _2 / projconf->width_height[1];
         work[10] = _2 / (projconf->far_near[1] - projconf->far_near[0]);
-        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / _2;
+        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / 
+            (projconf->far_near[1] - projconf->far_near[0]);
         work[15] = SLC_<NTID>_units[1];
     } while (0);
     if (err)
@@ -109,27 +112,28 @@ SLC_CTMat<NTID>_t SLC_Camera<NTID>_Perspective(
     SLC_TMat<NTID>_t work
 ) {
     int err = EXIT_SUCCESS;
-    const SLC_<NTID>_t _2 = SLC_<NTID>_units[1] + SLC_<NTID>_units[1];
+    const SLC_<NTID>_t _1 = SLC_<NTID>_units[1];
+    const SLC_<NTID>_t _2 = _1 + _1;
     SLC_<NTID>_copy(work, 1, SLC_<NTID>_units, 0, 16); // zero clear work
     do {
-        SLC_<NTID>_t zspan = projconf->far_near[0] - projconf->far_near[1];
-        if (zspan < SLC_<NTID>_units[0])
-        { // zspan is negative
+        SLC_<NTID>_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_<NTID>_t zspan = znear - zfar;
+        SLC_<NTID>_t max_wh = SLC_<NTID>_max(projconf->width_height[0], projconf->width_height[1]);
+        if ((zspan < SLC_<NTID>_units[0]) || (znear > SLC_<NTID>_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
             break;
         }
-        SLC_<NTID>_t max_wh = SLC_<NTID>_max(projconf->width_height[0], projconf->width_height[1]);
         if (zspan < (max_wh * SLC_<NTID>_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
-        work[0] = _2 / projconf->width_height[0];
-        work[5] = _2 / projconf->width_height[1];
-        SLC_<NTID>_t znear_zfar = projconf->far_near[1] - projconf->far_near[0];
-        work[10] = (projconf->far_near[0] + projconf->far_near[1])/znear_zfar;
-        work[11] = _2 * projconf->far_near[0] * projconf->far_near[1]/znear_zfar;
-        work[14] = SLC_<NTID>_units[2];
+        work[0] = _2 * znear / projconf->width_height[0];
+        work[5] = _2 * znear / projconf->width_height[1];
+        work[10] = (projconf->far_near[0] + projconf->far_near[1])/zspan;
+        work[11] = -_2 * projconf->far_near[0] * projconf->far_near[1]/zspan;
+        work[14] = _1;
     } while (0);
     if (err)
     {

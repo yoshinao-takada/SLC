@@ -82,21 +82,24 @@ SLC_CTMatr32_t SLC_Camerar32_Orth(
     const SLC_r32_t _2 = SLC_r32_units[1] + SLC_r32_units[1];
     SLC_r32_copy(work, 1, SLC_r32_units, 0, 16); // zero clear work
     do {
-        SLC_r32_t zspan = projconf->far_near[1] - projconf->far_near[0];
+        SLC_r32_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_r32_t zspan = znear - zfar;
         SLC_r32_t max_wh = SLC_r32_max(projconf->width_height[0], projconf->width_height[1]);
-        if (zspan < SLC_r32_units[0])
-        { // zspan is negative
+        if ((zspan < SLC_r32_units[0]) || (znear > SLC_r32_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
+            break;
         }
         if (zspan < (max_wh * SLC_r32_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
         work[0] = _2 / projconf->width_height[0];
         work[5] = _2 / projconf->width_height[1];
         work[10] = _2 / (projconf->far_near[1] - projconf->far_near[0]);
-        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / _2;
+        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / 
+            (projconf->far_near[1] - projconf->far_near[0]);
         work[15] = SLC_r32_units[1];
     } while (0);
     if (err)
@@ -112,27 +115,28 @@ SLC_CTMatr32_t SLC_Camerar32_Perspective(
     SLC_TMatr32_t work
 ) {
     int err = EXIT_SUCCESS;
-    const SLC_r32_t _2 = SLC_r32_units[1] + SLC_r32_units[1];
+    const SLC_r32_t _1 = SLC_r32_units[1];
+    const SLC_r32_t _2 = _1 + _1;
     SLC_r32_copy(work, 1, SLC_r32_units, 0, 16); // zero clear work
     do {
-        SLC_r32_t zspan = projconf->far_near[0] - projconf->far_near[1];
-        if (zspan < SLC_r32_units[0])
-        { // zspan is negative
+        SLC_r32_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_r32_t zspan = znear - zfar;
+        SLC_r32_t max_wh = SLC_r32_max(projconf->width_height[0], projconf->width_height[1]);
+        if ((zspan < SLC_r32_units[0]) || (znear > SLC_r32_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
             break;
         }
-        SLC_r32_t max_wh = SLC_r32_max(projconf->width_height[0], projconf->width_height[1]);
         if (zspan < (max_wh * SLC_r32_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
-        work[0] = _2 / projconf->width_height[0];
-        work[5] = _2 / projconf->width_height[1];
-        SLC_r32_t znear_zfar = projconf->far_near[1] - projconf->far_near[0];
-        work[10] = (projconf->far_near[0] + projconf->far_near[1])/znear_zfar;
-        work[11] = _2 * projconf->far_near[0] * projconf->far_near[1]/znear_zfar;
-        work[14] = SLC_r32_units[2];
+        work[0] = _2 * znear / projconf->width_height[0];
+        work[5] = _2 * znear / projconf->width_height[1];
+        work[10] = (projconf->far_near[0] + projconf->far_near[1])/zspan;
+        work[11] = -_2 * projconf->far_near[0] * projconf->far_near[1]/zspan;
+        work[14] = _1;
     } while (0);
     if (err)
     {
@@ -223,21 +227,24 @@ SLC_CTMatr64_t SLC_Camerar64_Orth(
     const SLC_r64_t _2 = SLC_r64_units[1] + SLC_r64_units[1];
     SLC_r64_copy(work, 1, SLC_r64_units, 0, 16); // zero clear work
     do {
-        SLC_r64_t zspan = projconf->far_near[1] - projconf->far_near[0];
+        SLC_r64_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_r64_t zspan = znear - zfar;
         SLC_r64_t max_wh = SLC_r64_max(projconf->width_height[0], projconf->width_height[1]);
-        if (zspan < SLC_r64_units[0])
-        { // zspan is negative
+        if ((zspan < SLC_r64_units[0]) || (znear > SLC_r64_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
+            break;
         }
         if (zspan < (max_wh * SLC_r64_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
         work[0] = _2 / projconf->width_height[0];
         work[5] = _2 / projconf->width_height[1];
         work[10] = _2 / (projconf->far_near[1] - projconf->far_near[0]);
-        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / _2;
+        work[11] = -(projconf->far_near[0] + projconf->far_near[1]) / 
+            (projconf->far_near[1] - projconf->far_near[0]);
         work[15] = SLC_r64_units[1];
     } while (0);
     if (err)
@@ -253,27 +260,28 @@ SLC_CTMatr64_t SLC_Camerar64_Perspective(
     SLC_TMatr64_t work
 ) {
     int err = EXIT_SUCCESS;
-    const SLC_r64_t _2 = SLC_r64_units[1] + SLC_r64_units[1];
+    const SLC_r64_t _1 = SLC_r64_units[1];
+    const SLC_r64_t _2 = _1 + _1;
     SLC_r64_copy(work, 1, SLC_r64_units, 0, 16); // zero clear work
     do {
-        SLC_r64_t zspan = projconf->far_near[0] - projconf->far_near[1];
-        if (zspan < SLC_r64_units[0])
-        { // zspan is negative
+        SLC_r64_t znear = projconf->far_near[1], zfar = projconf->far_near[0];
+        SLC_r64_t zspan = znear - zfar;
+        SLC_r64_t max_wh = SLC_r64_max(projconf->width_height[0], projconf->width_height[1]);
+        if ((zspan < SLC_r64_units[0]) || (znear > SLC_r64_units[0]))
+        { // zspan is negative or view depth range is reversed.
             err = EINVAL;
             break;
         }
-        SLC_r64_t max_wh = SLC_r64_max(projconf->width_height[0], projconf->width_height[1]);
         if (zspan < (max_wh * SLC_r64_stdtol))
-        {
+        { // zspan is too small
             err = SLC_ESINGULAR;
             break;
         }
-        work[0] = _2 / projconf->width_height[0];
-        work[5] = _2 / projconf->width_height[1];
-        SLC_r64_t znear_zfar = projconf->far_near[1] - projconf->far_near[0];
-        work[10] = (projconf->far_near[0] + projconf->far_near[1])/znear_zfar;
-        work[11] = _2 * projconf->far_near[0] * projconf->far_near[1]/znear_zfar;
-        work[14] = SLC_r64_units[2];
+        work[0] = _2 * znear / projconf->width_height[0];
+        work[5] = _2 * znear / projconf->width_height[1];
+        work[10] = (projconf->far_near[0] + projconf->far_near[1])/zspan;
+        work[11] = -_2 * projconf->far_near[0] * projconf->far_near[1]/zspan;
+        work[14] = _1;
     } while (0);
     if (err)
     {

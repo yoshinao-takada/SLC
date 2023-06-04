@@ -66,6 +66,30 @@ static const SLC_CameraPositionr64_t _cameraPosr64[] =
     }
 };
 
+static const SLC_Projectionr32_t  _orthr32[] =
+{
+    {
+        { 640.0f, 480.0f }, // width_height
+        { -1000.0f, -500.0f } // far_near
+    },
+    {
+        { 0.1f, 0.07f }, // width_height
+        { -1.0f, -0.8f }, // far_near
+    }
+};
+
+static const SLC_Projectionr64_t  _orthr64[] =
+{
+    {
+        { 640.0, 480.0 }, // width_height
+        { -1000.0, -500.0 } // far_near
+    },
+    {
+        { 0.1, 0.07 }, // width_height
+        { -1.0, -0.8 }, // far_near
+    }
+};
+
 SLC_errno_t SLC_CameraUT(SLC_i32_t settings)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -86,8 +110,14 @@ SLC_errno_t SLC_CameraUT(SLC_i32_t settings)
         SLC_test2(err, SLC_r64_CameraPositionUT, &testargs64, __func__, __LINE__);
 
         // Orth-normal projection
+        testargs32.data = _orthr32;
+        testargs64.data = _orthr64;
+        SLC_test2(err, SLC_r32_CameraOrthUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_CameraOrthUT, &testargs64, __func__, __LINE__);
 
         // Perspective projection
+        SLC_test2(err, SLC_r32_CameraPersUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_CameraPersUT, &testargs64, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

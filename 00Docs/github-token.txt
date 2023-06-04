@@ -1,3 +1,4 @@
 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 : 2023-04-17 - 30 days
 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 : 2023-04-26 - 30 days
-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 : 2023-05-29 - 30 days
+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 : 2023-05-29 - 30 days on Debian/HP ProDesk 600G1
+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 : 2023-05-30 - 30 days on Oracle Linux/HP ProDesk 600 G4

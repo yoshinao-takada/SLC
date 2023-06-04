@@ -162,10 +162,118 @@ SLC_errno_t SLC_r32_CameraOrthUT(SLC_PCTestArgs_t args)
 {
     const SLC_r32_t _0 = SLC_r32_units[0], _1 = SLC_r32_units[1], _minus1 = SLC_r32_units[2];
     SLC_errno_t err = EXIT_SUCCESS;
-    for (int i = 0; i < 4; i++)
+    SLC_PCProjectionr32_t proj = args->data;
+    const SLC_4r32_t 
+        projected_left_bottom_far_ref = { _minus1, _minus1, _minus1, _1 },
+        projected_right_top_near_ref = { _1, _1, _1, _1 };
+    for (int i = 0; i < 2; i++, proj++)
     {
-
+        SLC_r32_t workPnt[4], workMat[16];
+        SLC_CTMatr32_t projMat = SLC_Camerar32_Orth(proj, workMat);
+        SLC_r32_t xLeft = -proj->width_height[0]/(2 * _1);
+        SLC_r32_t yBottom = -proj->width_height[1]/(2 * _1);
+        SLC_r32_t zFar = proj->far_near[0];
+        SLC_r32_t zNear = proj->far_near[1];
+        const SLC_4r32_t
+            left_bottom_far = { xLeft, yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 };
+        fprintf(stderr, "--- projMat =\n");
+        SLC_TMatr32_Print(stderr, projMat);
+        SLC_CPntr32_t projected = SLC_TMatr32_Transform(projMat, left_bottom_far, workPnt);
+        fprintf(stderr, "--- projected left_bottom_far = ");
+        SLC_Pntr32_Print(stderr, projected);
+        if (!SLC_Pntr32_areequal(
+            projected_left_bottom_far_ref, projected, SLC_r32_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        projected = SLC_TMatr32_Transform(projMat, right_top_near, workPnt);
+        fprintf(stderr, "--- projected right_top_near = ");
+        SLC_Pntr32_Print(stderr, projected);
+        if (!SLC_Pntr32_areequal(
+            projected_right_top_near_ref, projected, SLC_r32_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
     }
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+
+SLC_errno_t SLC_r32_CameraPersUT(SLC_PCTestArgs_t args)
+{
+    const SLC_r32_t _0 = SLC_r32_units[0], _1 = SLC_r32_units[1], _minus1 = SLC_r32_units[2];
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PCProjectionr32_t proj = args->data;
+    SLC_r32_t workmat[16], workpnt[4];
+    for (int i = 0; i < 2; i++, proj++)
+    {
+        SLC_r32_t xLeft = -proj->width_height[0]/((SLC_r32_t)2);
+        SLC_r32_t yBottom = -proj->width_height[1]/((SLC_r32_t)2);
+        SLC_r32_t zFar = proj->far_near[0], zNear = proj->far_near[1];
+        SLC_r32_t zRatio = zFar/zNear;
+        const SLC_4r32_t
+            left_bottom_far = { zRatio * xLeft, zRatio * yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 },
+            center_far = { _0, _0, zFar, _1 },
+            center_near = { _0, _0, zNear, _1 };
+        SLC_CTMatr32_t projmat = SLC_Camerar32_Perspective(proj, workmat);
+        //printf("--- projmat = \n"); SLC_TMatr32_Print(stdout, projmat);
+        {
+            const SLC_4r32_t transformed_ref = { -_1, -_1, -_1, _1 };
+            SLC_CPntr32_t transformed = SLC_TMatr32_Transform(projmat, left_bottom_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr32_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr32_Print(stdout, transformed);
+            if (!SLC_Pntr32_areequal(transformed_ref, transformed, SLC_r32_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r32_t transformed_ref = { _1, _1, _1, _1 };
+            SLC_CPntr32_t transformed = SLC_TMatr32_Transform(projmat, right_top_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr32_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr32_Print(stdout, transformed);
+            if (!SLC_Pntr32_areequal(transformed_ref, transformed, SLC_r32_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r32_t transformed_ref = { _0, _0, -_1, _1 };
+            SLC_CPntr32_t transformed = SLC_TMatr32_Transform(projmat, center_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr32_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr32_Print(stdout, transformed);
+            if (!SLC_Pntr32_areequal(transformed_ref, transformed, SLC_r32_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r32_t transformed_ref = { _0, _0, _1, _1 };
+            SLC_CPntr32_t transformed = SLC_TMatr32_Transform(projmat, center_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr32_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr32_Print(stdout, transformed);
+            if (!SLC_Pntr32_areequal(transformed_ref, transformed, SLC_r32_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 #pragma endregion Polar-Y__Cartesian__Conversion_r32
@@ -328,10 +436,118 @@ SLC_errno_t SLC_r64_CameraOrthUT(SLC_PCTestArgs_t args)
 {
     const SLC_r64_t _0 = SLC_r64_units[0], _1 = SLC_r64_units[1], _minus1 = SLC_r64_units[2];
     SLC_errno_t err = EXIT_SUCCESS;
-    for (int i = 0; i < 4; i++)
+    SLC_PCProjectionr64_t proj = args->data;
+    const SLC_4r64_t 
+        projected_left_bottom_far_ref = { _minus1, _minus1, _minus1, _1 },
+        projected_right_top_near_ref = { _1, _1, _1, _1 };
+    for (int i = 0; i < 2; i++, proj++)
     {
-
+        SLC_r64_t workPnt[4], workMat[16];
+        SLC_CTMatr64_t projMat = SLC_Camerar64_Orth(proj, workMat);
+        SLC_r64_t xLeft = -proj->width_height[0]/(2 * _1);
+        SLC_r64_t yBottom = -proj->width_height[1]/(2 * _1);
+        SLC_r64_t zFar = proj->far_near[0];
+        SLC_r64_t zNear = proj->far_near[1];
+        const SLC_4r64_t
+            left_bottom_far = { xLeft, yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 };
+        fprintf(stderr, "--- projMat =\n");
+        SLC_TMatr64_Print(stderr, projMat);
+        SLC_CPntr64_t projected = SLC_TMatr64_Transform(projMat, left_bottom_far, workPnt);
+        fprintf(stderr, "--- projected left_bottom_far = ");
+        SLC_Pntr64_Print(stderr, projected);
+        if (!SLC_Pntr64_areequal(
+            projected_left_bottom_far_ref, projected, SLC_r64_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
+        projected = SLC_TMatr64_Transform(projMat, right_top_near, workPnt);
+        fprintf(stderr, "--- projected right_top_near = ");
+        SLC_Pntr64_Print(stderr, projected);
+        if (!SLC_Pntr64_areequal(
+            projected_right_top_near_ref, projected, SLC_r64_stdtol))
+        {
+            err = EXIT_FAILURE;
+            SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+            break;
+        }
     }
+    SLC_testend(err, __func__, __LINE__);
+    return err;
+}
+
+
+SLC_errno_t SLC_r64_CameraPersUT(SLC_PCTestArgs_t args)
+{
+    const SLC_r64_t _0 = SLC_r64_units[0], _1 = SLC_r64_units[1], _minus1 = SLC_r64_units[2];
+    SLC_errno_t err = EXIT_SUCCESS;
+    SLC_PCProjectionr64_t proj = args->data;
+    SLC_r64_t workmat[16], workpnt[4];
+    for (int i = 0; i < 2; i++, proj++)
+    {
+        SLC_r64_t xLeft = -proj->width_height[0]/((SLC_r64_t)2);
+        SLC_r64_t yBottom = -proj->width_height[1]/((SLC_r64_t)2);
+        SLC_r64_t zFar = proj->far_near[0], zNear = proj->far_near[1];
+        SLC_r64_t zRatio = zFar/zNear;
+        const SLC_4r64_t
+            left_bottom_far = { zRatio * xLeft, zRatio * yBottom, zFar, _1 },
+            right_top_near = { -xLeft, -yBottom, zNear, _1 },
+            center_far = { _0, _0, zFar, _1 },
+            center_near = { _0, _0, zNear, _1 };
+        SLC_CTMatr64_t projmat = SLC_Camerar64_Perspective(proj, workmat);
+        //printf("--- projmat = \n"); SLC_TMatr64_Print(stdout, projmat);
+        {
+            const SLC_4r64_t transformed_ref = { -_1, -_1, -_1, _1 };
+            SLC_CPntr64_t transformed = SLC_TMatr64_Transform(projmat, left_bottom_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr64_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr64_Print(stdout, transformed);
+            if (!SLC_Pntr64_areequal(transformed_ref, transformed, SLC_r64_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r64_t transformed_ref = { _1, _1, _1, _1 };
+            SLC_CPntr64_t transformed = SLC_TMatr64_Transform(projmat, right_top_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr64_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr64_Print(stdout, transformed);
+            if (!SLC_Pntr64_areequal(transformed_ref, transformed, SLC_r64_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r64_t transformed_ref = { _0, _0, -_1, _1 };
+            SLC_CPntr64_t transformed = SLC_TMatr64_Transform(projmat, center_far, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr64_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr64_Print(stdout, transformed);
+            if (!SLC_Pntr64_areequal(transformed_ref, transformed, SLC_r64_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+        {
+            const SLC_4r64_t transformed_ref = { _0, _0, _1, _1 };
+            SLC_CPntr64_t transformed = SLC_TMatr64_Transform(projmat, center_near, workpnt);
+            //printf("--- transformed_ref = "); SLC_Pntr64_Print(stdout, transformed_ref);
+            //printf("--- transformed = "); SLC_Pntr64_Print(stdout, transformed);
+            if (!SLC_Pntr64_areequal(transformed_ref, transformed, SLC_r64_stdtol))
+            {
+                err = EXIT_FAILURE;
+                SLC_LogERR(err, "@ %s, %d\n", __func__, __LINE__);
+                break;
+            }
+        }
+    }
+    SLC_testend(err, __func__, __LINE__);
     return err;
 }
 #pragma endregion Polar-Y__Cartesian__Conversion_r64
@@ -403,6 +619,30 @@ static const SLC_CameraPositionr64_t _cameraPosr64[] =
     }
 };
 
+static const SLC_Projectionr32_t  _orthr32[] =
+{
+    {
+        { 640.0f, 480.0f }, // width_height
+        { -1000.0f, -500.0f } // far_near
+    },
+    {
+        { 0.1f, 0.07f }, // width_height
+        { -1.0f, -0.8f }, // far_near
+    }
+};
+
+static const SLC_Projectionr64_t  _orthr64[] =
+{
+    {
+        { 640.0, 480.0 }, // width_height
+        { -1000.0, -500.0 } // far_near
+    },
+    {
+        { 0.1, 0.07 }, // width_height
+        { -1.0, -0.8 }, // far_near
+    }
+};
+
 SLC_errno_t SLC_CameraUT(SLC_i32_t settings)
 {
     SLC_errno_t err = EXIT_SUCCESS;
@@ -423,8 +663,14 @@ SLC_errno_t SLC_CameraUT(SLC_i32_t settings)
         SLC_test2(err, SLC_r64_CameraPositionUT, &testargs64, __func__, __LINE__);
 
         // Orth-normal projection
+        testargs32.data = _orthr32;
+        testargs64.data = _orthr64;
+        SLC_test2(err, SLC_r32_CameraOrthUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_CameraOrthUT, &testargs64, __func__, __LINE__);
 
         // Perspective projection
+        SLC_test2(err, SLC_r32_CameraPersUT, &testargs32, __func__, __LINE__);
+        SLC_test2(err, SLC_r64_CameraPersUT, &testargs64, __func__, __LINE__);
     } while (0);
     SLC_testend(err, __func__, __LINE__);
     return err;

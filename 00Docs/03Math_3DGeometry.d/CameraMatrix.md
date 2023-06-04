@@ -44,19 +44,19 @@ where _W_ is a width of a viewbox, _H_ is a height of a viewbox, and
 [_Z_<sub>MIN</sub> , _Z_<sub>MAX</sub>] is a depth range of a viewbox.
 The transform matrix is
 $$\begin{equation}\begin{bmatrix}
-2/W & 0 & 0 & 0 \\ 0 & 2/H & 0 & 0 \\ 0 & 0 & 2/(Z_{NEAR} - Z_{FAR}) & -(Z_{NEAR} + Z_{FAR})/2 \\
+2/W & 0 & 0 & 0 \\ 0 & 2/H & 0 & 0 \\ 0 & 0 & 2/(Z_{NEAR} - Z_{FAR}) & -(Z_{NEAR} + Z_{FAR})/(Z_{NEAR} - Z_{FAR}) \\
 0 & 0 & 0 & 1
 \end{bmatrix}\end{equation}$$
 
 ## Scaling in Perspective Mode
 In perspective mode, a frustum is mapped to the canonical viewbox.
-* [_Z_<sub>MIN</sub> , _Z_<sub>MAX</sub>] is mapped to [-1, 1].
-* _X_(_Z_ = 1) = _W_ / 2
-* _Y_(_Z_ = 1) = _H_ / 2
+* [_Z_<sub>FAR</sub> , _Z_<sub>NEAR</sub>] is mapped to [-1, 1].
+* _X_(_Z_ = _Z_<sub>NEAR</sub>) = _W_ / 2
+* _Y_(_Z_ = _Z_<sub>NEAR</sub>) = _H_ / 2
 $$\begin{equation}
 \begin{bmatrix}
-2 / W & 0 & 0 & 0 \\ 0 & 2 / H & 0 & 0 \\
-0 & 0 & a & b \\ 0 & 0 & -1 & 0
+2Z_{\text{NEAR}} / W & 0 & 0 & 0 \\ 0 & 2Z_{\text{NEAR}} / H & 0 & 0 \\
+0 & 0 & a & b \\ 0 & 0 & 1 & 0
 \end{bmatrix}
 \end{equation}$$
 $a$ and $b$ satisfies
@@ -128,10 +128,10 @@ that of their orignal points.
 ### __Orth-Normal Mode Projection__
 Several combinations of _Z_<sub>FAR</sub>, _Z_<sub>NEAR</sub>, _W_, and _H_ are given by random number
 generator.  
-[_W_, 0, _Z_<sub>AVE</sub>, 1] => [1, 0, 0, 1]  
-[-_W_, 0, _Z_<sub>AVE</sub>, 1] => [-1, 0, 0, 1]  
-[0, _H_, _Z_<sub>AVE</sub>, 1] => [0, 1, 0, 1]  
-[0, -_H_, _Z_<sub>AVE</sub>, 1] => [0, -1, 0, 1]  
+[_W_/2, 0, _Z_<sub>AVE</sub>, 1] => [1, 0, 0, 1]  
+[-_W_/2, 0, _Z_<sub>AVE</sub>, 1] => [-1, 0, 0, 1]  
+[0, _H_/2, _Z_<sub>AVE</sub>, 1] => [0, 1, 0, 1]  
+[0, -_H_/2, _Z_<sub>AVE</sub>, 1] => [0, -1, 0, 1]  
 [0, 0, _Z_<sub>NEAR</sub>, 1] => [0, 0, 1, 1]  
 [0, 0, _Z_<sub>FAR</sub>, 1] => [0, 0, -1, 1]  
 where  
@@ -140,14 +140,14 @@ _Z_<sub>AVE</sub> = (_Z_<sub>NEAR</sub> + _Z_<sub>FAR</sub>)/2
 ### __Perspective Mode Projection__
 Several combinations of _Z_<sub>FAR</sub>, _Z_<sub>NEAR</sub>, _W_, and _H_ are given by random number
 generator.  
-[_W_, 0, _Z_<sub>NEAR</sub>, 1] => [_w_, 0, _w_, _w_], where _w_ is any number.  
-[-_W_, 0, _Z_<sub>NEAR</sub>, 1] => [-_w_, 0, _w_, _w_], where _w_ is any number.  
-[0, _H_, _Z_<sub>NEAR</sub>, 1] => [0, _w_, _w_, _w_], where _w_ is any number.  
-[0, -_H_, _Z_<sub>NEAR</sub>, 1] => [0, _w_, _w_, _w_], where _w_ is any number.  
-[0, 0, _Z_<sub>NEAR</sub>, 1] => [0, 0, _w_, _w_], where _w_ is any number.  
+[_W_/2, 0, _Z_<sub>NEAR</sub>, 1] => [_w_, 0, _w_, _w_], where _w_ = _Z_<sub>NEAR</sub>.  
+[-_W_/2, 0, _Z_<sub>NEAR</sub>, 1] => [-_w_, 0, _w_, _w_], where _w_ = _Z_<sub>NEAR</sub>.  
+[0, _H_/2, _Z_<sub>NEAR</sub>, 1] => [0, _w_, _w_, _w_], where _w_ = _Z_<sub>NEAR</sub>.  
+[0, -_H_/2, _Z_<sub>NEAR</sub>, 1] => [0, -_w_, _w_, _w_], where _w_ = _Z_<sub>NEAR</sub>.  
+[0, 0, _Z_<sub>NEAR</sub>, 1] => [0, 0, _w_, _w_], where _w_ = _Z_<sub>NEAR</sub>.  
 <br/>
-[_W_, 0, _Z_<sub>FAR</sub>, 1] => [_w_, 0, -_w_, _w_], where _w_ is any number.  
-[-_W_, 0, _Z_<sub>FAR</sub>, 1] => [-_w_, 0, -_w_, _w_], where _w_ is any number.  
-[0, _H_, _Z_<sub>FAR</sub>, 1] => [0, _w_, -_w_, _w_], where _w_ is any number.  
-[0, -_H_, _Z_<sub>FAR</sub>, 1] => [0, _w_, -_w_, _w_], where _w_ is any number.  
-[0, 0, _Z_<sub>FAR</sub>, 1] => [0, 0, -_w_, _w_], where _w_ is any number.
+[_W_/2, 0, _Z_<sub>FAR</sub>, 1] => [_w_, 0, -_w_, _w_], where _w_ = _Z_<sub>FAR</sub>.  
+[-_W_/2, 0, _Z_<sub>FAR</sub>, 1] => [-_w_, 0, -_w_, _w_], where _w_ = _Z_<sub>FAR</sub>.  
+[0, _H_/2, _Z_<sub>FAR</sub>, 1] => [0, _w_, -_w_, _w_], where _w_ = _Z_<sub>FAR</sub>.  
+[0, -_H_/2, _Z_<sub>FAR</sub>, 1] => [0, _w_, -_w_, _w_], where _w_ = _Z_<sub>FAR</sub>.  
+[0, 0, _Z_<sub>FAR</sub>, 1] => [0, 0, -_w_, _w_], where _w_ = _Z_<sub>FAR</sub>.  
