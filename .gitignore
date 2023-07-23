@@ -5,3 +5,6 @@ lib/
 *.exe
 *.so
 *.err
+00Docs/github-token.txt
+06JSON*/
+07Cairo*/

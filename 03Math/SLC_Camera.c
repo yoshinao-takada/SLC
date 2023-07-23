@@ -145,6 +145,50 @@ SLC_CTMatr32_t SLC_Camerar32_Perspective(
     }
     return work;
 }
+
+#define _1 ((SLC_r32_t)1)
+#define _m1 ((SLC_r32_t)(-1))
+#define _0 ((SLC_r32_t)0)
+static SLC_CTMatr32_t SLC_Camerar32_ReverseZ()
+{    
+    static const SLC_r32_t mat[] =
+    {
+        _1, _0, _0, _0,
+        _0, _1, _0, _0,
+        _0, _0, _m1, _0,
+        _0, _0, _0, _1
+    };
+    return mat;
+}
+#undef _1
+#undef _m1
+#undef _0
+
+SLC_CTMatr32_t SLC_Camerar32_OrthRZ(
+    SLC_PCProjectionr32_t projconf,
+    SLC_TMatr32_t work
+) {
+    SLC_r32_t local_work[16];
+    SLC_CTMatr32_t orth = SLC_Camerar32_Orth(projconf, local_work);
+    if (!orth)
+    {
+        return NULL;
+    }
+    return SLC_TMatr32_Mul(SLC_Camerar32_ReverseZ(), orth, work);
+}
+
+SLC_CTMatr32_t SLC_Camerar32_PerspectiveRZ(
+    SLC_PCProjectionr32_t projconf,
+    SLC_TMatr32_t work
+) {
+    SLC_r32_t local_work[16];
+    SLC_CTMatr32_t pers = SLC_Camerar32_Perspective(projconf, local_work);
+    if (!pers)
+    {
+        return NULL;
+    }
+    return SLC_TMatr32_Mul(SLC_Camerar32_ReverseZ(), pers, work);
+}
 #pragma endregion Camera-matrix-with-basetype-r32
 #pragma region Camera-matrix-with-basetype-r64
 SLC_CTMatr64_t SLC_Camerar64_Direction(
@@ -289,5 +333,49 @@ SLC_CTMatr64_t SLC_Camerar64_Perspective(
         work = NULL;
     }
     return work;
+}
+
+#define _1 ((SLC_r64_t)1)
+#define _m1 ((SLC_r64_t)(-1))
+#define _0 ((SLC_r64_t)0)
+static SLC_CTMatr64_t SLC_Camerar64_ReverseZ()
+{    
+    static const SLC_r64_t mat[] =
+    {
+        _1, _0, _0, _0,
+        _0, _1, _0, _0,
+        _0, _0, _m1, _0,
+        _0, _0, _0, _1
+    };
+    return mat;
+}
+#undef _1
+#undef _m1
+#undef _0
+
+SLC_CTMatr64_t SLC_Camerar64_OrthRZ(
+    SLC_PCProjectionr64_t projconf,
+    SLC_TMatr64_t work
+) {
+    SLC_r64_t local_work[16];
+    SLC_CTMatr64_t orth = SLC_Camerar64_Orth(projconf, local_work);
+    if (!orth)
+    {
+        return NULL;
+    }
+    return SLC_TMatr64_Mul(SLC_Camerar64_ReverseZ(), orth, work);
+}
+
+SLC_CTMatr64_t SLC_Camerar64_PerspectiveRZ(
+    SLC_PCProjectionr64_t projconf,
+    SLC_TMatr64_t work
+) {
+    SLC_r64_t local_work[16];
+    SLC_CTMatr64_t pers = SLC_Camerar64_Perspective(projconf, local_work);
+    if (!pers)
+    {
+        return NULL;
+    }
+    return SLC_TMatr64_Mul(SLC_Camerar64_ReverseZ(), pers, work);
 }
 #pragma endregion Camera-matrix-with-basetype-r64

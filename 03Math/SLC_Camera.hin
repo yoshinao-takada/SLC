@@ -29,8 +29,21 @@ SLC_CTMat<NTID>_t SLC_Camera<NTID>_Orth(
     SLC_PCProjection<NTID>_t projconf,
     SLC_TMat<NTID>_t work);
 
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_OrthRZ(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work);
+
 // create a camera projection matrix of perspective mode
 SLC_CTMat<NTID>_t SLC_Camera<NTID>_Perspective(
     SLC_PCProjection<NTID>_t projconf,
     SLC_TMat<NTID>_t work);
+
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMat<NTID>_t SLC_Camera<NTID>_PerspectiveRZ(
+    SLC_PCProjection<NTID>_t projconf,
+    SLC_TMat<NTID>_t work);
+
 #pragma endregion Camera-matrix-with-basetype-<NTID>

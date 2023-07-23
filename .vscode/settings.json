@@ -10,6 +10,11 @@
         "slc_geometry.h": "c",
         "slc_shapes.h": "c",
         "slc_camera.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "sceneconf.h": "c",
+        "sceneconfjson.h": "c",
+        "jsmnhelper.h": "c",
+        "dieconf.h": "c",
+        "dieconfjson.h": "c"
     }
 }

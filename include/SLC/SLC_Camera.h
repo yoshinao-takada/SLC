@@ -38,10 +38,23 @@ SLC_CTMatr32_t SLC_Camerar32_Orth(
     SLC_PCProjectionr32_t projconf,
     SLC_TMatr32_t work);
 
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMatr32_t SLC_Camerar32_OrthRZ(
+    SLC_PCProjectionr32_t projconf,
+    SLC_TMatr32_t work);
+
 // create a camera projection matrix of perspective mode
 SLC_CTMatr32_t SLC_Camerar32_Perspective(
     SLC_PCProjectionr32_t projconf,
     SLC_TMatr32_t work);
+
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMatr32_t SLC_Camerar32_PerspectiveRZ(
+    SLC_PCProjectionr32_t projconf,
+    SLC_TMatr32_t work);
+
 #pragma endregion Camera-matrix-with-basetype-r32
 #pragma region Camera-matrix-with-basetype-r64
 // create a camera position matrix
@@ -74,9 +87,22 @@ SLC_CTMatr64_t SLC_Camerar64_Orth(
     SLC_PCProjectionr64_t projconf,
     SLC_TMatr64_t work);
 
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMatr64_t SLC_Camerar64_OrthRZ(
+    SLC_PCProjectionr64_t projconf,
+    SLC_TMatr64_t work);
+
 // create a camera projection matrix of perspective mode
 SLC_CTMatr64_t SLC_Camerar64_Perspective(
     SLC_PCProjectionr64_t projconf,
     SLC_TMatr64_t work);
+
+// Using OpenGL, It looks like that its clipping space has z-axis reversed.
+// Therefore I implemented functions to reverse Z-axis additionary projection matrices.
+SLC_CTMatr64_t SLC_Camerar64_PerspectiveRZ(
+    SLC_PCProjectionr64_t projconf,
+    SLC_TMatr64_t work);
+
 #pragma endregion Camera-matrix-with-basetype-r64
 #endif
